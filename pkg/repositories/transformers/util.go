@@ -3,7 +3,7 @@ package transformers
 import (
 	"github.com/golang/protobuf/proto"
 	"github.com/lyft/datacatalog/pkg/errors"
-	datacatalog "github.com/lyft/datacatalog/protos/gen"
+	datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 	"google.golang.org/grpc/codes"
 )
 

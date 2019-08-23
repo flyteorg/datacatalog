@@ -3,7 +3,7 @@
 package mocks
 
 import context "context"
-import idl_datacatalog "github.com/lyft/datacatalog/protos/gen"
+import datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 
 import mock "github.com/stretchr/testify/mock"
 
@@ -13,20 +13,20 @@ type DatasetManager struct {
 }
 
 // CreateDataset provides a mock function with given fields: ctx, request
-func (_m *DatasetManager) CreateDataset(ctx context.Context, request idl_datacatalog.CreateDatasetRequest) (*idl_datacatalog.CreateDatasetResponse, error) {
+func (_m *DatasetManager) CreateDataset(ctx context.Context, request datacatalog.CreateDatasetRequest) (*datacatalog.CreateDatasetResponse, error) {
 	ret := _m.Called(ctx, request)
 
-	var r0 *idl_datacatalog.CreateDatasetResponse
-	if rf, ok := ret.Get(0).(func(context.Context, idl_datacatalog.CreateDatasetRequest) *idl_datacatalog.CreateDatasetResponse); ok {
+	var r0 *datacatalog.CreateDatasetResponse
+	if rf, ok := ret.Get(0).(func(context.Context, datacatalog.CreateDatasetRequest) *datacatalog.CreateDatasetResponse); ok {
 		r0 = rf(ctx, request)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*idl_datacatalog.CreateDatasetResponse)
+			r0 = ret.Get(0).(*datacatalog.CreateDatasetResponse)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, idl_datacatalog.CreateDatasetRequest) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, datacatalog.CreateDatasetRequest) error); ok {
 		r1 = rf(ctx, request)
 	} else {
 		r1 = ret.Error(1)
@@ -36,20 +36,20 @@ func (_m *DatasetManager) CreateDataset(ctx context.Context, request idl_datacat
 }
 
 // GetDataset provides a mock function with given fields: ctx, request
-func (_m *DatasetManager) GetDataset(ctx context.Context, request idl_datacatalog.GetDatasetRequest) (*idl_datacatalog.GetDatasetResponse, error) {
+func (_m *DatasetManager) GetDataset(ctx context.Context, request datacatalog.GetDatasetRequest) (*datacatalog.GetDatasetResponse, error) {
 	ret := _m.Called(ctx, request)
 
-	var r0 *idl_datacatalog.GetDatasetResponse
-	if rf, ok := ret.Get(0).(func(context.Context, idl_datacatalog.GetDatasetRequest) *idl_datacatalog.GetDatasetResponse); ok {
+	var r0 *datacatalog.GetDatasetResponse
+	if rf, ok := ret.Get(0).(func(context.Context, datacatalog.GetDatasetRequest) *datacatalog.GetDatasetResponse); ok {
 		r0 = rf(ctx, request)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*idl_datacatalog.GetDatasetResponse)
+			r0 = ret.Get(0).(*datacatalog.GetDatasetResponse)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, idl_datacatalog.GetDatasetRequest) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, datacatalog.GetDatasetRequest) error); ok {
 		r1 = rf(ctx, request)
 	} else {
 		r1 = ret.Error(1)

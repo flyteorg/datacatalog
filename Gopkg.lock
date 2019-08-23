@@ -212,12 +212,15 @@
   version = "v1.2.0"
 
 [[projects]]
-  digest = "1:72841617053e049a34e8d98232b863fe5c173cdf03a4d8bc8dc9039303ad418e"
+  digest = "1:5b7e2ce9e5af770b41d9c1c0cbb68729353c6862469c15f1e50f3d0bba47b87c"
   name = "github.com/lyft/flyteidl"
-  packages = ["gen/pb-go/flyteidl/core"]
-  pruneopts = "T"
-  revision = "793b09d190148236f41ad8160b5cec9a3325c16f"
-  version = "v0.1.0"
+  packages = [
+    "gen/pb-go/flyteidl/core",
+    "gen/pb-go/flyteidl/datacatalog",
+  ]
+  pruneopts = "NUT"
+  revision = "cac3388022b624defe8ca6075f2f4af50fcfa311"
+  source = "https://github.com/lyft/flyteidl"
 
 [[projects]]
   digest = "1:6cc3cfda698262608d464cd89bfab217bb8fa8d507bf13b82cd585a520aed37d"
@@ -431,9 +434,10 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:bafd5fe279fd563e58b661da3c7c258beb33b55d48294446a8870caeecefd3a1"
+  digest = "1:0691891596aed53deec3856d0d16ddaf565fed63445c173c3299613494800030"
   name = "golang.org/x/net"
   packages = [
+    "context",
     "http/httpguts",
     "http2",
     "http2/hpack",
@@ -580,6 +584,7 @@
     "github.com/jinzhu/gorm/dialects/sqlite",
     "github.com/lib/pq",
     "github.com/lyft/flyteidl/gen/pb-go/flyteidl/core",
+    "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog",
     "github.com/lyft/flytestdlib/config",
     "github.com/lyft/flytestdlib/config/viper",
     "github.com/lyft/flytestdlib/contextutils",
@@ -588,7 +593,6 @@
     "github.com/lyft/flytestdlib/promutils/labeled",
     "github.com/lyft/flytestdlib/storage",
     "github.com/mitchellh/mapstructure",
-    "github.com/pkg/errors",
     "github.com/spf13/cobra",
     "github.com/spf13/pflag",
     "github.com/stretchr/testify/assert",

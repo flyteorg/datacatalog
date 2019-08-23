@@ -23,12 +23,12 @@
 #   non-go = false
 #   go-tests = true
 #   unused-packages = true
+[[constraint]]
+  name = "github.com/lyft/flyteidl"
+  source = "https://github.com/lyft/flyteidl"
+  revision = "cac3388022b624defe8ca6075f2f4af50fcfa311"
+
 [prune]
   go-tests = true
   unused-packages = true
   non-go = true
-
-  [[prune.project]]
-    name = "github.com/lyft/flyteidl"
-    non-go = false
-    unused-packages = false

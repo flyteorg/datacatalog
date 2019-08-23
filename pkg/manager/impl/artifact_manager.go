@@ -7,7 +7,7 @@ import (
 	"github.com/lyft/datacatalog/pkg/manager/impl/validators"
 	"github.com/lyft/datacatalog/pkg/manager/interfaces"
 	"github.com/lyft/datacatalog/pkg/repositories"
-	datacatalog "github.com/lyft/datacatalog/protos/gen"
+	datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 
 	"github.com/lyft/datacatalog/pkg/repositories/models"
 	"github.com/lyft/datacatalog/pkg/repositories/transformers"

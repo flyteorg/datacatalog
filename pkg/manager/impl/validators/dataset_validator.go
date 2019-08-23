@@ -1,6 +1,6 @@
 package validators
 
-import datacatalog "github.com/lyft/datacatalog/protos/gen"
+import datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 
 const (
 	datasetEntity  = "dataset"

@@ -3,7 +3,7 @@
 package mocks
 
 import context "context"
-import idl_datacatalog "github.com/lyft/datacatalog/protos/gen"
+import datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 
 import mock "github.com/stretchr/testify/mock"
 
@@ -13,20 +13,20 @@ type TagManager struct {
 }
 
 // AddTag provides a mock function with given fields: ctx, request
-func (_m *TagManager) AddTag(ctx context.Context, request idl_datacatalog.AddTagRequest) (*idl_datacatalog.AddTagResponse, error) {
+func (_m *TagManager) AddTag(ctx context.Context, request datacatalog.AddTagRequest) (*datacatalog.AddTagResponse, error) {
 	ret := _m.Called(ctx, request)
 
-	var r0 *idl_datacatalog.AddTagResponse
-	if rf, ok := ret.Get(0).(func(context.Context, idl_datacatalog.AddTagRequest) *idl_datacatalog.AddTagResponse); ok {
+	var r0 *datacatalog.AddTagResponse
+	if rf, ok := ret.Get(0).(func(context.Context, datacatalog.AddTagRequest) *datacatalog.AddTagResponse); ok {
 		r0 = rf(ctx, request)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*idl_datacatalog.AddTagResponse)
+			r0 = ret.Get(0).(*datacatalog.AddTagResponse)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, idl_datacatalog.AddTagRequest) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, datacatalog.AddTagRequest) error); ok {
 		r1 = rf(ctx, request)
 	} else {
 		r1 = ret.Error(1)

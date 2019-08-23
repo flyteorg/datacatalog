@@ -5,8 +5,8 @@ import (
 
 	"github.com/lyft/datacatalog/pkg/errors"
 	"github.com/lyft/datacatalog/pkg/repositories/models"
-	datacatalog "github.com/lyft/datacatalog/protos/gen"
 	"github.com/lyft/flyteidl/gen/pb-go/flyteidl/core"
+	datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 	"github.com/lyft/flytestdlib/storage"
 	"google.golang.org/grpc/codes"
 )

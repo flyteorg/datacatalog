@@ -9,7 +9,7 @@ import (
 
 	"github.com/lyft/datacatalog/pkg/config"
 	"github.com/lyft/datacatalog/pkg/rpc/datacatalogservice"
-	datacatalog "github.com/lyft/datacatalog/protos/gen"
+	datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 	"github.com/lyft/flytestdlib/contextutils"
 	"github.com/lyft/flytestdlib/logger"
 	"github.com/lyft/flytestdlib/promutils/labeled"
@@ -58,7 +58,7 @@ func serveInsecure(ctx context.Context, cfg *config.Config) error {
 // Creates a new GRPC Server with all the configuration
 func newGRPCServer(_ context.Context) *grpc.Server {
 	grpcServer := grpc.NewServer()
-	datacatalog.RegisterDataCatalogServer(grpcServer, datacatalogservice.NewDataCatalogService())
+	datacatalog.RegisterDataCatalogServiceServer(grpcServer, datacatalogservice.NewDataCatalogService())
 	return grpcServer
 }
 

@@ -7,9 +7,9 @@ import (
 	"github.com/lyft/datacatalog/pkg/repositories/errors"
 	"github.com/lyft/datacatalog/pkg/repositories/interfaces"
 	"github.com/lyft/datacatalog/pkg/repositories/models"
-
-	idl_datacatalog "github.com/lyft/datacatalog/protos/gen"
 	"github.com/lyft/flytestdlib/logger"
+
+	datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 )
 
 type dataSetRepo struct {
@@ -45,7 +45,7 @@ func (h *dataSetRepo) Get(ctx context.Context, in models.DatasetKey) (models.Dat
 		return models.Dataset{}, h.errorTransformer.ToDataCatalogError(result.Error)
 	}
 	if result.RecordNotFound() {
-		return models.Dataset{}, errors.GetMissingEntityError("Dataset", &idl_datacatalog.DatasetID{
+		return models.Dataset{}, errors.GetMissingEntityError("Dataset", &datacatalog.DatasetID{
 			Project: in.Project,
 			Domain:  in.Domain,
 			Name:    in.Name,

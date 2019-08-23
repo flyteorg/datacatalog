@@ -6,7 +6,7 @@ import (
 
 	"github.com/lyft/datacatalog/pkg/config"
 	"github.com/lyft/datacatalog/pkg/rpc/datacatalogservice"
-	datacatalog "github.com/lyft/datacatalog/protos/gen"
+	datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 	"github.com/lyft/flytestdlib/contextutils"
 	"github.com/lyft/flytestdlib/logger"
 	"github.com/lyft/flytestdlib/promutils/labeled"
@@ -54,6 +54,6 @@ func serveDummy(ctx context.Context, cfg *config.Config) error {
 // Creates a new GRPC Server with all the configuration
 func newGRPCDummyServer(_ context.Context) *grpc.Server {
 	grpcServer := grpc.NewServer()
-	datacatalog.RegisterDataCatalogServer(grpcServer, &datacatalogservice.DataCatalogService{})
+	datacatalog.RegisterDataCatalogServiceServer(grpcServer, &datacatalogservice.DataCatalogService{})
 	return grpcServer
 }

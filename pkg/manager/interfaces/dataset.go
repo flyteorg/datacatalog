@@ -3,10 +3,10 @@ package interfaces
 import (
 	"context"
 
-	idl_datacatalog "github.com/lyft/datacatalog/protos/gen"
+	datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 )
 
 type DatasetManager interface {
-	CreateDataset(ctx context.Context, request idl_datacatalog.CreateDatasetRequest) (*idl_datacatalog.CreateDatasetResponse, error)
-	GetDataset(ctx context.Context, request idl_datacatalog.GetDatasetRequest) (*idl_datacatalog.GetDatasetResponse, error)
+	CreateDataset(ctx context.Context, request datacatalog.CreateDatasetRequest) (*datacatalog.CreateDatasetResponse, error)
+	GetDataset(ctx context.Context, request datacatalog.GetDatasetRequest) (*datacatalog.GetDatasetResponse, error)
 }

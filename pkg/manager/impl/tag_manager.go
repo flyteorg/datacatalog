@@ -9,7 +9,7 @@ import (
 
 	"github.com/lyft/datacatalog/pkg/repositories/models"
 	"github.com/lyft/datacatalog/pkg/repositories/transformers"
-	datacatalog "github.com/lyft/datacatalog/protos/gen"
+	datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 
 	"github.com/lyft/flytestdlib/promutils"
 	"github.com/lyft/flytestdlib/storage"

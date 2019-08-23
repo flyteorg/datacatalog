@@ -3,10 +3,10 @@ package interfaces
 import (
 	"context"
 
-	idl_datacatalog "github.com/lyft/datacatalog/protos/gen"
+	datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 )
 
 type ArtifactManager interface {
-	CreateArtifact(ctx context.Context, request idl_datacatalog.CreateArtifactRequest) (*idl_datacatalog.CreateArtifactResponse, error)
-	GetArtifact(ctx context.Context, request idl_datacatalog.GetArtifactRequest) (*idl_datacatalog.GetArtifactResponse, error)
+	CreateArtifact(ctx context.Context, request datacatalog.CreateArtifactRequest) (*datacatalog.CreateArtifactResponse, error)
+	GetArtifact(ctx context.Context, request datacatalog.GetArtifactRequest) (*datacatalog.GetArtifactResponse, error)
 }

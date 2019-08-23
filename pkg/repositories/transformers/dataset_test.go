@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/lyft/datacatalog/pkg/repositories/models"
-	datacatalog "github.com/lyft/datacatalog/protos/gen"
+	datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 	"github.com/stretchr/testify/assert"
 )
 

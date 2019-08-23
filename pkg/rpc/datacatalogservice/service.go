@@ -10,7 +10,7 @@ import (
 	"github.com/lyft/datacatalog/pkg/repositories"
 	"github.com/lyft/datacatalog/pkg/repositories/config"
 	"github.com/lyft/datacatalog/pkg/runtime"
-	catalog "github.com/lyft/datacatalog/protos/gen"
+	datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 	"github.com/lyft/flytestdlib/logger"
 	"github.com/lyft/flytestdlib/promutils"
 	"github.com/lyft/flytestdlib/storage"
@@ -23,23 +23,23 @@ type DataCatalogService struct {
 }
 
 // TODO: add metrics and counters to these service methods
-func (s *DataCatalogService) CreateDataset(ctx context.Context, request *catalog.CreateDatasetRequest) (*catalog.CreateDatasetResponse, error) {
+func (s *DataCatalogService) CreateDataset(ctx context.Context, request *datacatalog.CreateDatasetRequest) (*datacatalog.CreateDatasetResponse, error) {
 	return s.DatasetManager.CreateDataset(ctx, *request)
 }
 
-func (s *DataCatalogService) CreateArtifact(ctx context.Context, request *catalog.CreateArtifactRequest) (*catalog.CreateArtifactResponse, error) {
+func (s *DataCatalogService) CreateArtifact(ctx context.Context, request *datacatalog.CreateArtifactRequest) (*datacatalog.CreateArtifactResponse, error) {
 	return s.ArtifactManager.CreateArtifact(ctx, *request)
 }
 
-func (s *DataCatalogService) GetDataset(ctx context.Context, request *catalog.GetDatasetRequest) (*catalog.GetDatasetResponse, error) {
+func (s *DataCatalogService) GetDataset(ctx context.Context, request *datacatalog.GetDatasetRequest) (*datacatalog.GetDatasetResponse, error) {
 	return s.DatasetManager.GetDataset(ctx, *request)
 }
 
-func (s *DataCatalogService) GetArtifact(ctx context.Context, request *catalog.GetArtifactRequest) (*catalog.GetArtifactResponse, error) {
+func (s *DataCatalogService) GetArtifact(ctx context.Context, request *datacatalog.GetArtifactRequest) (*datacatalog.GetArtifactResponse, error) {
 	return s.ArtifactManager.GetArtifact(ctx, *request)
 }
 
-func (s *DataCatalogService) AddTag(ctx context.Context, request *catalog.AddTagRequest) (*catalog.AddTagResponse, error) {
+func (s *DataCatalogService) AddTag(ctx context.Context, request *datacatalog.AddTagRequest) (*datacatalog.AddTagResponse, error) {
 	return s.TagManager.AddTag(ctx, *request)
 }
 

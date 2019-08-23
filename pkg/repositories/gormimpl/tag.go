@@ -7,7 +7,7 @@ import (
 	"github.com/lyft/datacatalog/pkg/repositories/errors"
 	"github.com/lyft/datacatalog/pkg/repositories/interfaces"
 	"github.com/lyft/datacatalog/pkg/repositories/models"
-	idl_datacatalog "github.com/lyft/datacatalog/protos/gen"
+	datacatalog "github.com/lyft/flyteidl/gen/pb-go/flyteidl/datacatalog"
 )
 
 type tagRepo struct {
@@ -42,7 +42,7 @@ func (h *tagRepo) Get(ctx context.Context, in models.TagKey) (models.Tag, error)
 		return models.Tag{}, h.errorTransformer.ToDataCatalogError(result.Error)
 	}
 	if result.RecordNotFound() {
-		return models.Tag{}, errors.GetMissingEntityError("Tag", &idl_datacatalog.Tag{
+		return models.Tag{}, errors.GetMissingEntityError("Tag", &datacatalog.Tag{
 			Name: tag.TagName,
 		})
 	}
