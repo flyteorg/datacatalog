@@ -10,6 +10,7 @@ service DataCatalog {
     rpc CreateArtifact (CreateArtifactRequest) returns (CreateArtifactResponse);
     rpc GetArtifact (GetArtifactRequest) returns (GetArtifactResponse);
     rpc AddTag (AddTagRequest) returns (AddTagResponse);
+    rpc ListArtifacts (ListArtifactsRequest) returns (ListArtifactsResponse);
 }
 
 message CreateDatasetRequest {
@@ -57,6 +58,16 @@ message AddTagResponse {
 
 }
 
+message ListArtifactsRequest {
+    DatasetID dataset = 1;
+    FilterExpression filter = 2;
+    PaginationOptions pagination = 3;
+}
+
+message ListArtifactsResponse {
+    repeated Artifact artifacts = 1;
+}
+
 message Dataset {
     DatasetID id = 1;
     Metadata metadata = 2;
@@ -97,4 +108,69 @@ message Tag {
 
 message Metadata {
     map<string, string> key_map = 1; // key map is a dictionary of key/val strings that represent metadata
+}
+
+message FilterExpression {
+    repeated SingleValueFilter filters = 1;
+}
+
+message SingleValueFilter {
+    oneof entity {
+        TagFilter tagFilter = 1;
+        PartitionFilter partition_filter = 2;
+        ArtifactFilter artifact_filter = 3;
+        DatasetFilter dataset_filter = 4;
+    }
+
+    // as use-cases come up we can add more operators, ex: gte, like, not eq etc.
+    enum ComparisonOperator {
+        EQUALS = 0;
+    }
+
+    ComparisonOperator operator = 10; // field 10 in case we add more entities to query
+    // Next field number: 11
+}
+
+message ArtifactFilter {
+    oneof property {
+        string artifact_id = 1;
+    }
+}
+
+message TagFilter {
+    oneof property {
+        string tag_name = 1;
+    }
+}
+
+message PartitionFilter {
+    oneof property {
+        KeyValuePair key_val = 1;
+    }
+}
+
+message KeyValuePair {
+    string key = 1;
+    string value = 2;
+}
+
+message DatasetFilter {
+    oneof property {
+        string project = 1;
+        string name = 2;
+        string domain = 3;
+        string version = 4;
+    }
+}
+
+message PaginationOptions {
+    int32 limit = 1;
+    int32 offset = 2;
+    string sortKey = 3;
+    SortOrder order = 4;
+
+    enum SortOrder {
+        ASCENDING = 0;
+        DESCENDING = 1;
+    }
 }
