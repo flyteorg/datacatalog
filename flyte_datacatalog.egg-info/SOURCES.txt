@@ -1,0 +1,8 @@
+README.md
+setup.cfg
+setup.py
+flyte_datacatalog.egg-info/PKG-INFO
+flyte_datacatalog.egg-info/SOURCES.txt
+flyte_datacatalog.egg-info/dependency_links.txt
+flyte_datacatalog.egg-info/requires.txt
+flyte_datacatalog.egg-info/top_level.txt

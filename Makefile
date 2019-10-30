@@ -18,7 +18,8 @@ linux_compile:
 
 .PHONY: generate_idl
 generate_idl:
-	protoc -I ./vendor/github.com/lyft/flyteidl/protos/ -I ./protos/idl/. --go_out=plugins=grpc:protos/gen ./protos/idl/service.proto
+	protoc -I ./vendor/github.com/lyft/flyteidl/protos/ -I ./protos/idl/datacatalog/. --go_out=plugins=grpc:protos/gen ./protos/idl/datacatalog/service.proto
+	protoc -I ./vendor/github.com/lyft/flyteidl/protos/ -I ./protos/idl/. --python_out=./protos/gen/pb_python/ ./protos/idl/datacatalog/service.proto
 
 .PHONY: generate
 generate:

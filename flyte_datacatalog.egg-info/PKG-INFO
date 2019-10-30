@@ -1,0 +1,11 @@
+Metadata-Version: 1.2
+Name: flyte-datacatalog
+Version: 0.0.1b0
+Summary: Proto IDL for Data Catalog Service
+Home-page: https://www.github.com/lyft/datacatalog
+Maintainer: Lyft
+Maintainer-email: flyte-eng@lyft.com
+License: apache2
+Description: UNKNOWN
+Platform: UNKNOWN
+Requires-Python: >=2.7
