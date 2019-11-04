@@ -60,7 +60,7 @@ func (m *tagManager) AddTag(ctx context.Context, request datacatalog.AddTagReque
 	err = m.repo.TagRepo().Create(ctx, models.Tag{
 		TagKey:      tagKey,
 		ArtifactID:  request.Tag.ArtifactId,
-		DatasetUUID: artifact.Dataset.UUID,
+		DatasetUUID: artifact.DatasetUUID,
 	})
 	if err != nil {
 		if errors.IsAlreadyExistsError(err) {
