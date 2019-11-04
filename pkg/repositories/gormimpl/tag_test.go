@@ -39,7 +39,6 @@ func getTestTag() models.Tag {
 			DatasetName:    artifact.DatasetName,
 			DatasetVersion: artifact.DatasetVersion,
 			TagName:        "test-tagname",
-			DatasetUUID:    "test-uuid",
 		},
 		ArtifactID: artifact.ArtifactID,
 	}
@@ -52,7 +51,7 @@ func TestCreateTag(t *testing.T) {
 
 	// Only match on queries that append expected filters
 	GlobalMock.NewMock().WithQuery(
-		`INSERT  INTO "tags" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","dataset_uuid","artifact_id") VALUES (?,?,?,?,?,?,?,?,?,?)`).WithCallback(
+		`INSERT  INTO "tags" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","artifact_id","dataset_uuid") VALUES (?,?,?,?,?,?,?,?,?,?)`).WithCallback(
 		func(s string, values []driver.NamedValue) {
 			tagCreated = true
 		},
@@ -106,11 +105,11 @@ func TestGetTag(t *testing.T) {
 
 	// Only match on queries that append expected filters
 	GlobalMock.NewMock().WithQuery(
-		`SELECT * FROM "tags"  WHERE "tags"."deleted_at" IS NULL AND (("tags"."dataset_project" = testProject) AND ("tags"."dataset_name" = testName) AND ("tags"."dataset_domain" = testDomain) AND ("tags"."dataset_version" = testVersion) AND ("tags"."tag_name" = test-tag) AND ("tags"."dataset_uuid" = test-uuid))`).WithReply(expectedTagResponse)
+		`SELECT * FROM "tags"  WHERE "tags"."deleted_at" IS NULL AND (("tags"."dataset_project" = testProject) AND ("tags"."dataset_name" = testName) AND ("tags"."dataset_domain" = testDomain) AND ("tags"."dataset_version" = testVersion) AND ("tags"."tag_name" = test-tag))`).WithReply(expectedTagResponse)
 	GlobalMock.NewMock().WithQuery(
 		`SELECT * FROM "artifacts"  WHERE "artifacts"."deleted_at" IS NULL AND ((("dataset_project","dataset_name","dataset_domain","dataset_version","artifact_id","dataset_uuid") IN ((testProject,testName,testDomain,testVersion,123,test-uuid))))`).WithReply(expectedArtifactResponse)
 	GlobalMock.NewMock().WithQuery(
-		`SELECT * FROM "artifact_data"  WHERE "artifact_data"."deleted_at" IS NULL AND (("artifact_id" IN (123)))`).WithReply(expectedArtifactDataResponse)
+		`SELECT * FROM "artifact_data"  WHERE "artifact_data"."deleted_at" IS NULL AND ((("dataset_project","dataset_name","dataset_domain","dataset_version","artifact_id") IN ((testProject,testName,testDomain,testVersion,123))))`).WithReply(expectedArtifactDataResponse)
 
 	getInput := models.TagKey{
 		DatasetProject: artifact.DatasetProject,
@@ -118,7 +117,6 @@ func TestGetTag(t *testing.T) {
 		DatasetName:    artifact.DatasetName,
 		DatasetVersion: artifact.DatasetVersion,
 		TagName:        "test-tag",
-		DatasetUUID:    "test-uuid",
 	}
 
 	tagRepo := NewTagRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
@@ -135,7 +133,7 @@ func TestTagAlreadyExists(t *testing.T) {
 
 	// Only match on queries that append expected filters
 	GlobalMock.NewMock().WithQuery(
-		`INSERT  INTO "tags" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","dataset_uuid","artifact_id") VALUES (?,?,?,?,?,?,?,?,?,?)`).WithError(
+		`INSERT  INTO "tags" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","artifact_id","dataset_uuid") VALUES (?,?,?,?,?,?,?,?,?,?)`).WithError(
 		getAlreadyExistsErr(),
 	)
 
