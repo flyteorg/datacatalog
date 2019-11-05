@@ -66,6 +66,15 @@ func TestAddTag(t *testing.T) {
 			DatasetUUID: expectedTag.DatasetUUID,
 		}
 
+		dataset := models.Dataset{
+			DatasetKey: models.DatasetKey{
+				Project: expectedTag.DatasetProject,
+				Domain:  expectedTag.DatasetDomain,
+				Version: expectedTag.DatasetVersion,
+				Name:    expectedTag.DatasetName,
+			},
+		}
+
 		dcRepo.MockArtifactRepo.On("Get", mock.MatchedBy(func(ctx context.Context) bool { return true }),
 			mock.MatchedBy(func(artifactKey models.ArtifactKey) bool {
 				return artifactKey.DatasetProject == expectedTag.DatasetProject &&
@@ -74,6 +83,14 @@ func TestAddTag(t *testing.T) {
 					artifactKey.DatasetVersion == expectedTag.DatasetVersion &&
 					artifactKey.ArtifactID == expectedTag.ArtifactID
 			})).Return(artifact, nil)
+
+		dcRepo.MockDatasetRepo.On("Get", mock.MatchedBy(func(ctx context.Context) bool { return true }),
+			mock.MatchedBy(func(datasetKey models.DatasetKey) bool {
+				return datasetKey.Project == expectedTag.DatasetProject &&
+					datasetKey.Domain == expectedTag.DatasetDomain &&
+					datasetKey.Name == expectedTag.DatasetName &&
+					datasetKey.Version == expectedTag.DatasetVersion
+			})).Return(dataset, nil)
 
 		tagManager := NewTagManager(dcRepo, nil, mockScope.NewTestScope())
 		_, err := tagManager.AddTag(context.Background(), datacatalog.AddTagRequest{
