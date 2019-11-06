@@ -58,15 +58,21 @@ message AddTagResponse {
 
 }
 
+// List the artifacts that belong to the Dataset
 message ListArtifactsRequest {
     DatasetID dataset = 1;
+    // Apply the filter expression to this query
     FilterExpression filter = 2;
+    // Pagination options to get a page of artifacts
     PaginationOptions pagination = 3;
 }
 
+// Response to list artifacts
 message ListArtifactsResponse {
+    // The list of artifacts
     repeated Artifact artifacts = 1;
-    PaginationOptions next_page_options = 2;
+    // Token to use to request the next page, pass this into the next requests PaginationOptions
+    string next_token = 2;
 }
 
 message Dataset {
