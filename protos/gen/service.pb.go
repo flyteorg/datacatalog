@@ -1143,6 +1143,8 @@ func (*SinglePropertyFilter) XXX_OneofWrappers() []interface{} {
 
 // Artifact properties we can filter by
 type ArtifactPropertyFilter struct {
+	// oneof because we can add more properties in the future
+	//
 	// Types that are valid to be assigned to Property:
 	//	*ArtifactPropertyFilter_ArtifactId
 	Property             isArtifactPropertyFilter_Property `protobuf_oneof:"property"`
@@ -1497,10 +1499,15 @@ func (*DatasetPropertyFilter) XXX_OneofWrappers() []interface{} {
 	}
 }
 
+// Pagination options for making list requests
 type PaginationOptions struct {
-	Limit                int32                       `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
-	Token                int32                       `protobuf:"varint,2,opt,name=token,proto3" json:"token,omitempty"`
-	SortKey              string                      `protobuf:"bytes,3,opt,name=sortKey,proto3" json:"sortKey,omitempty"`
+	// the max number of results to return
+	Limit int32 `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	// the token to pass to fetch the next page
+	Token int32 `protobuf:"varint,2,opt,name=token,proto3" json:"token,omitempty"`
+	// the property that we want to sort the results by
+	SortKey string `protobuf:"bytes,3,opt,name=sortKey,proto3" json:"sortKey,omitempty"`
+	// the sort order of the results
 	Order                PaginationOptions_SortOrder `protobuf:"varint,4,opt,name=order,proto3,enum=datacatalog.PaginationOptions_SortOrder" json:"order,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                    `json:"-"`
 	XXX_unrecognized     []byte                      `json:"-"`
