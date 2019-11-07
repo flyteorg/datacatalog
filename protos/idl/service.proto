@@ -142,6 +142,7 @@ message SinglePropertyFilter {
 
 // Artifact properties we can filter by
 message ArtifactPropertyFilter {
+    // oneof because we can add more properties in the future
     oneof property {
         string artifact_id = 1;
     }
@@ -176,10 +177,19 @@ message DatasetPropertyFilter {
     }
 }
 
+// Pagination options for making list requests
 message PaginationOptions {
+
+    // the max number of results to return
     int32 limit = 1;
+
+    // the token to pass to fetch the next page
     int32 token = 2;
+
+    // the property that we want to sort the results by
     string sortKey = 3;
+
+    // the sort order of the results
     SortOrder order = 4;
 
     enum SortOrder {
