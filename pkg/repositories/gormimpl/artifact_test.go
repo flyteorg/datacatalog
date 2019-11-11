@@ -10,6 +10,7 @@ import (
 
 	"database/sql/driver"
 
+	"github.com/lyft/datacatalog/pkg/common"
 	apiErrors "github.com/lyft/datacatalog/pkg/errors"
 	"github.com/lyft/datacatalog/pkg/repositories/errors"
 	"github.com/lyft/datacatalog/pkg/repositories/models"
@@ -209,4 +210,30 @@ func TestCreateArtifactAlreadyExists(t *testing.T) {
 	dcErr, ok := err.(apiErrors.DataCatalogError)
 	assert.True(t, ok)
 	assert.Equal(t, dcErr.Code(), codes.AlreadyExists)
+}
+
+func TestListArtifacts(t *testing.T) {
+	artifactsListed := false
+	GlobalMock := mocket.Catcher.Reset()
+	GlobalMock.Logging = true
+	dataset := getTestDataset()
+	dataset.UUID = getDatasetUUID()
+
+	// Only match on queries that append expected filters
+	GlobalMock.NewMock().WithQuery(
+		`SELECT "artifacts".* FROM "artifacts" JOIN partitions ON artifacts.artifact_id = partitions.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((artifacts.dataset_uuid = test-uuid))`).WithCallback(
+		func(s string, values []driver.NamedValue) {
+			artifactsListed = true
+		},
+	)
+
+	artifactRepo := NewArtifactRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
+	listInput := models.ListModelsInput{
+		JoinEntityToConditionMap: map[common.Entity]models.ModelJoinCondition{
+			common.Partition: NewGormJoinCondition(common.Artifact, common.Partition),
+		},
+	}
+	_, err := artifactRepo.List(context.Background(), dataset.DatasetKey, listInput)
+	assert.NoError(t, err)
+	assert.True(t, artifactsListed)
 }
