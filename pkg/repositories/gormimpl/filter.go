@@ -124,10 +124,10 @@ func NewGormJoinCondition(sourceEntity common.Entity, joiningEntity common.Entit
 
 func applyListModelsInput(ctx context.Context, tx *gorm.DB, sourceEntity common.Entity, in models.ListModelsInput) (*gorm.DB, error) {
 	sourceModel, ok := entityToModel[sourceEntity]
-
 	if !ok {
-		return nil, errors.GetInvalidEntityError(sourceEntity.Name()) // TODO return err
+		return nil, errors.GetInvalidEntityError(sourceEntity.Name())
 	}
+
 	sourceTableName := tx.NewScope(sourceModel).TableName()
 	for joiningEntity, joinCondition := range in.JoinEntityToConditionMap {
 		joiningTableName := tx.NewScope(entityToModel[joiningEntity]).TableName()

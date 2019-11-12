@@ -22,5 +22,5 @@ func GetInvalidEntityRelationshipError(entityType string, otherEntityType string
 }
 
 func GetInvalidEntityError(entityType string) error {
-	return errors.NewDataCatalogErrorf(codes.InvalidArgument, invalidJoin, entityType)
+	return errors.NewDataCatalogErrorf(codes.InvalidArgument, invalidEntity, entityType)
 }
