@@ -420,5 +420,39 @@ func TestGetArtifact(t *testing.T) {
 		responseCode := status.Code(err)
 		assert.Equal(t, codes.NotFound, responseCode)
 	})
+}
+func TestListArtifact(t *testing.T) {
+	ctx := context.Background()
+	datastore := createInmemoryDataStore(t, mockScope.NewTestScope())
+	testStoragePrefix, err := datastore.ConstructReference(ctx, datastore.GetBaseContainerFQN(ctx), "test")
+	assert.NoError(t, err)
 
+	dcRepo := &mocks.DataCatalogRepo{
+		MockDatasetRepo:  &mocks.DatasetRepo{},
+		MockArtifactRepo: &mocks.ArtifactRepo{},
+		MockTagRepo:      &mocks.TagRepo{},
+	}
+
+	t.Run("List Artifact on invalid filter", func(t *testing.T) {
+		artifactManager := NewArtifactManager(dcRepo, datastore, testStoragePrefix, mockScope.NewTestScope())
+		filter := &datacatalog.FilterExpression{
+			Filters: []*datacatalog.SinglePropertyFilter{
+				{
+					PropertyFilter: &datacatalog.SinglePropertyFilter_DatasetFilter{
+						DatasetFilter: &datacatalog.DatasetPropertyFilter{
+							Property: &datacatalog.DatasetPropertyFilter_Project{
+								Project: "test",
+							},
+						},
+					},
+				},
+			},
+		}
+
+		artifactResponse, err := artifactManager.ListArtifacts(ctx, datacatalog.ListArtifactsRequest{Dataset: getTestDataset().Id, Filter: filter})
+		assert.Error(t, err)
+		assert.Nil(t, artifactResponse)
+		responseCode := status.Code(err)
+		assert.Equal(t, codes.InvalidArgument, responseCode)
+	})
 }

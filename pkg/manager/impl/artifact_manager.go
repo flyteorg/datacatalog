@@ -214,19 +214,19 @@ func (m *artifactManager) getArtifactDataList(ctx context.Context, artifactDataM
 	return artifactDataList, nil
 }
 func (m *artifactManager) ListArtifacts(ctx context.Context, request datacatalog.ListArtifactsRequest) (*datacatalog.ListArtifactsResponse, error) {
+	err := validators.ValidateListArtifactRequest(request)
+	if err != nil {
+		logger.Warningf(ctx, "Invalid list artifact request %v, err: %v", request, err)
+		m.systemMetrics.validationErrorCounter.Inc(ctx)
+		return nil, err
+	}
+
 	// Verify the dataset exists before listing artifacts
 	datasetKey := transformers.FromDatasetID(*request.Dataset)
 	dataset, err := m.repo.DatasetRepo().Get(ctx, datasetKey)
 	if err != nil {
 		logger.Warnf(ctx, "Failed to get dataset for listing artifacts %v, err: %v", datasetKey, err)
 		m.systemMetrics.listFailureCounter.Inc(ctx)
-		return nil, err
-	}
-
-	err = validators.ValidateListArtifactRequest(request)
-	if err != nil {
-		logger.Warningf(ctx, "Invalid list artifact request %v, err: %v", request, err)
-		m.systemMetrics.validationErrorCounter.Inc(ctx)
 		return nil, err
 	}
 
