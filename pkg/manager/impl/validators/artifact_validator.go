@@ -64,3 +64,27 @@ func ValidateArtifact(artifact *datacatalog.Artifact) error {
 
 	return nil
 }
+
+func ValidateListArtifactRequest(request datacatalog.ListArtifactsRequest) error {
+	if err := ValidateDatasetID(request.Dataset); err != nil {
+		return err
+	}
+
+	if err := ValidateArtifactFilterTypes(request.Filter.GetFilters()); err != nil {
+		return err
+	}
+
+	// TODO: validate PaginationOptions
+
+	return nil
+}
+
+// Artifacts cannot be filtered across Datasets
+func ValidateArtifactFilterTypes(filters []*datacatalog.SinglePropertyFilter) error {
+	for _, filter := range filters {
+		if filter.GetDatasetFilter() != nil {
+			return NewInvalidFilterError("Artifact", "Dataset")
+		}
+	}
+	return nil
+}

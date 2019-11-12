@@ -5,6 +5,7 @@ import (
 
 	"github.com/lyft/datacatalog/pkg/common"
 
+	"github.com/lyft/datacatalog/pkg/manager/impl/validators"
 	"github.com/lyft/datacatalog/pkg/repositories/gormimpl"
 	"github.com/lyft/datacatalog/pkg/repositories/models"
 	datacatalog "github.com/lyft/datacatalog/protos/gen"
@@ -32,14 +33,15 @@ func ToListInput(ctx context.Context, sourceEntity common.Entity, filterExpressi
 	modelFilters := make([]models.ModelValueFilter, 0, len(filterExpression.GetFilters()))
 	joinModelMap := make(map[common.Entity]models.ModelJoinCondition, 0)
 	for _, filter := range filterExpression.GetFilters() {
-		modelPropertyFilters, err := ToModelValueFilter(filter)
-
+		modelPropertyFilters, err := ToModelValueFilter(ctx, filter)
 		if err != nil {
-			modelFilters = append(modelFilters, modelPropertyFilters...)
-			joiningEntity := modelPropertyFilters[0].GetDBEntity()
-			if sourceEntity != joiningEntity {
-				joinModelMap[joiningEntity] = gormimpl.NewGormJoinCondition(sourceEntity, joiningEntity)
-			}
+			return models.ListModelsInput{}, err
+		}
+
+		modelFilters = append(modelFilters, modelPropertyFilters...)
+		joiningEntity := modelPropertyFilters[0].GetDBEntity()
+		if sourceEntity != joiningEntity {
+			joinModelMap[joiningEntity] = gormimpl.NewGormJoinCondition(sourceEntity, joiningEntity)
 		}
 	}
 
@@ -50,29 +52,37 @@ func ToListInput(ctx context.Context, sourceEntity common.Entity, filterExpressi
 	}, nil
 }
 
-func ToModelValueFilter(singleFilter *datacatalog.SinglePropertyFilter) ([]models.ModelValueFilter, error) {
+func ToModelValueFilter(ctx context.Context, singleFilter *datacatalog.SinglePropertyFilter) ([]models.ModelValueFilter, error) {
 	modelValueFilters := make([]models.ModelValueFilter, 0, 1)
 
 	switch propertyFilter := singleFilter.GetPropertyFilter().(type) {
 	case *datacatalog.SinglePropertyFilter_PartitionFilter:
 		partitionPropertyFilter := singleFilter.GetPartitionFilter()
+
 		switch partitionProperty := partitionPropertyFilter.GetProperty().(type) {
 		case *datacatalog.PartitionPropertyFilter_KeyVal:
-			partitionKey := partitionProperty.KeyVal.Key
-			partitionValue := partitionProperty.KeyVal.Value
-			modelValueFilters = append(modelValueFilters, gormimpl.NewGormValueFilter(common.Partition, comparisonOperatorMap[singleFilter.Operator], partitionKeyFieldName, partitionKey))
-			modelValueFilters = append(modelValueFilters, gormimpl.NewGormValueFilter(common.Partition, comparisonOperatorMap[singleFilter.Operator], partitionValueFieldName, partitionValue))
+			if err := validators.ValidateEmptyStringField(partitionProperty.KeyVal.Key, "PartitionKey"); err != nil {
+				return nil, err
+			}
+			if err := validators.ValidateEmptyStringField(partitionProperty.KeyVal.Value, "PartitionValue"); err != nil {
+				return nil, err
+			}
+			partitionKeyFilter := gormimpl.NewGormValueFilter(common.Partition, comparisonOperatorMap[singleFilter.Operator], partitionKeyFieldName, partitionProperty.KeyVal.Key)
+			partitionValueFilter := gormimpl.NewGormValueFilter(common.Partition, comparisonOperatorMap[singleFilter.Operator], partitionValueFieldName, partitionProperty.KeyVal.Value)
+			modelValueFilters = append(modelValueFilters, partitionKeyFilter, partitionValueFilter)
 		}
 	case *datacatalog.SinglePropertyFilter_TagFilter:
 		switch tagProperty := propertyFilter.TagFilter.GetProperty().(type) {
 		case *datacatalog.TagPropertyFilter_TagName:
-			tagName := tagProperty.TagName
-			modelValueFilters = append(modelValueFilters, gormimpl.NewGormValueFilter(common.Artifact, comparisonOperatorMap[singleFilter.Operator], tagNameFieldName, tagName))
+			if err := validators.ValidateEmptyStringField(tagProperty.TagName, "TagName"); err != nil {
+				return nil, err
+			}
+			tagNameFilter := gormimpl.NewGormValueFilter(common.Artifact, comparisonOperatorMap[singleFilter.Operator], tagNameFieldName, tagProperty.TagName)
+			modelValueFilters = append(modelValueFilters, tagNameFilter)
 		}
 
 	default:
 		return nil, nil
 	}
-
 	return modelValueFilters, nil
 }

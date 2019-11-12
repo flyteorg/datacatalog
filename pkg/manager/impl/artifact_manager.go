@@ -30,6 +30,8 @@ type artifactMetrics struct {
 	createFailureCounter     labeled.Counter
 	getSuccessCounter        labeled.Counter
 	getFailureCounter        labeled.Counter
+	listSuccessCounter       labeled.Counter
+	listFailureCounter       labeled.Counter
 	createDataFailureCounter labeled.Counter
 	createDataSuccessCounter labeled.Counter
 	transformerErrorCounter  labeled.Counter
@@ -181,8 +183,22 @@ func (m *artifactManager) GetArtifact(ctx context.Context, request datacatalog.G
 		return nil, err
 	}
 
-	artifactDataList := make([]*datacatalog.ArtifactData, len(artifactModel.ArtifactData))
-	for i, artifactData := range artifactModel.ArtifactData {
+	artifactDataList, err := m.getArtifactDataList(ctx, artifactModel.ArtifactData)
+	if err != nil {
+		return nil, err
+	}
+	artifact.Data = artifactDataList
+
+	logger.Debugf(ctx, "Retrieved artifact dataset %v, id: %v", artifact.Dataset, artifact.Id)
+	m.systemMetrics.getSuccessCounter.Inc(ctx)
+	return &datacatalog.GetArtifactResponse{
+		Artifact: &artifact,
+	}, nil
+}
+
+func (m *artifactManager) getArtifactDataList(ctx context.Context, artifactDataModels []models.ArtifactData) ([]*datacatalog.ArtifactData, error) {
+	artifactDataList := make([]*datacatalog.ArtifactData, len(artifactDataModels))
+	for i, artifactData := range artifactDataModels {
 		value, err := m.artifactStore.GetData(ctx, artifactData)
 		if err != nil {
 			logger.Errorf(ctx, "Error in getting artifact data from datastore %+v, err %v", artifactData.Location, err)
@@ -194,40 +210,61 @@ func (m *artifactManager) GetArtifact(ctx context.Context, request datacatalog.G
 			Value: value,
 		}
 	}
-	artifact.Data = artifactDataList
 
-	logger.Debugf(ctx, "Retrieved artifact dataset %v, id: %v", artifact.Dataset, artifact.Id)
-	m.systemMetrics.getSuccessCounter.Inc(ctx)
-	return &datacatalog.GetArtifactResponse{
-		Artifact: &artifact,
-	}, nil
+	return artifactDataList, nil
 }
-
 func (m *artifactManager) ListArtifacts(ctx context.Context, request datacatalog.ListArtifactsRequest) (*datacatalog.ListArtifactsResponse, error) {
 	// Verify the dataset exists before listing artifacts
 	datasetKey := transformers.FromDatasetID(*request.Dataset)
 	dataset, err := m.repo.DatasetRepo().Get(ctx, datasetKey)
 	if err != nil {
+		logger.Warnf(ctx, "Failed to get dataset for listing artifacts %v, err: %v", datasetKey, err)
+		m.systemMetrics.listFailureCounter.Inc(ctx)
+		return nil, err
+	}
 
+	err = validators.ValidateListArtifactRequest(request)
+	if err != nil {
+		logger.Warningf(ctx, "Invalid list artifact request %v, err: %v", request, err)
+		m.systemMetrics.validationErrorCounter.Inc(ctx)
+		return nil, err
 	}
 
 	// Get the list inputs
 	query, err := transformers.ToListInput(ctx, common.Artifact, request.GetFilter())
 	if err != nil {
-
+		logger.Warningf(ctx, "Invalid list artifact request %v, err: %v", request, err)
+		m.systemMetrics.validationErrorCounter.Inc(ctx)
+		return nil, err
 	}
 
 	// Perform the list with the dataset and query filters
-	artifacts, err := m.repo.ArtifactRepo().List(ctx, dataset.DatasetKey, query)
+	artifactModels, err := m.repo.ArtifactRepo().List(ctx, dataset.DatasetKey, query)
 	if err != nil {
-
+		logger.Errorf(ctx, "Unable to list Artifacts err: %v", err)
+		m.systemMetrics.listFailureCounter.Inc(ctx)
+		return nil, err
 	}
 
-	artifactsList, err := transformers.FromArtifactModels(artifacts)
+	artifactsList, err := transformers.FromArtifactModels(artifactModels)
 	if err != nil {
-
+		logger.Errorf(ctx, "Unable to transform Artifacts %+v err: %v", artifactModels, err)
+		m.systemMetrics.listFailureCounter.Inc(ctx)
+		return nil, err
 	}
 
+	for i, artifact := range artifactsList {
+		artifactDataList, err := m.getArtifactDataList(ctx, artifactModels[i].ArtifactData)
+		if err != nil {
+			logger.Errorf(ctx, "Unable to transform Artifacts %+v err: %v", artifactModels, err)
+			m.systemMetrics.listFailureCounter.Inc(ctx)
+			return nil, err
+		}
+		artifact.Data = artifactDataList
+	}
+
+	logger.Debugf(ctx, "Listed %v matching artifacts successfully", len(artifactsList))
+	m.systemMetrics.listSuccessCounter.Inc(ctx)
 	return &datacatalog.ListArtifactsResponse{Artifacts: artifactsList}, nil
 }
 
@@ -246,6 +283,8 @@ func NewArtifactManager(repo repositories.RepositoryInterface, store *storage.Da
 		validationErrorCounter:   labeled.NewCounter("validation_failed_count", "The number of times validation failed", artifactScope, labeled.EmitUnlabeledMetric),
 		alreadyExistsCounter:     labeled.NewCounter("already_exists_count", "The number of times an artifact already exists", artifactScope, labeled.EmitUnlabeledMetric),
 		doesNotExistCounter:      labeled.NewCounter("does_not_exists_count", "The number of times an artifact was not found", artifactScope, labeled.EmitUnlabeledMetric),
+		listSuccessCounter:       labeled.NewCounter("list_success_count", "The number of times list artifact suceeded", artifactScope, labeled.EmitUnlabeledMetric),
+		listFailureCounter:       labeled.NewCounter("list_failure_count", "The number of times list artifact failed", artifactScope, labeled.EmitUnlabeledMetric),
 	}
 
 	return &artifactManager{

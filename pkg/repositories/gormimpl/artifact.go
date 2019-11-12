@@ -95,7 +95,7 @@ func (h *artifactRepo) List(ctx context.Context, datasetKey models.DatasetKey, i
 		return []models.Artifact{}, h.errorTransformer.ToDataCatalogError(tx.Error)
 	}
 
-	tx = tx.Find(&artifacts)
+	tx = tx.Preload("ArtifactData").Preload("Partitions").Find(&artifacts)
 	if tx.Error != nil {
 		return []models.Artifact{}, h.errorTransformer.ToDataCatalogError(tx.Error)
 	}
