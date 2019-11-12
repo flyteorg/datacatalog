@@ -221,14 +221,12 @@ func TestListArtifacts(t *testing.T) {
 	dataset.UUID = getDatasetUUID()
 
 	GlobalMock.NewMock().WithQuery(
-		`SELECT "artifacts".* FROM "artifacts" JOIN partitions ON artifacts.artifact_id = partitions.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((artifacts.dataset_uuid = test-uuid))`).WithCallback(
+		`SELECT "artifacts".* FROM "artifacts" JOIN partitions ON artifacts.artifact_id = partitions.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((artifacts.dataset_uuid = test-uuid)) LIMIT 10 OFFSET 10`).WithCallback(
 		func(s string, values []driver.NamedValue) {
 			artifactsListed = true
 		},
 	)
 
-	// GlobalMock.NewMock().WithQuery(
-	// 	`SELECT * FROM "artifacts"  WHERE "artifacts"."deleted_at" IS NULL AND (("artifacts"."dataset_project" = testProject) AND ("artifacts"."dataset_name" = testName) AND ("artifacts"."dataset_domain" = testDomain) AND ("artifacts"."dataset_version" = testVersion) AND ("artifacts"."artifact_id" = 123)) ORDER BY "artifacts"."dataset_project" ASC LIMIT 1`).WithReply(expectedArtifactResponse)
 	// GlobalMock.NewMock().WithQuery(
 	// 	`SELECT * FROM "artifact_data"  WHERE "artifact_data"."deleted_at" IS NULL AND ((("dataset_project","dataset_name","dataset_domain","dataset_version","artifact_id") IN ((testProject,testName,testDomain,testVersion,123))))`).WithReply(expectedArtifactDataResponse)
 	// GlobalMock.NewMock().WithQuery(
@@ -239,6 +237,8 @@ func TestListArtifacts(t *testing.T) {
 		JoinEntityToConditionMap: map[common.Entity]models.ModelJoinCondition{
 			common.Partition: NewGormJoinCondition(common.Artifact, common.Partition),
 		},
+		Offset: 10,
+		Limit:  10,
 	}
 	_, err := artifactRepo.List(context.Background(), dataset.DatasetKey, listInput)
 	assert.NoError(t, err)

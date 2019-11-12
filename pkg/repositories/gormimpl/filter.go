@@ -122,33 +122,35 @@ func NewGormJoinCondition(sourceEntity common.Entity, joiningEntity common.Entit
 	}
 }
 
-func applyListModelsInput(ctx context.Context, db *gorm.DB, sourceEntity common.Entity, in models.ListModelsInput) (*gorm.DB, error) {
+func applyListModelsInput(ctx context.Context, tx *gorm.DB, sourceEntity common.Entity, in models.ListModelsInput) (*gorm.DB, error) {
 	sourceModel, ok := entityToModel[sourceEntity]
 
 	if !ok {
 		return nil, errors.GetInvalidEntityError(sourceEntity.Name()) // TODO return err
 	}
-	sourceTableName := db.NewScope(sourceModel).TableName()
+	sourceTableName := tx.NewScope(sourceModel).TableName()
 	for joiningEntity, joinCondition := range in.JoinEntityToConditionMap {
-		joiningTableName := db.NewScope(entityToModel[joiningEntity]).TableName()
+		joiningTableName := tx.NewScope(entityToModel[joiningEntity]).TableName()
 		joinExpression, err := joinCondition.GetJoinOnDBQueryExpression(sourceTableName, joiningTableName)
 		if err != nil {
 			return nil, err
 		}
-		db = db.Joins(joinExpression)
+		tx = tx.Joins(joinExpression)
 	}
 
 	for _, whereFilter := range in.Filters {
 		filterEntity := whereFilter.GetDBEntity()
-		entityTableName := db.NewScope(entityToModel[filterEntity]).TableName()
+		entityTableName := tx.NewScope(entityToModel[filterEntity]).TableName()
 
 		dbQueryExpr, err := whereFilter.GetDBQueryExpression(entityTableName)
 
 		if err != nil {
 			return nil, err
 		}
-		db = db.Where(dbQueryExpr.Query, dbQueryExpr.Args)
+		tx = tx.Where(dbQueryExpr.Query, dbQueryExpr.Args)
 	}
 
-	return db, nil
+	tx = tx.Limit(in.Limit)
+	tx = tx.Offset(in.Offset)
+	return tx, nil
 }

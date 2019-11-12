@@ -77,7 +77,7 @@ func ToModelValueFilter(ctx context.Context, singleFilter *datacatalog.SinglePro
 			if err := validators.ValidateEmptyStringField(tagProperty.TagName, "TagName"); err != nil {
 				return nil, err
 			}
-			tagNameFilter := gormimpl.NewGormValueFilter(common.Artifact, comparisonOperatorMap[singleFilter.Operator], tagNameFieldName, tagProperty.TagName)
+			tagNameFilter := gormimpl.NewGormValueFilter(common.Tag, comparisonOperatorMap[singleFilter.Operator], tagNameFieldName, tagProperty.TagName)
 			modelValueFilters = append(modelValueFilters, tagNameFilter)
 		}
 
