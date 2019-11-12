@@ -21,19 +21,12 @@ var comparisonOperatorMap = map[datacatalog.SinglePropertyFilter_ComparisonOpera
 	datacatalog.SinglePropertyFilter_EQUALS: common.Equal,
 }
 
-func ValidateListInput(ctx context.Context, filterExpression *datacatalog.FilterExpression) error {
-
-	// Validate that the join entities provided are supported queries for the entity at hand
-	// Validate for filters like Labels, they are not filtering multiple times over the same key
-	return nil
-}
-
-func ToListInput(ctx context.Context, sourceEntity common.Entity, filterExpression *datacatalog.FilterExpression) (models.ListModelsInput, error) {
+func FilterToListInput(ctx context.Context, sourceEntity common.Entity, filterExpression *datacatalog.FilterExpression) (models.ListModelsInput, error) {
 	// ListInput is composed of ModelFilters and ModelJoins. Let's construct those filters and joins.
 	modelFilters := make([]models.ModelValueFilter, 0, len(filterExpression.GetFilters()))
 	joinModelMap := make(map[common.Entity]models.ModelJoinCondition, 0)
 	for _, filter := range filterExpression.GetFilters() {
-		modelPropertyFilters, err := ToModelValueFilter(ctx, filter)
+		modelPropertyFilters, err := constructModelValueFilter(ctx, filter)
 		if err != nil {
 			return models.ListModelsInput{}, err
 		}
@@ -52,7 +45,7 @@ func ToListInput(ctx context.Context, sourceEntity common.Entity, filterExpressi
 	}, nil
 }
 
-func ToModelValueFilter(ctx context.Context, singleFilter *datacatalog.SinglePropertyFilter) ([]models.ModelValueFilter, error) {
+func constructModelValueFilter(ctx context.Context, singleFilter *datacatalog.SinglePropertyFilter) ([]models.ModelValueFilter, error) {
 	modelValueFilters := make([]models.ModelValueFilter, 0, 1)
 
 	switch propertyFilter := singleFilter.GetPropertyFilter().(type) {

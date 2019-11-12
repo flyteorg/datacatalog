@@ -274,10 +274,10 @@ func TestListArtifactsNoPartitions(t *testing.T) {
 	artifact := getTestArtifact()
 	expectedArtifactDataResponse := getDBArtifactDataResponse(artifact)
 	expectedArtifactResponse := getDBArtifactResponse(artifact)
-	expectedPartitionResponse := getDBPartitionResponse(artifact)
+	expectedPartitionResponse := make([]map[string]interface{}, 0)
 
 	GlobalMock.NewMock().WithQuery(
-		`SELECT "artifacts".* FROM "artifacts" JOIN partitions ON artifacts.artifact_id = partitions.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((artifacts.dataset_uuid = test-uuid)) LIMIT 10 OFFSET 10`).WithReply(expectedArtifactResponse)
+		`SELECT * FROM "artifacts"  WHERE "artifacts"."deleted_at" IS NULL AND ((artifacts.dataset_uuid = test-uuid)) LIMIT 10 OFFSET 10`).WithReply(expectedArtifactResponse)
 	GlobalMock.NewMock().WithQuery(
 		`SELECT * FROM "artifact_data"  WHERE "artifact_data"."deleted_at" IS NULL AND ((("dataset_project","dataset_name","dataset_domain","dataset_version","artifact_id") IN ((testProject,testName,testDomain,testVersion,123))))`).WithReply(expectedArtifactDataResponse)
 	GlobalMock.NewMock().WithQuery(
@@ -285,9 +285,6 @@ func TestListArtifactsNoPartitions(t *testing.T) {
 
 	artifactRepo := NewArtifactRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
 	listInput := models.ListModelsInput{
-		JoinEntityToConditionMap: map[common.Entity]models.ModelJoinCondition{
-			common.Partition: NewGormJoinCondition(common.Artifact, common.Partition),
-		},
 		Offset: 10,
 		Limit:  10,
 	}
@@ -296,5 +293,5 @@ func TestListArtifactsNoPartitions(t *testing.T) {
 	assert.Len(t, artifacts, 1)
 	assert.Equal(t, artifacts[0].ArtifactID, artifact.ArtifactID)
 	assert.Len(t, artifacts[0].ArtifactData, 1)
-	assert.Len(t, artifacts[0].Partitions, 1)
+	assert.Len(t, artifacts[0].Partitions, 0)
 }

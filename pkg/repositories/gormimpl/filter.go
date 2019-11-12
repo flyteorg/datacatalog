@@ -152,5 +152,6 @@ func applyListModelsInput(ctx context.Context, tx *gorm.DB, sourceEntity common.
 
 	tx = tx.Limit(in.Limit)
 	tx = tx.Offset(in.Offset)
+
 	return tx, nil
 }

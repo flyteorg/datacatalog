@@ -231,7 +231,7 @@ func (m *artifactManager) ListArtifacts(ctx context.Context, request datacatalog
 	}
 
 	// Get the list inputs
-	query, err := transformers.ToListInput(ctx, common.Artifact, request.GetFilter())
+	query, err := transformers.FilterToListInput(ctx, common.Artifact, request.GetFilter())
 	if err != nil {
 		logger.Warningf(ctx, "Invalid list artifact request %v, err: %v", request, err)
 		m.systemMetrics.validationErrorCounter.Inc(ctx)
