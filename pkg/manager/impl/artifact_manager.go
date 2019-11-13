@@ -231,15 +231,22 @@ func (m *artifactManager) ListArtifacts(ctx context.Context, request datacatalog
 	}
 
 	// Get the list inputs
-	query, err := transformers.FilterToListInput(ctx, common.Artifact, request.GetFilter())
+	listInput, err := transformers.FilterToListInput(ctx, common.Artifact, request.GetFilter())
 	if err != nil {
 		logger.Warningf(ctx, "Invalid list artifact request %v, err: %v", request, err)
 		m.systemMetrics.validationErrorCounter.Inc(ctx)
 		return nil, err
 	}
 
-	// Perform the list with the dataset and query filters
-	artifactModels, err := m.repo.ArtifactRepo().List(ctx, dataset.DatasetKey, query)
+	err = transformers.ApplyPagination(request.Pagination, &listInput)
+	if err != nil {
+		logger.Warningf(ctx, "Invalid pagination options in list artifact request %v, err: %v", request, err)
+		m.systemMetrics.validationErrorCounter.Inc(ctx)
+		return nil, err
+	}
+
+	// Perform the list with the dataset and listInput filters
+	artifactModels, err := m.repo.ArtifactRepo().List(ctx, dataset.DatasetKey, listInput)
 	if err != nil {
 		logger.Errorf(ctx, "Unable to list Artifacts err: %v", err)
 		m.systemMetrics.listFailureCounter.Inc(ctx)

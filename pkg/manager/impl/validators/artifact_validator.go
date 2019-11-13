@@ -74,7 +74,9 @@ func ValidateListArtifactRequest(request datacatalog.ListArtifactsRequest) error
 		return err
 	}
 
-	// TODO: validate PaginationOptions
+	if err := ValidatePaginationOptions(request.Pagination); err != nil {
+		return err
+	}
 
 	return nil
 }

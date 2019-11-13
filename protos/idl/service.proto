@@ -184,10 +184,10 @@ message PaginationOptions {
     int32 limit = 1;
 
     // the token to pass to fetch the next page
-    int32 token = 2;
+    string token = 2;
 
     // the property that we want to sort the results by
-    string sortKey = 3;
+    SortKey sortKey = 3;
 
     // the sort order of the results
     SortOrder order = 4;
@@ -195,5 +195,9 @@ message PaginationOptions {
     enum SortOrder {
         ASCENDING = 0;
         DESCENDING = 1;
+    }
+
+    enum SortKey {
+        CREATION_TIME = 0;
     }
 }

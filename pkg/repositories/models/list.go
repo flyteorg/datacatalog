@@ -13,7 +13,7 @@ type ListModelsInput struct {
 	// The token to offset results by
 	Offset int
 	// Parameter to sort by
-	SortParameter
+	SortParameter SortParameter
 }
 
 type SortParameter interface {
