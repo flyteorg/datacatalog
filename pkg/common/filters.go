@@ -1,5 +1,11 @@
 package common
 
+// Common constants and types for Filtering
+const (
+	DefaultOffset = 0
+	MaxLimit      = 50
+)
+
 // Common Entity types that can be used on any filters
 type Entity int
 

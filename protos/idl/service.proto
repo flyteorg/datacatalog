@@ -190,7 +190,7 @@ message PaginationOptions {
     SortKey sortKey = 3;
 
     // the sort order of the results
-    SortOrder order = 4;
+    SortOrder sortOrder = 4;
 
     enum SortOrder {
         DESCENDING = 0;

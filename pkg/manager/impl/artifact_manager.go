@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/lyft/datacatalog/pkg/errors"
@@ -215,7 +216,7 @@ func (m *artifactManager) getArtifactDataList(ctx context.Context, artifactDataM
 }
 
 func (m *artifactManager) ListArtifacts(ctx context.Context, request datacatalog.ListArtifactsRequest) (*datacatalog.ListArtifactsResponse, error) {
-	err := validators.ValidateAndFormatListArtifactRequest(&request)
+	err := validators.ValidateListArtifactRequest(&request)
 	if err != nil {
 		logger.Warningf(ctx, "Invalid list artifact request %v, err: %v", request, err)
 		m.systemMetrics.validationErrorCounter.Inc(ctx)
@@ -273,9 +274,11 @@ func (m *artifactManager) ListArtifacts(ctx context.Context, request datacatalog
 		artifact.Data = artifactDataList
 	}
 
+	token := strconv.Itoa(listInput.Offset + len(artifactsList))
+
 	logger.Debugf(ctx, "Listed %v matching artifacts successfully", len(artifactsList))
 	m.systemMetrics.listSuccessCounter.Inc(ctx)
-	return &datacatalog.ListArtifactsResponse{Artifacts: artifactsList}, nil
+	return &datacatalog.ListArtifactsResponse{Artifacts: artifactsList, NextToken: token}, nil
 }
 
 func NewArtifactManager(repo repositories.RepositoryInterface, store *storage.DataStore, storagePrefix storage.DataReference, artifactScope promutils.Scope) interfaces.ArtifactManager {

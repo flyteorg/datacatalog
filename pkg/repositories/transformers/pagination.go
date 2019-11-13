@@ -3,6 +3,7 @@ package transformers
 import (
 	"strconv"
 
+	"github.com/lyft/datacatalog/pkg/common"
 	"github.com/lyft/datacatalog/pkg/errors"
 	"github.com/lyft/datacatalog/pkg/repositories/gormimpl"
 	"github.com/lyft/datacatalog/pkg/repositories/models"
@@ -11,12 +12,26 @@ import (
 )
 
 func ApplyPagination(paginationOpts *datacatalog.PaginationOptions, input *models.ListModelsInput) error {
-	offset, err := strconv.Atoi(paginationOpts.Token)
-	if err != nil {
-		return errors.NewDataCatalogErrorf(codes.InvalidArgument, "Invalid token %v", offset)
+	var (
+		offset    = common.DefaultOffset
+		limit     = common.MaxLimit
+		sortKey   = datacatalog.PaginationOptions_CREATION_TIME
+		sortOrder = datacatalog.PaginationOptions_DESCENDING
+	)
+
+	if paginationOpts != nil {
+		var err error
+		offset, err = strconv.Atoi(paginationOpts.Token)
+		if err != nil {
+			return errors.NewDataCatalogErrorf(codes.InvalidArgument, "Invalid token %v", offset)
+		}
+		limit = int(paginationOpts.Limit)
+		sortKey = paginationOpts.SortKey
+		sortOrder = paginationOpts.SortOrder
 	}
+
 	input.Offset = offset
-	input.Limit = int(paginationOpts.Limit)
-	input.SortParameter = gormimpl.NewGormSortParameter(paginationOpts.SortKey, paginationOpts.Order)
+	input.Limit = limit
+	input.SortParameter = gormimpl.NewGormSortParameter(sortKey, sortOrder)
 	return nil
 }

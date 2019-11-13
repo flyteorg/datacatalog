@@ -6,14 +6,10 @@ import (
 
 	"fmt"
 
+	"github.com/lyft/datacatalog/pkg/common"
 	"github.com/lyft/datacatalog/pkg/errors"
 	datacatalog "github.com/lyft/datacatalog/protos/gen"
 	"google.golang.org/grpc/codes"
-)
-
-const (
-	defaultOffset = 0
-	maxLimit      = 50
 )
 
 // The token is a string that should be opaque to the client
@@ -21,7 +17,7 @@ const (
 // but in the future it can be a string that encodes anything
 func ValidateToken(token string) (int, error) {
 	if len(strings.Trim(token, " ")) == 0 {
-		return defaultOffset, nil
+		return common.DefaultOffset, nil
 	}
 	offset, err := strconv.Atoi(token)
 	if err != nil {
@@ -33,29 +29,28 @@ func ValidateToken(token string) (int, error) {
 	return offset, nil
 }
 
-// Validate the pagination options and return a new copy with missing values set to default
-func ValidateAndGetPaginationOptions(options *datacatalog.PaginationOptions) (datacatalog.PaginationOptions, error) {
-	if options == nil {
-		options = &datacatalog.PaginationOptions{
-			Limit: maxLimit,
-			Token: "",
-		}
-	}
+// Validate the pagination options and set default limits
+func ValidatePagination(options *datacatalog.PaginationOptions) error {
 	offset, err := ValidateToken(options.Token)
 	if err != nil {
-		return datacatalog.PaginationOptions{}, err
+		return err
 	}
 	options.Token = fmt.Sprintf("%d", offset)
 
-	if options.Limit < 0 {
-		return datacatalog.PaginationOptions{}, errors.NewDataCatalogErrorf(codes.InvalidArgument, "Invalid page limit %v", options.SortKey)
-	} else if options.Limit > maxLimit {
-		options.Limit = maxLimit
+	if options.Limit <= 0 {
+		return errors.NewDataCatalogErrorf(codes.InvalidArgument, "Invalid page limit %v", options.Limit)
+	} else if options.Limit > common.MaxLimit {
+		options.Limit = common.MaxLimit
 	}
 
 	if options.SortKey != datacatalog.PaginationOptions_CREATION_TIME {
-		return datacatalog.PaginationOptions{}, errors.NewDataCatalogErrorf(codes.InvalidArgument, "Invalid sort key %v", options.SortKey)
+		return errors.NewDataCatalogErrorf(codes.InvalidArgument, "Invalid sort key %v", options.SortKey)
 	}
 
-	return *options, nil
+	if options.SortOrder != datacatalog.PaginationOptions_ASCENDING &&
+		options.SortOrder != datacatalog.PaginationOptions_DESCENDING {
+		return errors.NewDataCatalogErrorf(codes.InvalidArgument, "Invalid sort order %v", options.SortOrder)
+	}
+
+	return nil
 }
