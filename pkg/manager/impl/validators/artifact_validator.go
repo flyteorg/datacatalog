@@ -74,11 +74,11 @@ func ValidateAndFormatListArtifactRequest(request *datacatalog.ListArtifactsRequ
 		return err
 	}
 
-	if paginationOpts, err := ValidateAndGetPaginationOptions(request.Pagination); err != nil {
+	paginationOpts, err := ValidateAndGetPaginationOptions(request.Pagination)
+	if err != nil {
 		return err
-	} else {
-		request.Pagination = &paginationOpts
 	}
+	request.Pagination = &paginationOpts
 
 	return nil
 }

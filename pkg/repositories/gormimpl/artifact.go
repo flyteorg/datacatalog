@@ -87,7 +87,7 @@ func (h *artifactRepo) List(ctx context.Context, datasetKey models.DatasetKey, i
 	in.Filters = append(in.Filters, datasetUUIDFilter)
 
 	// apply filters and joins
-	tx, err := applyListModelsInput(ctx, h.db, sourceEntity, in)
+	tx, err := applyListModelsInput(h.db, sourceEntity, in)
 
 	if err != nil {
 		return nil, err

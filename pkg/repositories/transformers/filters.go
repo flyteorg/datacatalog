@@ -24,9 +24,9 @@ var comparisonOperatorMap = map[datacatalog.SinglePropertyFilter_ComparisonOpera
 func FilterToListInput(ctx context.Context, sourceEntity common.Entity, filterExpression *datacatalog.FilterExpression) (models.ListModelsInput, error) {
 	// ListInput is composed of ModelFilters and ModelJoins. Let's construct those filters and joins.
 	modelFilters := make([]models.ModelValueFilter, 0, len(filterExpression.GetFilters()))
-	joinModelMap := make(map[common.Entity]models.ModelJoinCondition, 0)
+	joinModelMap := make(map[common.Entity]models.ModelJoinCondition)
 	for _, filter := range filterExpression.GetFilters() {
-		modelPropertyFilters, err := constructModelValueFilter(ctx, filter)
+		modelPropertyFilters, err := constructModelValueFilter(filter)
 		if err != nil {
 			return models.ListModelsInput{}, err
 		}
@@ -45,7 +45,7 @@ func FilterToListInput(ctx context.Context, sourceEntity common.Entity, filterEx
 	}, nil
 }
 
-func constructModelValueFilter(ctx context.Context, singleFilter *datacatalog.SinglePropertyFilter) ([]models.ModelValueFilter, error) {
+func constructModelValueFilter(singleFilter *datacatalog.SinglePropertyFilter) ([]models.ModelValueFilter, error) {
 	modelValueFilters := make([]models.ModelValueFilter, 0, 1)
 
 	switch propertyFilter := singleFilter.GetPropertyFilter().(type) {

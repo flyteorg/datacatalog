@@ -1,8 +1,6 @@
 package gormimpl
 
 import (
-	"context"
-
 	"github.com/jinzhu/gorm"
 	"github.com/lyft/datacatalog/pkg/common"
 	"github.com/lyft/datacatalog/pkg/repositories/errors"
@@ -18,7 +16,7 @@ var entityToModel = map[common.Entity]interface{}{
 
 // Apply the list query on the source model. This method will apply the necessary joins, filters and
 // pagination on the database for the given ListModelInputs.
-func applyListModelsInput(ctx context.Context, tx *gorm.DB, sourceEntity common.Entity, in models.ListModelsInput) (*gorm.DB, error) {
+func applyListModelsInput(tx *gorm.DB, sourceEntity common.Entity, in models.ListModelsInput) (*gorm.DB, error) {
 	sourceModel, ok := entityToModel[sourceEntity]
 	if !ok {
 		return nil, errors.GetInvalidEntityError(sourceEntity.Name())

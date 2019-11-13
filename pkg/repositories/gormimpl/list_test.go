@@ -1,7 +1,6 @@
 package gormimpl
 
 import (
-	"context"
 	"database/sql/driver"
 	"strings"
 	"testing"
@@ -46,10 +45,10 @@ func TestApplyFilter(t *testing.T) {
 		SortParameter: NewGormSortParameter(datacatalog.PaginationOptions_CREATION_TIME, datacatalog.PaginationOptions_DESCENDING),
 	}
 
-	tx, err := applyListModelsInput(context.Background(), testDB, common.Artifact, listInput)
+	tx, err := applyListModelsInput(testDB, common.Artifact, listInput)
 	assert.NoError(t, err)
 
-	tx = tx.Find(models.Artifact{})
+	tx.Find(models.Artifact{})
 	assert.True(t, validInputApply)
 }
 
@@ -73,9 +72,9 @@ func TestApplyFilterEmpty(t *testing.T) {
 		Limit:                    10,
 	}
 
-	tx, err := applyListModelsInput(context.Background(), testDB, common.Artifact, listInput)
+	tx, err := applyListModelsInput(testDB, common.Artifact, listInput)
 	assert.NoError(t, err)
 
-	tx = tx.Find(models.Artifact{})
+	tx.Find(models.Artifact{})
 	assert.True(t, validInputApply)
 }
