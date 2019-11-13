@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/lyft/datacatalog/pkg/common"
+	"github.com/lyft/datacatalog/pkg/repositories/errors"
 	"github.com/lyft/datacatalog/pkg/repositories/models"
 )
 
@@ -32,7 +33,7 @@ func (g *gormValueFilterImpl) GetDBQueryExpression(tableName string) (models.DBQ
 			Args:  g.value,
 		}, nil
 	}
-	return models.DBQueryExpr{}, common.GetUnsupportedFilterExpressionErr(g.comparisonOperator)
+	return models.DBQueryExpr{}, errors.GetUnsupportedFilterExpressionErr(g.comparisonOperator)
 }
 
 // Construct the container necessary to issue a db query to filter in GORM

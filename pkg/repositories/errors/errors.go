@@ -3,6 +3,7 @@ package errors
 
 import (
 	"github.com/golang/protobuf/proto"
+	"github.com/lyft/datacatalog/pkg/common"
 	"github.com/lyft/datacatalog/pkg/errors"
 	"google.golang.org/grpc/codes"
 )
@@ -23,4 +24,9 @@ func GetInvalidEntityRelationshipError(entityType string, otherEntityType string
 
 func GetInvalidEntityError(entityType string) error {
 	return errors.NewDataCatalogErrorf(codes.InvalidArgument, invalidEntity, entityType)
+}
+
+func GetUnsupportedFilterExpressionErr(operator common.ComparisonOperator) error {
+	return errors.NewDataCatalogErrorf(codes.InvalidArgument, "unsupported filter expression operator index: %v",
+		operator)
 }

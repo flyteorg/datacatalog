@@ -87,6 +87,50 @@ func getExpectedDatastoreLocation(ctx context.Context, store *storage.DataStore,
 	return store.ConstructReference(ctx, prefix, dataset.Project, dataset.Domain, dataset.Name, dataset.Version, artifact.Id, artifact.Data[idx].Name, artifactDataFile)
 }
 
+func getExpectedArtifactModel(ctx context.Context, t *testing.T, datastore *storage.DataStore, artifact *datacatalog.Artifact) models.Artifact {
+	expectedDataset := artifact.Dataset
+	// Write sample artifact data to the expected location and see if the retrieved data matches
+	testStoragePrefix, err := datastore.ConstructReference(ctx, datastore.GetBaseContainerFQN(ctx), "test")
+	assert.NoError(t, err)
+	dataLocation, err := getExpectedDatastoreLocation(ctx, datastore, testStoragePrefix, artifact, 0)
+	assert.NoError(t, err)
+	err = datastore.WriteProtobuf(ctx, dataLocation, storage.Options{}, getTestStringLiteral())
+	assert.NoError(t, err)
+
+	// construct the artifact model we will return on the queries
+	serializedMetadata, err := proto.Marshal(artifact.Metadata)
+	assert.NoError(t, err)
+	datasetKey := models.DatasetKey{
+		Project: expectedDataset.Project,
+		Domain:  expectedDataset.Domain,
+		Version: expectedDataset.Version,
+		Name:    expectedDataset.Name,
+		UUID:    expectedDataset.UUID,
+	}
+	return models.Artifact{
+		ArtifactKey: models.ArtifactKey{
+			DatasetProject: expectedDataset.Project,
+			DatasetDomain:  expectedDataset.Domain,
+			DatasetVersion: expectedDataset.Version,
+			DatasetName:    expectedDataset.Name,
+			ArtifactID:     artifact.Id,
+		},
+		DatasetUUID: expectedDataset.UUID,
+		ArtifactData: []models.ArtifactData{
+			{Name: "data1", Location: dataLocation.String()},
+		},
+		Dataset: models.Dataset{
+			DatasetKey:         datasetKey,
+			SerializedMetadata: serializedMetadata,
+		},
+		SerializedMetadata: serializedMetadata,
+		Partitions: []models.Partition{
+			{Key: "key1", Value: "value1"},
+			{Key: "key2", Value: "value2"},
+		},
+	}
+}
+
 func TestCreateArtifact(t *testing.T) {
 	ctx := context.Background()
 	datastore := createInmemoryDataStore(t, mockScope.NewTestScope())
@@ -308,46 +352,7 @@ func TestGetArtifact(t *testing.T) {
 	}
 
 	expectedArtifact := getTestArtifact()
-	expectedDataset := expectedArtifact.Dataset
-
-	// Write the artifact data to the expected location and see if the retrieved data matches
-	dataLocation, err := getExpectedDatastoreLocation(ctx, datastore, testStoragePrefix, expectedArtifact, 0)
-	assert.NoError(t, err)
-	err = datastore.WriteProtobuf(ctx, dataLocation, storage.Options{}, getTestStringLiteral())
-	assert.NoError(t, err)
-
-	// construct the artifact model we will return on the queries
-	serializedMetadata, err := proto.Marshal(expectedArtifact.Metadata)
-	assert.NoError(t, err)
-	datasetKey := models.DatasetKey{
-		Project: expectedDataset.Project,
-		Domain:  expectedDataset.Domain,
-		Version: expectedDataset.Version,
-		Name:    expectedDataset.Name,
-		UUID:    expectedDataset.UUID,
-	}
-	mockArtifactModel := models.Artifact{
-		ArtifactKey: models.ArtifactKey{
-			DatasetProject: expectedDataset.Project,
-			DatasetDomain:  expectedDataset.Domain,
-			DatasetVersion: expectedDataset.Version,
-			DatasetName:    expectedDataset.Name,
-			ArtifactID:     expectedArtifact.Id,
-		},
-		DatasetUUID: expectedDataset.UUID,
-		ArtifactData: []models.ArtifactData{
-			{Name: "data1", Location: dataLocation.String()},
-		},
-		Dataset: models.Dataset{
-			DatasetKey:         datasetKey,
-			SerializedMetadata: serializedMetadata,
-		},
-		SerializedMetadata: serializedMetadata,
-		Partitions: []models.Partition{
-			{Key: "key1", Value: "value1"},
-			{Key: "key2", Value: "value2"},
-		},
-	}
+	mockArtifactModel := getExpectedArtifactModel(ctx, t, datastore, expectedArtifact)
 
 	t.Run("Get by Id", func(t *testing.T) {
 
@@ -447,38 +452,7 @@ func TestListArtifact(t *testing.T) {
 	}
 
 	expectedArtifact := getTestArtifact()
-
-	// Write the artifact data to the expected location and see if the retrieved data matches
-	dataLocation, err := getExpectedDatastoreLocation(ctx, datastore, testStoragePrefix, expectedArtifact, 0)
-	assert.NoError(t, err)
-	err = datastore.WriteProtobuf(ctx, dataLocation, storage.Options{}, getTestStringLiteral())
-	assert.NoError(t, err)
-
-	// construct the artifact model we will return on the queries
-	serializedMetadata, err := proto.Marshal(expectedArtifact.Metadata)
-	assert.NoError(t, err)
-	mockArtifactModel := models.Artifact{
-		ArtifactKey: models.ArtifactKey{
-			DatasetProject: expectedDataset.Id.Project,
-			DatasetDomain:  expectedDataset.Id.Domain,
-			DatasetVersion: expectedDataset.Id.Version,
-			DatasetName:    expectedDataset.Id.Name,
-			ArtifactID:     expectedArtifact.Id,
-		},
-		DatasetUUID: expectedDataset.Id.UUID,
-		ArtifactData: []models.ArtifactData{
-			{Name: "data1", Location: dataLocation.String()},
-		},
-		Dataset: models.Dataset{
-			DatasetKey:         mockDatasetModel.DatasetKey,
-			SerializedMetadata: serializedMetadata,
-		},
-		SerializedMetadata: serializedMetadata,
-		Partitions: []models.Partition{
-			{Key: "key1", Value: "value1"},
-			{Key: "key2", Value: "value2"},
-		},
-	}
+	mockArtifactModel := getExpectedArtifactModel(ctx, t, datastore, expectedArtifact)
 
 	t.Run("List Artifact on invalid filter", func(t *testing.T) {
 		artifactManager := NewArtifactManager(dcRepo, datastore, testStoragePrefix, mockScope.NewTestScope())

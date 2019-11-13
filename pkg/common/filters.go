@@ -1,10 +1,6 @@
 package common
 
-import (
-	"github.com/lyft/datacatalog/pkg/errors"
-	"google.golang.org/grpc/codes"
-)
-
+// Common Entity types that can be used on any filters
 type Entity int
 
 const (
@@ -13,18 +9,6 @@ const (
 	Partition
 	Tag
 )
-
-type ComparisonOperator int
-
-const (
-	Equal ComparisonOperator = iota
-	// Add more operators as needed, ie., gte, lte
-)
-
-func GetUnsupportedFilterExpressionErr(operator ComparisonOperator) error {
-	return errors.NewDataCatalogErrorf(codes.InvalidArgument, "unsupported filter expression operator index: %v",
-		operator)
-}
 
 func (entity Entity) Name() string {
 	switch entity {
@@ -40,3 +24,11 @@ func (entity Entity) Name() string {
 
 	return ""
 }
+
+// Supported operators that can be used on filters
+type ComparisonOperator int
+
+const (
+	Equal ComparisonOperator = iota
+	// Add more operators as needed, ie., gte, lte
+)

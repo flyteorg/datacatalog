@@ -3,6 +3,7 @@ package validators
 import (
 	"fmt"
 
+	"github.com/lyft/datacatalog/pkg/common"
 	datacatalog "github.com/lyft/datacatalog/protos/gen"
 )
 
@@ -65,6 +66,7 @@ func ValidateArtifact(artifact *datacatalog.Artifact) error {
 	return nil
 }
 
+// Validate the list request and format the request with proper defaults if not provided
 func ValidateAndFormatListArtifactRequest(request *datacatalog.ListArtifactsRequest) error {
 	if err := ValidateDatasetID(request.Dataset); err != nil {
 		return err
@@ -87,7 +89,7 @@ func ValidateAndFormatListArtifactRequest(request *datacatalog.ListArtifactsRequ
 func ValidateArtifactFilterTypes(filters []*datacatalog.SinglePropertyFilter) error {
 	for _, filter := range filters {
 		if filter.GetDatasetFilter() != nil {
-			return NewInvalidFilterError("Artifact", "Dataset")
+			return NewInvalidFilterError(common.Artifact, common.Dataset)
 		}
 	}
 	return nil
