@@ -22,7 +22,7 @@ const (
 )
 
 func GetUnsupportedFilterExpressionErr(operator ComparisonOperator) error {
-	return errors.NewDataCatalogErrorf(codes.InvalidArgument, "unsupported filter expression operator: %s",
+	return errors.NewDataCatalogErrorf(codes.InvalidArgument, "unsupported filter expression operator index: %v",
 		operator)
 }
 
