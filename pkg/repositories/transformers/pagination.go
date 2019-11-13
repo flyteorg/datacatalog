@@ -10,23 +10,13 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-const (
-	maxLimit = 50
-)
-
 func ApplyPagination(paginationOpts *datacatalog.PaginationOptions, input *models.ListModelsInput) error {
 	offset, err := strconv.Atoi(paginationOpts.Token)
 	if err != nil {
 		return errors.NewDataCatalogErrorf(codes.InvalidArgument, "Invalid token %v", offset)
 	}
-
+	input.Offset = offset
+	input.Limit = int(paginationOpts.Limit)
 	input.SortParameter = gormimpl.NewGormSortParameter(paginationOpts.SortKey, paginationOpts.Order)
-
-	if paginationOpts.Limit > maxLimit {
-		input.Limit = maxLimit
-	} else {
-		input.Limit = int(paginationOpts.Limit)
-	}
-
 	return nil
 }

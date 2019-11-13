@@ -7,6 +7,10 @@ import (
 	datacatalog "github.com/lyft/datacatalog/protos/gen"
 )
 
+const (
+	sortQuery = "%s.%s %s"
+)
+
 // Container for the sort details
 type sortParameter struct {
 	sortKey   datacatalog.PaginationOptions_SortKey
@@ -14,7 +18,7 @@ type sortParameter struct {
 }
 
 // Generate the DBOrderExpression that GORM needs to order models
-func (s *sortParameter) GetDBOrderExpression() string {
+func (s *sortParameter) GetDBOrderExpression(tableName string) string {
 	var sortOrderString string
 	switch s.sortOrder {
 	case datacatalog.PaginationOptions_ASCENDING:
@@ -32,7 +36,7 @@ func (s *sortParameter) GetDBOrderExpression() string {
 	default:
 		sortKeyString = "created_at"
 	}
-	return fmt.Sprintf(sortQuery, sortKeyString, sortOrderString)
+	return fmt.Sprintf(sortQuery, tableName, sortKeyString, sortOrderString)
 }
 
 // Create SortParameter for GORM

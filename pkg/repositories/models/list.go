@@ -17,7 +17,7 @@ type ListModelsInput struct {
 }
 
 type SortParameter interface {
-	GetDBOrderExpression() string
+	GetDBOrderExpression(tableName string) string
 }
 
 // Generates db filter expressions for model values

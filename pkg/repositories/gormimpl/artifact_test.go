@@ -15,6 +15,7 @@ import (
 	"github.com/lyft/datacatalog/pkg/repositories/errors"
 	"github.com/lyft/datacatalog/pkg/repositories/models"
 	"github.com/lyft/datacatalog/pkg/repositories/utils"
+	datacatalog "github.com/lyft/datacatalog/protos/gen"
 	"github.com/lyft/flytestdlib/contextutils"
 	"github.com/lyft/flytestdlib/promutils"
 	"github.com/lyft/flytestdlib/promutils/labeled"
@@ -239,7 +240,7 @@ func TestListArtifactsWithPartition(t *testing.T) {
 	expectedPartitionResponse := getDBPartitionResponse(artifact)
 
 	GlobalMock.NewMock().WithQuery(
-		`SELECT "artifacts".* FROM "artifacts" JOIN partitions ON artifacts.artifact_id = partitions.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((partitions.key1 = val1) AND (partitions.key2 = val2) AND (artifacts.dataset_uuid = test-uuid)) LIMIT 10 OFFSET 10`).WithReply(expectedArtifactResponse)
+		`SELECT "artifacts".* FROM "artifacts" JOIN partitions ON artifacts.artifact_id = partitions.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((partitions.key1 = val1) AND (partitions.key2 = val2) AND (artifacts.dataset_uuid = test-uuid)) ORDER BY artifacts.created_at desc LIMIT 10 OFFSET 10`).WithReply(expectedArtifactResponse)
 	GlobalMock.NewMock().WithQuery(
 		`SELECT * FROM "artifact_data"  WHERE "artifact_data"."deleted_at" IS NULL AND ((("dataset_project","dataset_name","dataset_domain","dataset_version","artifact_id") IN ((testProject,testName,testDomain,testVersion,123))))`).WithReply(expectedArtifactDataResponse)
 	GlobalMock.NewMock().WithQuery(
@@ -254,8 +255,9 @@ func TestListArtifactsWithPartition(t *testing.T) {
 			NewGormValueFilter(common.Partition, common.Equal, "key1", "val1"),
 			NewGormValueFilter(common.Partition, common.Equal, "key2", "val2"),
 		},
-		Offset: 10,
-		Limit:  10,
+		Offset:        10,
+		Limit:         10,
+		SortParameter: NewGormSortParameter(datacatalog.PaginationOptions_CREATION_TIME, datacatalog.PaginationOptions_DESCENDING),
 	}
 	artifacts, err := artifactRepo.List(context.Background(), dataset.DatasetKey, listInput)
 	assert.NoError(t, err)

@@ -193,8 +193,8 @@ message PaginationOptions {
     SortOrder order = 4;
 
     enum SortOrder {
-        ASCENDING = 0;
-        DESCENDING = 1;
+        DESCENDING = 0;
+        ASCENDING = 1;
     }
 
     enum SortKey {

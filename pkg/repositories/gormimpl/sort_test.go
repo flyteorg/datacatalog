@@ -10,15 +10,15 @@ import (
 func TestSortAsc(t *testing.T) {
 	dbSortExpression := NewGormSortParameter(
 		datacatalog.PaginationOptions_CREATION_TIME,
-		datacatalog.PaginationOptions_ASCENDING).GetDBOrderExpression()
+		datacatalog.PaginationOptions_ASCENDING).GetDBOrderExpression("artifacts")
 
-	assert.Equal(t, dbSortExpression, "created_at asc")
+	assert.Equal(t, dbSortExpression, "artifacts.created_at asc")
 }
 
 func TestSortDesc(t *testing.T) {
 	dbSortExpression := NewGormSortParameter(
 		datacatalog.PaginationOptions_CREATION_TIME,
-		datacatalog.PaginationOptions_DESCENDING).GetDBOrderExpression()
+		datacatalog.PaginationOptions_DESCENDING).GetDBOrderExpression("artifacts")
 
-	assert.Equal(t, dbSortExpression, "created_at desc")
+	assert.Equal(t, dbSortExpression, "artifacts.created_at desc")
 }

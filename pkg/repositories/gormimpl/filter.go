@@ -9,11 +9,7 @@ import (
 
 // String formats for various GORM expression queries
 const (
-	equalQuery          = "%s.%s = ?"
-	joinCondition       = "JOIN %s ON %s"
-	joinEquals          = "%s.%s = %s.%s"
-	joinAdditionalField = "AND %s"
-	sortQuery           = "%s %s"
+	equalQuery = "%s.%s = ?"
 )
 
 type gormValueFilterImpl struct {

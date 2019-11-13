@@ -422,6 +422,7 @@ func TestGetArtifact(t *testing.T) {
 		assert.Equal(t, codes.NotFound, responseCode)
 	})
 }
+
 func TestListArtifact(t *testing.T) {
 	ctx := context.Background()
 	datastore := createInmemoryDataStore(t, mockScope.NewTestScope())
@@ -564,7 +565,9 @@ func TestListArtifact(t *testing.T) {
 					listInput.Filters[3].GetDBEntity() == common.Partition &&
 					listInput.Filters[4].GetDBEntity() == common.Tag &&
 					listInput.JoinEntityToConditionMap[common.Partition].GetJoiningDBEntity() == common.Partition &&
-					listInput.JoinEntityToConditionMap[common.Tag].GetJoiningDBEntity() == common.Tag
+					listInput.JoinEntityToConditionMap[common.Tag].GetJoiningDBEntity() == common.Tag &&
+					listInput.Limit == 50 &&
+					listInput.Offset == 0
 			})).Return(mockArtifacts, nil)
 
 		artifactResponse, err := artifactManager.ListArtifacts(ctx, datacatalog.ListArtifactsRequest{Dataset: expectedDataset.Id, Filter: filter})

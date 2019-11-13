@@ -213,8 +213,9 @@ func (m *artifactManager) getArtifactDataList(ctx context.Context, artifactDataM
 
 	return artifactDataList, nil
 }
+
 func (m *artifactManager) ListArtifacts(ctx context.Context, request datacatalog.ListArtifactsRequest) (*datacatalog.ListArtifactsResponse, error) {
-	err := validators.ValidateListArtifactRequest(request)
+	err := validators.ValidateAndFormatListArtifactRequest(&request)
 	if err != nil {
 		logger.Warningf(ctx, "Invalid list artifact request %v, err: %v", request, err)
 		m.systemMetrics.validationErrorCounter.Inc(ctx)
@@ -253,6 +254,7 @@ func (m *artifactManager) ListArtifacts(ctx context.Context, request datacatalog
 		return nil, err
 	}
 
+	// convert returned models into entity list
 	artifactsList, err := transformers.FromArtifactModels(artifactModels)
 	if err != nil {
 		logger.Errorf(ctx, "Unable to transform Artifacts %+v err: %v", artifactModels, err)
@@ -260,6 +262,7 @@ func (m *artifactManager) ListArtifacts(ctx context.Context, request datacatalog
 		return nil, err
 	}
 
+	// attach artifactData to artifactList
 	for i, artifact := range artifactsList {
 		artifactDataList, err := m.getArtifactDataList(ctx, artifactModels[i].ArtifactData)
 		if err != nil {

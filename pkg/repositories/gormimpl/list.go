@@ -49,5 +49,8 @@ func applyListModelsInput(ctx context.Context, tx *gorm.DB, sourceEntity common.
 	tx = tx.Limit(in.Limit)
 	tx = tx.Offset(in.Offset)
 
+	if in.SortParameter != nil {
+		tx = tx.Order(in.SortParameter.GetDBOrderExpression(sourceTableName))
+	}
 	return tx, nil
 }

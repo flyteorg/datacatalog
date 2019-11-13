@@ -65,7 +65,7 @@ func ValidateArtifact(artifact *datacatalog.Artifact) error {
 	return nil
 }
 
-func ValidateListArtifactRequest(request datacatalog.ListArtifactsRequest) error {
+func ValidateAndFormatListArtifactRequest(request *datacatalog.ListArtifactsRequest) error {
 	if err := ValidateDatasetID(request.Dataset); err != nil {
 		return err
 	}
@@ -74,8 +74,10 @@ func ValidateListArtifactRequest(request datacatalog.ListArtifactsRequest) error
 		return err
 	}
 
-	if err := ValidatePaginationOptions(request.Pagination); err != nil {
+	if paginationOpts, err := ValidateAndGetPaginationOptions(request.Pagination); err != nil {
 		return err
+	} else {
+		request.Pagination = &paginationOpts
 	}
 
 	return nil

@@ -32,7 +32,7 @@ func GetRepository(repoType RepoConfig, dbConfig config.DbConfig, scope promutil
 	switch repoType {
 	case POSTGRES:
 		db, err := config.OpenDbConnection(config.NewPostgresConfigProvider(dbConfig, scope.NewSubScope("postgres")))
-		db.LogMode(true)
+
 		if err != nil {
 			panic(err)
 		}

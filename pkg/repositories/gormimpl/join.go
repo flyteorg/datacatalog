@@ -9,6 +9,12 @@ import (
 	"github.com/lyft/datacatalog/pkg/repositories/models"
 )
 
+const (
+	joinCondition       = "JOIN %s ON %s"
+	joinEquals          = "%s.%s = %s.%s"
+	joinAdditionalField = "AND %s"
+)
+
 // JoinOnMap is a map of the properties for joining source table to joining table
 type JoinOnMap map[string]string
 

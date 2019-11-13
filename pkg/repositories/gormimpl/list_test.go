@@ -10,6 +10,7 @@ import (
 	"github.com/lyft/datacatalog/pkg/common"
 	"github.com/lyft/datacatalog/pkg/repositories/models"
 	"github.com/lyft/datacatalog/pkg/repositories/utils"
+	datacatalog "github.com/lyft/datacatalog/protos/gen"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,7 +28,7 @@ func TestApplyFilter(t *testing.T) {
 				strings.Contains(s, `JOIN partitions ON artifacts.artifact_id = partitions.artifact_id`) &&
 				strings.Contains(s, `WHERE "artifacts"."deleted_at" IS NULL AND `+
 					`((partitions.key1 = val1) AND (partitions.key2 = val2) AND (tags.tag_name = special)) `+
-					`LIMIT 10 OFFSET 10`)
+					`ORDER BY artifacts.created_at desc LIMIT 10 OFFSET 10`)
 		})
 
 	listInput := models.ListModelsInput{
@@ -40,8 +41,9 @@ func TestApplyFilter(t *testing.T) {
 			NewGormValueFilter(common.Partition, common.Equal, "key2", "val2"),
 			NewGormValueFilter(common.Tag, common.Equal, "tag_name", "special"),
 		},
-		Offset: 10,
-		Limit:  10,
+		Offset:        10,
+		Limit:         10,
+		SortParameter: NewGormSortParameter(datacatalog.PaginationOptions_CREATION_TIME, datacatalog.PaginationOptions_DESCENDING),
 	}
 
 	tx, err := applyListModelsInput(context.Background(), testDB, common.Artifact, listInput)
