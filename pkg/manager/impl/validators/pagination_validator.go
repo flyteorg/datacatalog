@@ -17,12 +17,9 @@ func ValidateToken(token string) error {
 	if len(strings.Trim(token, " ")) == 0 {
 		return nil
 	}
-	offset, err := strconv.Atoi(token)
+	_, err := strconv.ParseUint(token, 10, 32)
 	if err != nil {
 		return errors.NewDataCatalogErrorf(codes.InvalidArgument, "Invalid token value: %s", token)
-	}
-	if offset < 0 {
-		return errors.NewDataCatalogErrorf(codes.InvalidArgument, "Token needs to be a positive value: %s", token)
 	}
 	return nil
 }

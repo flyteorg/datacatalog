@@ -24,7 +24,7 @@ func (s *sortParameter) GetDBOrderExpression(tableName string) string {
 	case datacatalog.PaginationOptions_ASCENDING:
 		sortOrderString = "asc"
 	case datacatalog.PaginationOptions_DESCENDING:
-		sortOrderString = "desc"
+		fallthrough
 	default:
 		sortOrderString = "desc"
 	}
@@ -32,7 +32,7 @@ func (s *sortParameter) GetDBOrderExpression(tableName string) string {
 	var sortKeyString string
 	switch s.sortKey {
 	case datacatalog.PaginationOptions_CREATION_TIME:
-		sortKeyString = "created_at"
+		fallthrough
 	default:
 		sortKeyString = "created_at"
 	}

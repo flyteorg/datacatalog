@@ -11,8 +11,8 @@ import (
 
 func TestPaginationDefaults(t *testing.T) {
 	listModelsInput := &models.ListModelsInput{}
-	ApplyPagination(nil, listModelsInput)
-
+	err := ApplyPagination(nil, listModelsInput)
+	assert.NoError(t, err)
 	assert.Equal(t, common.DefaultPageOffset, listModelsInput.Offset)
 	assert.Equal(t, common.MaxPageLimit, listModelsInput.Limit)
 	assert.Equal(t, "artifacts.created_at desc", listModelsInput.SortParameter.GetDBOrderExpression("artifacts"))
