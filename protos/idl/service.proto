@@ -181,7 +181,7 @@ message DatasetPropertyFilter {
 message PaginationOptions {
 
     // the max number of results to return
-    int32 limit = 1;
+    uint32 limit = 1;
 
     // the token to pass to fetch the next page
     string token = 2;

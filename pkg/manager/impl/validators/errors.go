@@ -22,5 +22,5 @@ func NewInvalidArgumentError(field string, value string) error {
 }
 
 func NewInvalidFilterError(entity common.Entity, propertyEntity common.Entity) error {
-	return errors.NewDataCatalogErrorf(codes.InvalidArgument, fmt.Sprintf(invalidFilterFormat, entity.Name(), propertyEntity.Name()))
+	return errors.NewDataCatalogErrorf(codes.InvalidArgument, fmt.Sprintf(invalidFilterFormat, entity, propertyEntity))
 }

@@ -2,34 +2,19 @@ package common
 
 // Common constants and types for Filtering
 const (
-	DefaultOffset = 0
-	MaxLimit      = 50
+	DefaultPageOffset = uint32(0)
+	MaxPageLimit      = uint32(50)
 )
 
 // Common Entity types that can be used on any filters
-type Entity int
+type Entity string
 
 const (
-	Artifact Entity = iota
-	Dataset
-	Partition
-	Tag
+	Artifact  Entity = "Artifact"
+	Dataset   Entity = "Dataset"
+	Partition Entity = "Partition"
+	Tag       Entity = "Tag"
 )
-
-func (entity Entity) Name() string {
-	switch entity {
-	case Artifact:
-		return "Artifact"
-	case Dataset:
-		return "Dataset"
-	case Partition:
-		return "Partition"
-	case Tag:
-		return "Tag"
-	}
-
-	return ""
-}
 
 // Supported operators that can be used on filters
 type ComparisonOperator int

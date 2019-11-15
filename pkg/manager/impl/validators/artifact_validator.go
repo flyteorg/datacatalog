@@ -77,7 +77,7 @@ func ValidateListArtifactRequest(request *datacatalog.ListArtifactsRequest) erro
 	}
 
 	if request.Pagination != nil {
-		err := ValidatePagination(request.Pagination)
+		err := ValidatePagination(*request.Pagination)
 		if err != nil {
 			return err
 		}

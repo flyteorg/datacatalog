@@ -19,12 +19,17 @@ var entityToModel = map[common.Entity]interface{}{
 func applyListModelsInput(tx *gorm.DB, sourceEntity common.Entity, in models.ListModelsInput) (*gorm.DB, error) {
 	sourceModel, ok := entityToModel[sourceEntity]
 	if !ok {
-		return nil, errors.GetInvalidEntityError(sourceEntity.Name())
+		return nil, errors.GetInvalidEntityError(sourceEntity)
 	}
 
 	sourceTableName := tx.NewScope(sourceModel).TableName()
 	for joiningEntity, joinCondition := range in.JoinEntityToConditionMap {
-		joiningTableName := tx.NewScope(entityToModel[joiningEntity]).TableName()
+		joiningModel, ok := entityToModel[joiningEntity]
+		if !ok {
+			return nil, errors.GetInvalidEntityError(joiningEntity)
+		}
+
+		joiningTableName := tx.NewScope(joiningModel).TableName()
 		joinExpression, err := joinCondition.GetJoinOnDBQueryExpression(sourceTableName, joiningTableName)
 		if err != nil {
 			return nil, err
@@ -34,7 +39,12 @@ func applyListModelsInput(tx *gorm.DB, sourceEntity common.Entity, in models.Lis
 
 	for _, whereFilter := range in.Filters {
 		filterEntity := whereFilter.GetDBEntity()
-		entityTableName := tx.NewScope(entityToModel[filterEntity]).TableName()
+		filterModel, ok := entityToModel[filterEntity]
+		if !ok {
+			return nil, errors.GetInvalidEntityError(filterEntity)
+		}
+
+		entityTableName := tx.NewScope(filterModel).TableName()
 
 		dbQueryExpr, err := whereFilter.GetDBQueryExpression(entityTableName)
 

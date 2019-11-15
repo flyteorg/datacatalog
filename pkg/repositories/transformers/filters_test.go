@@ -13,10 +13,17 @@ import (
 func assertJoinExpression(t *testing.T, listInput models.ListModelsInput, joiningEntity common.Entity, sourceTableName string, joiningTableName string, expectedJoinStatement string) {
 	joinCondition, ok := listInput.JoinEntityToConditionMap[joiningEntity]
 	assert.True(t, ok)
-	assert.Equal(t, joinCondition.GetJoiningDBEntity(), joiningEntity)
 	expr, err := joinCondition.GetJoinOnDBQueryExpression(sourceTableName, joiningTableName)
 	assert.NoError(t, err)
 	assert.Equal(t, expr, expectedJoinStatement)
+}
+
+func assertFilterExpression(t *testing.T, filter models.ModelValueFilter, expectedEntity common.Entity, tableName string, expectedStatement string, expectedArgs interface{}) {
+	assert.Equal(t, filter.GetDBEntity(), expectedEntity)
+	expr, err := filter.GetDBQueryExpression(tableName)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedStatement, expr.Query)
+	assert.EqualValues(t, expectedArgs, expr.Args)
 }
 
 func TestListInputWithPartitionsAndTags(t *testing.T) {
@@ -53,12 +60,22 @@ func TestListInputWithPartitionsAndTags(t *testing.T) {
 	}
 	listInput, err := FilterToListInput(context.Background(), common.Artifact, filter)
 	assert.NoError(t, err)
-	assert.Len(t, listInput.Filters, 5)                  // 2 for each partition filter, 1 for tag filter
-	assert.Len(t, listInput.JoinEntityToConditionMap, 2) // join on partition and tag
 
-	// even though there are 5 filters, there should only have entries for 2 joins
+	// Should have 5 filters: 2 for each partition filter, 1 for tag filter
+	assert.Len(t, listInput.Filters, 5)
+
+	assertFilterExpression(t, listInput.Filters[0], common.Partition, "partitions", "partitions.key = ?", "key1")
+	assertFilterExpression(t, listInput.Filters[1], common.Partition, "partitions", "partitions.value = ?", "val1")
+	assertFilterExpression(t, listInput.Filters[2], common.Partition, "partitions", "partitions.key = ?", "key2")
+	assertFilterExpression(t, listInput.Filters[3], common.Partition, "partitions", "partitions.value = ?", "val2")
+	assertFilterExpression(t, listInput.Filters[4], common.Tag, "tags", "tags.tag_name = ?", "special")
+
+	// even though there are 5 filters, we only need 2 joins on Partition and Tag
+	assert.Len(t, listInput.JoinEntityToConditionMap, 2)
+
 	assertJoinExpression(t, listInput, common.Partition, "artifacts", "partitions", "JOIN partitions ON artifacts.artifact_id = partitions.artifact_id")
 	assertJoinExpression(t, listInput, common.Tag, "artifacts", "tags", "JOIN tags ON artifacts.artifact_id = tags.artifact_id")
+
 }
 
 func TestEmptyFiledListInput(t *testing.T) {

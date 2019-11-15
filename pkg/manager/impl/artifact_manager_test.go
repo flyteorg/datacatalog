@@ -523,6 +523,7 @@ func TestListArtifact(t *testing.T) {
 			mockArtifactModel,
 			mockArtifactModel,
 		}
+
 		dcRepo.MockArtifactRepo.On("List", mock.Anything,
 			mock.MatchedBy(func(dataset models.DatasetKey) bool {
 				return dataset.Project == expectedDataset.Id.Project &&
@@ -538,8 +539,8 @@ func TestListArtifact(t *testing.T) {
 					listInput.Filters[2].GetDBEntity() == common.Partition &&
 					listInput.Filters[3].GetDBEntity() == common.Partition &&
 					listInput.Filters[4].GetDBEntity() == common.Tag &&
-					listInput.JoinEntityToConditionMap[common.Partition].GetJoiningDBEntity() == common.Partition &&
-					listInput.JoinEntityToConditionMap[common.Tag].GetJoiningDBEntity() == common.Tag &&
+					listInput.JoinEntityToConditionMap[common.Partition] != nil &&
+					listInput.JoinEntityToConditionMap[common.Tag] != nil &&
 					listInput.Limit == 50 &&
 					listInput.Offset == 0
 			})).Return(mockArtifacts, nil)

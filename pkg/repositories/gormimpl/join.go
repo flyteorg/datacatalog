@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	joinCondition       = "JOIN %s ON %s"
-	joinEquals          = "%s.%s = %s.%s"
-	joinAdditionalField = "AND %s"
+	joinCondition = "JOIN %s ON %s"
+	joinEquals    = "%s.%s = %s.%s"
+	joinSeparator = " AND "
 )
 
 // JoinOnMap is a map of the properties for joining source table to joining table
@@ -35,11 +35,6 @@ type gormJoinConditionImpl struct {
 	joiningEntity common.Entity
 }
 
-// Get the joining entity
-func (g *gormJoinConditionImpl) GetJoiningDBEntity() common.Entity {
-	return g.joiningEntity
-}
-
 // Get the GORM expression to JOIN two entities. The output should be a valid input into tx.Join()
 func (g *gormJoinConditionImpl) GetJoinOnDBQueryExpression(sourceTableName string, joiningTableName string) (string, error) {
 	joinOnFieldMap, err := g.getJoinOnFields()
@@ -51,26 +46,22 @@ func (g *gormJoinConditionImpl) GetJoinOnDBQueryExpression(sourceTableName strin
 	joinFields := make([]string, 0, len(joinOnFieldMap))
 	for sourceField, joiningField := range joinOnFieldMap {
 		joinFieldCondition := fmt.Sprintf(joinEquals, sourceTableName, sourceField, joiningTableName, joiningField)
-		if len(joinFields) > 1 {
-			// append "AND" for joins on more than one column
-			joinFieldCondition = fmt.Sprintf(joinAdditionalField, joinFieldCondition)
-		}
 		joinFields = append(joinFields, joinFieldCondition)
 	}
 
-	return fmt.Sprintf(joinCondition, joiningTableName, strings.Join(joinFields, " ")), nil
+	return fmt.Sprintf(joinCondition, joiningTableName, strings.Join(joinFields, joinSeparator)), nil
 }
 
 // Get the properties necessary to join two GORM models
 func (g *gormJoinConditionImpl) getJoinOnFields() (JoinOnMap, error) {
 	joiningEntityMap, ok := joinFieldNames[g.sourceEntity]
 	if !ok {
-		return nil, errors.GetInvalidEntityRelationshipError(g.sourceEntity.Name(), g.joiningEntity.Name())
+		return nil, errors.GetInvalidEntityRelationshipError(g.sourceEntity, g.joiningEntity)
 	}
 
 	fieldMap, ok := joiningEntityMap[g.joiningEntity]
 	if !ok {
-		return nil, errors.GetInvalidEntityRelationshipError(g.sourceEntity.Name(), g.joiningEntity.Name())
+		return nil, errors.GetInvalidEntityRelationshipError(g.sourceEntity, g.joiningEntity)
 	}
 
 	return fieldMap, nil

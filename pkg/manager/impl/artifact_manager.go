@@ -186,6 +186,7 @@ func (m *artifactManager) GetArtifact(ctx context.Context, request datacatalog.G
 
 	artifactDataList, err := m.getArtifactDataList(ctx, artifactModel.ArtifactData)
 	if err != nil {
+		m.systemMetrics.getFailureCounter.Inc(ctx)
 		return nil, err
 	}
 	artifact.Data = artifactDataList
@@ -263,7 +264,8 @@ func (m *artifactManager) ListArtifacts(ctx context.Context, request datacatalog
 		return nil, err
 	}
 
-	// attach artifactData to artifactList
+	// Get the artifact data for the artifacts. It retrieves the data from storage and
+	// unmarshals the data.
 	for i, artifact := range artifactsList {
 		artifactDataList, err := m.getArtifactDataList(ctx, artifactModels[i].ArtifactData)
 		if err != nil {
@@ -274,7 +276,7 @@ func (m *artifactManager) ListArtifacts(ctx context.Context, request datacatalog
 		artifact.Data = artifactDataList
 	}
 
-	token := strconv.Itoa(listInput.Offset + len(artifactsList))
+	token := strconv.Itoa(int(listInput.Offset) + len(artifactsList))
 
 	logger.Debugf(ctx, "Listed %v matching artifacts successfully", len(artifactsList))
 	m.systemMetrics.listSuccessCounter.Inc(ctx)

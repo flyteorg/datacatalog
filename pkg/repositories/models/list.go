@@ -9,9 +9,9 @@ type ListModelsInput struct {
 	// Value filters for the list query
 	Filters []ModelValueFilter
 	// The number of models to list
-	Limit int
+	Limit uint32
 	// The token to offset results by
-	Offset int
+	Offset uint32
 	// Parameter to sort by
 	SortParameter SortParameter
 }
@@ -27,7 +27,6 @@ type ModelValueFilter interface {
 }
 
 type ModelJoinCondition interface {
-	GetJoiningDBEntity() common.Entity
 	GetJoinOnDBQueryExpression(sourceTableName string, joiningTableName string) (string, error)
 }
 

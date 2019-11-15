@@ -2,6 +2,7 @@ package transformers
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/lyft/datacatalog/pkg/common"
 	"github.com/lyft/datacatalog/pkg/errors"
@@ -13,19 +14,24 @@ import (
 
 func ApplyPagination(paginationOpts *datacatalog.PaginationOptions, input *models.ListModelsInput) error {
 	var (
-		offset    = common.DefaultOffset
-		limit     = common.MaxLimit
+		offset    = common.DefaultPageOffset
+		limit     = common.MaxPageLimit
 		sortKey   = datacatalog.PaginationOptions_CREATION_TIME
 		sortOrder = datacatalog.PaginationOptions_DESCENDING
 	)
 
 	if paginationOpts != nil {
-		var err error
-		offset, err = strconv.Atoi(paginationOpts.Token)
-		if err != nil {
-			return errors.NewDataCatalogErrorf(codes.InvalidArgument, "Invalid token %v", offset)
+		// if the token is empty, that is still valid input since it is optional
+		if len(strings.Trim(paginationOpts.Token, " ")) == 0 {
+			offset = common.DefaultPageOffset
+		} else {
+			parsedOffset, err := strconv.ParseUint(paginationOpts.Token, 10, 32)
+			if err != nil {
+				return errors.NewDataCatalogErrorf(codes.InvalidArgument, "Invalid token %v", offset)
+			}
+			offset = uint32(parsedOffset)
 		}
-		limit = int(paginationOpts.Limit)
+		limit = paginationOpts.Limit
 		sortKey = paginationOpts.SortKey
 		sortOrder = paginationOpts.SortOrder
 	}

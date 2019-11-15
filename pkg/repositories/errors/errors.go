@@ -18,11 +18,11 @@ func GetMissingEntityError(entityType string, identifier proto.Message) error {
 	return errors.NewDataCatalogErrorf(codes.NotFound, notFound, entityType, identifier)
 }
 
-func GetInvalidEntityRelationshipError(entityType string, otherEntityType string) error {
+func GetInvalidEntityRelationshipError(entityType common.Entity, otherEntityType common.Entity) error {
 	return errors.NewDataCatalogErrorf(codes.InvalidArgument, invalidJoin, entityType, otherEntityType)
 }
 
-func GetInvalidEntityError(entityType string) error {
+func GetInvalidEntityError(entityType common.Entity) error {
 	return errors.NewDataCatalogErrorf(codes.InvalidArgument, invalidEntity, entityType)
 }
 
