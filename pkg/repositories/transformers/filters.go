@@ -66,7 +66,7 @@ func constructModelValueFilters(ctx context.Context, singleFilter *datacatalog.S
 			key := partitionProperty.KeyVal.Key
 			value := partitionProperty.KeyVal.Value
 
-			logger.Debugf(ctx, "Constructing partition key:[%v], val:[v%] filter", key, value)
+			logger.Debugf(ctx, "Constructing partition key:[%v], val:[%v] filter", key, value)
 			if err := validators.ValidateEmptyStringField(key, "PartitionKey"); err != nil {
 				return nil, err
 			}
