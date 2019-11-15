@@ -9,7 +9,11 @@ More information can be found here: https://lyft.github.io/flyte/user/features/t
 
 ## Development
 `make compile` - compiles the service and produces runnable executable
+
 `make install` - installs the necessary dependencies for DataCatalog
+
 `make generate_idl` - generates the Protobuf IDL code
+
 `make lint` - runs GO linter
+
 `make test_unit` - runs the unit tests
