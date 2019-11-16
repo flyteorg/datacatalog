@@ -46,6 +46,10 @@
   version = "1.2.0"
 
 [[override]]
+  branch = "master"
+  name = "golang.org/x/net"
+
+[[override]]
   name = "github.com/lyft/flyteidl"
   source = "https://github.com/lyft/flyteidl"
   version = "^0.16.x"
