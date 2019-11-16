@@ -298,7 +298,7 @@ func NewArtifactManager(repo repositories.RepositoryInterface, store *storage.Da
 		validationErrorCounter:   labeled.NewCounter("validation_failed_count", "The number of times validation failed", artifactScope, labeled.EmitUnlabeledMetric),
 		alreadyExistsCounter:     labeled.NewCounter("already_exists_count", "The number of times an artifact already exists", artifactScope, labeled.EmitUnlabeledMetric),
 		doesNotExistCounter:      labeled.NewCounter("does_not_exists_count", "The number of times an artifact was not found", artifactScope, labeled.EmitUnlabeledMetric),
-		listSuccessCounter:       labeled.NewCounter("list_success_count", "The number of times list artifact suceeded", artifactScope, labeled.EmitUnlabeledMetric),
+		listSuccessCounter:       labeled.NewCounter("list_success_count", "The number of times list artifact succeeded", artifactScope, labeled.EmitUnlabeledMetric),
 		listFailureCounter:       labeled.NewCounter("list_failure_count", "The number of times list artifact failed", artifactScope, labeled.EmitUnlabeledMetric),
 	}
 
