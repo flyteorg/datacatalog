@@ -5,7 +5,7 @@
 
 # Using go1.10.4
 FROM golang:1.13.3-alpine3.10 as builder
-RUN apk add git openssh-client make curl dep
+RUN apk add git openssh-client make curl dep build-base
 
 # COPY only the dep files for efficient caching
 COPY Gopkg.* /go/src/github.com/lyft/datacatalog/
