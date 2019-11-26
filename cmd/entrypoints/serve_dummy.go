@@ -4,14 +4,13 @@ import (
 	"context"
 	"net"
 
-	"google.golang.org/grpc/reflection"
-
 	"github.com/lyft/datacatalog/pkg/config"
 	"github.com/lyft/datacatalog/pkg/rpc/datacatalogservice"
 	datacatalog "github.com/lyft/datacatalog/protos/gen"
 	"github.com/lyft/flytestdlib/logger"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 var serveDummyCmd = &cobra.Command{
