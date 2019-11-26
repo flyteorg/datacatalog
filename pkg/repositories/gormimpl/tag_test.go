@@ -51,6 +51,12 @@ func TestCreateTag(t *testing.T) {
 
 	// Only match on queries that append expected filters
 	GlobalMock.NewMock().WithQuery(
+		`SELECT * FROM "artifacts"  WHERE "artifacts"."deleted_at" IS NULL AND (("artifacts"."artifact_id" = 123))`).WithReply(getDBArtifactResponse(getTestArtifact()))
+
+	GlobalMock.NewMock().WithQuery(
+		`SELECT * FROM "partitions"  WHERE "partitions"."deleted_at" IS NULL AND (("artifact_id" IN (123)))`).WithReply(getDBArtifactResponse(getTestArtifact()))
+
+	GlobalMock.NewMock().WithQuery(
 		`INSERT  INTO "tags" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","artifact_id","dataset_uuid") VALUES (?,?,?,?,?,?,?,?,?,?)`).WithCallback(
 		func(s string, values []driver.NamedValue) {
 			tagCreated = true
