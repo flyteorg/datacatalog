@@ -8,11 +8,11 @@ FROM golang:1.13.3-alpine3.10 as builder
 RUN apk add git openssh-client make curl dep
 
 # COPY only the dep files for efficient caching
-COPY Gopkg.* /go/src/github.com/lyft/datacatalog/
+COPY go.mod go.sum /go/src/github.com/lyft/datacatalog/
 WORKDIR /go/src/github.com/lyft/datacatalog
 
 # Pull dependencies
-RUN dep ensure -vendor-only
+RUN go mod download
 
 # COPY the rest of the source code
 COPY . /go/src/github.com/lyft/datacatalog/
