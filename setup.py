@@ -8,7 +8,7 @@ setup(
     description='Proto IDL for Data Catalog Service',
     url='https://www.github.com/lyft/datacatalog',
     maintainer='Andrew Chan',
-    maintainer_email='achan@lyft.com',
+    maintainer_email='flyte-eng@lyft.com',
     packages=find_packages('protos/gen/pb_python'),
     package_dir={'': 'protos/gen/pb_python'},
     dependency_links=[],
