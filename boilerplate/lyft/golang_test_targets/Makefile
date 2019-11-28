@@ -9,7 +9,7 @@ lint: #lints the package for common code smells
 	# Calling lint twice here is a hack. The first call seem to fail when internally calling `go list...`
 	# However, that call seem to have some effects (e.g. https://github.com/golang/go/issues/29452) which, for some
 	# reason, allows the subsequent calls to succeed.
-	GL_DEBUG=linters_output,loader,env golangci-lint run --deadline=5m --exclude deprecated -v
+	GL_DEBUG=linters_output,env golangci-lint run --deadline=5m --exclude deprecated -v
 
 # If code is failing goimports linter, this will fix.
 # skips 'vendor'
