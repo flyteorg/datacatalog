@@ -5,13 +5,11 @@
 
 .PHONY: lint
 lint: #lints the package for common code smells
-	which golangci-lint || GO111MODULE=on go install github.com/golangci/golangci-lint/cmd/golangci-lint
+	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint
 	# Calling lint twice here is a hack. The first call seem to fail when internally calling `go list...`
 	# However, that call seem to have some effects (e.g. https://github.com/golang/go/issues/29452) which, for some
 	# reason, allows the subsequent calls to succeed.
-	# TODO: Evaluate whether this is still a problem after moving admin dependency system to go modules.
-	GO111MODULE=off GL_DEBUG=linters_output,loader,env golangci-lint run --exclude deprecated -v || true
-	GO111MODULE=off GL_DEBUG=linters_output,loader,env golangci-lint run --deadline=5m --exclude deprecated -v
+	GL_DEBUG=linters_output,loader,env golangci-lint run --deadline=5m --exclude deprecated -v
 
 # If code is failing goimports linter, this will fix.
 # skips 'vendor'
