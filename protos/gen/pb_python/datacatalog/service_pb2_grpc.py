@@ -39,6 +39,11 @@ class DataCatalogStub(object):
         request_serializer=datacatalog_dot_service__pb2.AddTagRequest.SerializeToString,
         response_deserializer=datacatalog_dot_service__pb2.AddTagResponse.FromString,
         )
+    self.ListArtifacts = channel.unary_unary(
+        '/datacatalog.DataCatalog/ListArtifacts',
+        request_serializer=datacatalog_dot_service__pb2.ListArtifactsRequest.SerializeToString,
+        response_deserializer=datacatalog_dot_service__pb2.ListArtifactsResponse.FromString,
+        )
 
 
 class DataCatalogServicer(object):
@@ -80,6 +85,13 @@ class DataCatalogServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def ListArtifacts(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_DataCatalogServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -107,6 +119,11 @@ def add_DataCatalogServicer_to_server(servicer, server):
           servicer.AddTag,
           request_deserializer=datacatalog_dot_service__pb2.AddTagRequest.FromString,
           response_serializer=datacatalog_dot_service__pb2.AddTagResponse.SerializeToString,
+      ),
+      'ListArtifacts': grpc.unary_unary_rpc_method_handler(
+          servicer.ListArtifacts,
+          request_deserializer=datacatalog_dot_service__pb2.ListArtifactsRequest.FromString,
+          response_serializer=datacatalog_dot_service__pb2.ListArtifactsResponse.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
