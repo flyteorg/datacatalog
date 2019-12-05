@@ -64,8 +64,8 @@ func constructModelFilter(ctx context.Context, singleFilter *datacatalog.SingleP
 			modelValueFilters := []models.ModelValueFilter{partitionKeyFilter, partitionValueFilter}
 
 			return models.ModelFilter{
-				Entity: common.Partition,
-				ValueFilters: modelValueFilters,
+				Entity:        common.Partition,
+				ValueFilters:  modelValueFilters,
 				JoinCondition: gormimpl.NewGormJoinCondition(sourceEntity, common.Partition),
 			}, nil
 		}
@@ -81,8 +81,8 @@ func constructModelFilter(ctx context.Context, singleFilter *datacatalog.SingleP
 			modelValueFilters := []models.ModelValueFilter{tagNameFilter}
 
 			return models.ModelFilter{
-				Entity: common.Tag,
-				ValueFilters: modelValueFilters,
+				Entity:        common.Tag,
+				ValueFilters:  modelValueFilters,
 				JoinCondition: gormimpl.NewGormJoinCondition(sourceEntity, common.Tag),
 			}, nil
 		}

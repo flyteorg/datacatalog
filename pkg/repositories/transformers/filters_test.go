@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/lyft/datacatalog/pkg/common"
-	"github.com/lyft/datacatalog/protos/gen"
-	"github.com/stretchr/testify/assert"
 	"github.com/lyft/datacatalog/pkg/repositories/models"
+	datacatalog "github.com/lyft/datacatalog/protos/gen"
+	"github.com/stretchr/testify/assert"
 )
 
 func assertJoinExpression(t *testing.T, joinCondition models.ModelJoinCondition, sourceTableName string, joiningTableName string, joiningTableAlias string, expectedJoinStatement string) {
@@ -61,23 +61,23 @@ func TestListInputWithPartitionsAndTags(t *testing.T) {
 	// Should have 3 filters: 2 for partitions, 1 for tag
 	assert.Len(t, listInput.ModelFilters, 3)
 
-	assertFilterExpression(t, listInput.ModelFilters[0].ValueFilters[0],"partitions",
+	assertFilterExpression(t, listInput.ModelFilters[0].ValueFilters[0], "partitions",
 		"partitions.key = ?", "key1")
-	assertFilterExpression(t, listInput.ModelFilters[0].ValueFilters[1],"partitions",
+	assertFilterExpression(t, listInput.ModelFilters[0].ValueFilters[1], "partitions",
 		"partitions.value = ?", "val1")
-	assertJoinExpression(t,listInput.ModelFilters[0].JoinCondition, "artifacts", "partitions",
+	assertJoinExpression(t, listInput.ModelFilters[0].JoinCondition, "artifacts", "partitions",
 		"p1", "JOIN partitions p1 ON artifacts.artifact_id = p1.artifact_id")
 
 	assertFilterExpression(t, listInput.ModelFilters[1].ValueFilters[0], "partitions",
 		"partitions.key = ?", "key2")
 	assertFilterExpression(t, listInput.ModelFilters[1].ValueFilters[1], "partitions",
 		"partitions.value = ?", "val2")
-	assertJoinExpression(t,listInput.ModelFilters[1].JoinCondition, "artifacts", "partitions",
+	assertJoinExpression(t, listInput.ModelFilters[1].JoinCondition, "artifacts", "partitions",
 		"p2", "JOIN partitions p2 ON artifacts.artifact_id = p2.artifact_id")
 
 	assertFilterExpression(t, listInput.ModelFilters[2].ValueFilters[0], "tags",
 		"tags.tag_name = ?", "special")
-	assertJoinExpression(t, listInput.ModelFilters[2].JoinCondition,"artifacts", "tags",
+	assertJoinExpression(t, listInput.ModelFilters[2].JoinCondition, "artifacts", "tags",
 		"t1", "JOIN tags t1 ON artifacts.artifact_id = t1.artifact_id")
 
 }

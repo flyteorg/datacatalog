@@ -1,8 +1,9 @@
 package gormimpl
 
 import (
-	"strings"
 	"fmt"
+	"strings"
+
 	"github.com/lyft/datacatalog/pkg/common"
 	"github.com/lyft/datacatalog/pkg/repositories/errors"
 	"github.com/lyft/datacatalog/pkg/repositories/models"

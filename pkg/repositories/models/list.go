@@ -31,9 +31,9 @@ type ModelJoinCondition interface {
 // A single filter for a model encompasses value filters and optionally a join condition if the filter is not on
 // the source model
 type ModelFilter struct {
-	ValueFilters []ModelValueFilter
+	ValueFilters  []ModelValueFilter
 	JoinCondition ModelJoinCondition
-	Entity common.Entity
+	Entity        common.Entity
 }
 
 // Encapsulates the query and necessary arguments to issue a DB query.
