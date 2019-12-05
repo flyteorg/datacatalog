@@ -41,7 +41,7 @@ func TestApplyFilter(t *testing.T) {
 				},
 			},
 			{
-				Entity: common.Tag,
+				Entity:        common.Tag,
 				JoinCondition: NewGormJoinCondition(common.Artifact, common.Tag),
 				ValueFilters: []models.ModelValueFilter{
 					NewGormValueFilter(common.Equal, "tag_name", "special"),
@@ -74,8 +74,8 @@ func TestApplyFilterEmpty(t *testing.T) {
 		})
 
 	listInput := models.ListModelsInput{
-		Offset:                   10,
-		Limit:                    10,
+		Offset: 10,
+		Limit:  10,
 	}
 
 	tx, err := applyListModelsInput(testDB, common.Artifact, listInput)

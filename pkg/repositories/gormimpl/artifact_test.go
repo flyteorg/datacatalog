@@ -250,8 +250,8 @@ func TestListArtifactsWithPartition(t *testing.T) {
 	listInput := models.ListModelsInput{
 		ModelFilters: []models.ModelFilter{
 			{Entity: common.Partition,
-			 JoinCondition: NewGormJoinCondition(common.Artifact, common.Partition),
-			 ValueFilters: []models.ModelValueFilter{
+				JoinCondition: NewGormJoinCondition(common.Artifact, common.Partition),
+				ValueFilters: []models.ModelValueFilter{
 					NewGormValueFilter(common.Equal, "key", "val1"),
 					NewGormValueFilter(common.Equal, "val", "val2"),
 				},

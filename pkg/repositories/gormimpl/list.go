@@ -2,6 +2,7 @@ package gormimpl
 
 import (
 	"fmt"
+
 	"github.com/jinzhu/gorm"
 	"github.com/lyft/datacatalog/pkg/common"
 	"github.com/lyft/datacatalog/pkg/repositories/errors"
