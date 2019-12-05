@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	tableAliasFormat = "%s%d"
+	tableAliasFormat = "%s%d" // Table Alias is the "<table name><index>"
 )
 
 var entityToModel = map[common.Entity]interface{}{
@@ -24,7 +24,6 @@ var entityToModel = map[common.Entity]interface{}{
 func applyListModelsInput(tx *gorm.DB, sourceEntity common.Entity, in models.ListModelsInput) (*gorm.DB, error) {
 	sourceModel, ok := entityToModel[sourceEntity]
 	if !ok {
-		print("here")
 		return nil, errors.GetInvalidEntityError(sourceEntity)
 	}
 
