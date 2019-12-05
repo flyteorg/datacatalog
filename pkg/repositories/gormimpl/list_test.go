@@ -36,15 +36,15 @@ func TestApplyFilter(t *testing.T) {
 				Entity:        common.Partition,
 				JoinCondition: NewGormJoinCondition(common.Artifact, common.Partition),
 				ValueFilters: []models.ModelValueFilter{
-					NewGormValueFilter(common.Partition, common.Equal, "key1", "val1"),
-					NewGormValueFilter(common.Partition, common.Equal, "key2", "val2"),
+					NewGormValueFilter(common.Equal, "key1", "val1"),
+					NewGormValueFilter(common.Equal, "key2", "val2"),
 				},
 			},
 			{
 				Entity: common.Tag,
 				JoinCondition: NewGormJoinCondition(common.Artifact, common.Tag),
 				ValueFilters: []models.ModelValueFilter{
-					NewGormValueFilter(common.Tag, common.Equal, "tag_name", "special"),
+					NewGormValueFilter(common.Equal, "tag_name", "special"),
 				},
 			},
 		},

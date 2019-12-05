@@ -83,7 +83,7 @@ func (h *artifactRepo) List(ctx context.Context, datasetKey models.DatasetKey, i
 	sourceEntity := common.Artifact
 
 	// add filter for dataset
-	datasetUUIDFilter := NewGormValueFilter(sourceEntity, common.Equal, "dataset_uuid", datasetKey.UUID)
+	datasetUUIDFilter := NewGormValueFilter(common.Equal, "dataset_uuid", datasetKey.UUID)
 	datasetFilter := models.ModelFilter{
 		Entity:       common.Artifact,
 		ValueFilters: []models.ModelValueFilter{datasetUUIDFilter},

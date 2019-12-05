@@ -59,8 +59,8 @@ func constructModelFilter(ctx context.Context, singleFilter *datacatalog.SingleP
 			if err := validators.ValidateEmptyStringField(value, "PartitionValue"); err != nil {
 				return models.ModelFilter{}, err
 			}
-			partitionKeyFilter := gormimpl.NewGormValueFilter(common.Partition, operator, partitionKeyFieldName, key)
-			partitionValueFilter := gormimpl.NewGormValueFilter(common.Partition, operator, partitionValueFieldName, value)
+			partitionKeyFilter := gormimpl.NewGormValueFilter(operator, partitionKeyFieldName, key)
+			partitionValueFilter := gormimpl.NewGormValueFilter(operator, partitionValueFieldName, value)
 			modelValueFilters := []models.ModelValueFilter{partitionKeyFilter, partitionValueFilter}
 
 			return models.ModelFilter{
@@ -77,7 +77,7 @@ func constructModelFilter(ctx context.Context, singleFilter *datacatalog.SingleP
 			if err := validators.ValidateEmptyStringField(tagProperty.TagName, "TagName"); err != nil {
 				return models.ModelFilter{}, err
 			}
-			tagNameFilter := gormimpl.NewGormValueFilter(common.Tag, operator, tagNameFieldName, tagName)
+			tagNameFilter := gormimpl.NewGormValueFilter(operator, tagNameFieldName, tagName)
 			modelValueFilters := []models.ModelValueFilter{tagNameFilter}
 
 			return models.ModelFilter{

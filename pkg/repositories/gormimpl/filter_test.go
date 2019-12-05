@@ -8,7 +8,7 @@ import (
 )
 
 func TestGormValueFilter(t *testing.T) {
-	filter := NewGormValueFilter(common.Partition, common.Equal, "key", "region")
+	filter := NewGormValueFilter(common.Equal, "key", "region")
 	expression, err := filter.GetDBQueryExpression("partitions")
 	assert.NoError(t, err)
 	assert.Equal(t, expression.Query, "partitions.key = ?")
@@ -16,7 +16,7 @@ func TestGormValueFilter(t *testing.T) {
 }
 
 func TestGormValueFilterInvalidOperator(t *testing.T) {
-	filter := NewGormValueFilter(common.Partition, 123, "key", "region")
+	filter := NewGormValueFilter(123, "key", "region")
 	_, err := filter.GetDBQueryExpression("partitions")
 	assert.Error(t, err)
 }
