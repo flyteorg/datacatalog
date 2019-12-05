@@ -1,16 +1,15 @@
 package gormimpl
 
 import (
-	"fmt"
 	"strings"
-
+	"fmt"
 	"github.com/lyft/datacatalog/pkg/common"
 	"github.com/lyft/datacatalog/pkg/repositories/errors"
 	"github.com/lyft/datacatalog/pkg/repositories/models"
 )
 
 const (
-	joinCondition = "JOIN %s ON %s"
+	joinCondition = "JOIN %s %s ON %s"
 	joinEquals    = "%s.%s = %s.%s"
 	joinSeparator = " AND "
 )
@@ -36,7 +35,7 @@ type gormJoinConditionImpl struct {
 }
 
 // Get the GORM expression to JOIN two entities. The output should be a valid input into tx.Join()
-func (g *gormJoinConditionImpl) GetJoinOnDBQueryExpression(sourceTableName string, joiningTableName string) (string, error) {
+func (g *gormJoinConditionImpl) GetJoinOnDBQueryExpression(sourceTableName string, joiningTableName string, joiningTableAlias string) (string, error) {
 	joinOnFieldMap, err := g.getJoinOnFields()
 
 	if err != nil {
@@ -45,11 +44,11 @@ func (g *gormJoinConditionImpl) GetJoinOnDBQueryExpression(sourceTableName strin
 
 	joinFields := make([]string, 0, len(joinOnFieldMap))
 	for sourceField, joiningField := range joinOnFieldMap {
-		joinFieldCondition := fmt.Sprintf(joinEquals, sourceTableName, sourceField, joiningTableName, joiningField)
+		joinFieldCondition := fmt.Sprintf(joinEquals, sourceTableName, sourceField, joiningTableAlias, joiningField)
 		joinFields = append(joinFields, joinFieldCondition)
 	}
 
-	return fmt.Sprintf(joinCondition, joiningTableName, strings.Join(joinFields, joinSeparator)), nil
+	return fmt.Sprintf(joinCondition, joiningTableName, joiningTableAlias, strings.Join(joinFields, joinSeparator)), nil
 }
 
 // Get the properties necessary to join two GORM models

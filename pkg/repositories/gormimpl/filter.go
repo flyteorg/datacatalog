@@ -14,12 +14,13 @@ const (
 )
 
 type gormValueFilterImpl struct {
-	entity             common.Entity
+	entity             common.Entity // TODO: can remove this since we have it in ModelFilter
 	comparisonOperator common.ComparisonOperator
 	field              string
 	value              interface{}
 }
 
+// TODO: can remove this since we have it in ModelFilter
 func (g *gormValueFilterImpl) GetDBEntity() common.Entity {
 	return g.entity
 }
@@ -39,7 +40,7 @@ func (g *gormValueFilterImpl) GetDBQueryExpression(tableName string) (models.DBQ
 // Construct the container necessary to issue a db query to filter in GORM
 func NewGormValueFilter(entity common.Entity, comparisonOperator common.ComparisonOperator, field string, value interface{}) models.ModelValueFilter {
 	return &gormValueFilterImpl{
-		entity:             entity,
+		entity:             entity, // TODO: can remove this since we have it in ModelFilter
 		comparisonOperator: comparisonOperator,
 		field:              field,
 		value:              value,

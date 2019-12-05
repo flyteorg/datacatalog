@@ -11,7 +11,6 @@ func TestGormValueFilter(t *testing.T) {
 	filter := NewGormValueFilter(common.Partition, common.Equal, "key", "region")
 	expression, err := filter.GetDBQueryExpression("partitions")
 	assert.NoError(t, err)
-	assert.Equal(t, filter.GetDBEntity(), common.Partition)
 	assert.Equal(t, expression.Query, "partitions.key = ?")
 	assert.Equal(t, expression.Args, "region")
 }

@@ -84,7 +84,11 @@ func (h *artifactRepo) List(ctx context.Context, datasetKey models.DatasetKey, i
 
 	// add filter for dataset
 	datasetUUIDFilter := NewGormValueFilter(sourceEntity, common.Equal, "dataset_uuid", datasetKey.UUID)
-	in.Filters = append(in.Filters, datasetUUIDFilter)
+	datasetFilter := models.ModelFilter{
+		Entity: common.Artifact,
+		ValueFilters: []models.ModelValueFilter{datasetUUIDFilter},
+	}
+	in.ModelFilters = append(in.ModelFilters, datasetFilter)
 
 	// apply filters and joins
 	tx, err := applyListModelsInput(h.db, sourceEntity, in)

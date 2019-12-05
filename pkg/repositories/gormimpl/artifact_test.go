@@ -248,12 +248,14 @@ func TestListArtifactsWithPartition(t *testing.T) {
 
 	artifactRepo := NewArtifactRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
 	listInput := models.ListModelsInput{
-		JoinEntityToConditionMap: map[common.Entity]models.ModelJoinCondition{
-			common.Partition: NewGormJoinCondition(common.Artifact, common.Partition),
-		},
-		Filters: []models.ModelValueFilter{
-			NewGormValueFilter(common.Partition, common.Equal, "key1", "val1"),
-			NewGormValueFilter(common.Partition, common.Equal, "key2", "val2"),
+		ModelFilters: []models.ModelFilter{
+			{Entity: common.Partition,
+			 JoinCondition: NewGormJoinCondition(common.Artifact, common.Partition),
+			 ValueFilters: []models.ModelValueFilter{
+					NewGormValueFilter(common.Partition, common.Equal, "key1", "val1"),
+					NewGormValueFilter(common.Partition, common.Equal, "key2", "val2"),
+				},
+			},
 		},
 		Offset:        10,
 		Limit:         10,
