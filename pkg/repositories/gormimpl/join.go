@@ -12,7 +12,7 @@ import (
 const (
 	joinCondition = "JOIN %s %s ON %s" // Format for the join: JOIN <table name> <table alias> ON <columns to join>
 	joinEquals    = "%s.%s = %s.%s"    // Format for the columns to join: <tableAlias>.<column> = <tableAlias>.<column>
-	joinSeparator = " AND "            // Seperator if there's more than one joining column
+	joinSeparator = " AND "            // Separator if there's more than one joining column
 )
 
 // JoinOnMap is a map of the properties for joining source table to joining table
