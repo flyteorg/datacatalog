@@ -45,7 +45,7 @@ func (h *tagRepo) Get(ctx context.Context, in models.TagKey) (models.Tag, error)
 	result := h.db.Preload("Artifact").Preload("Artifact.ArtifactData").
 		Preload("Artifact.Partitions").Preload("Artifact.Tags").
 		Order("tags.created_at DESC").
-		Find(&tag, &models.Tag{
+		First(&tag, &models.Tag{
 			TagKey: in,
 		})
 
