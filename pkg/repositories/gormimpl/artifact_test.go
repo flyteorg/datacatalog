@@ -168,17 +168,20 @@ func TestGetArtifact(t *testing.T) {
 	expectedArtifactDataResponse := getDBArtifactDataResponse(artifact)
 	expectedArtifactResponse := getDBArtifactResponse(artifact)
 	expectedPartitionResponse := getDBPartitionResponse(artifact)
+	expectedTagResponse := getDBTagResponse(artifact)
 
 	GlobalMock := mocket.Catcher.Reset()
 	GlobalMock.Logging = true
 
 	// Only match on queries that append expected filters
 	GlobalMock.NewMock().WithQuery(
-		`SELECT * FROM "artifacts"  WHERE "artifacts"."deleted_at" IS NULL AND (("artifacts"."dataset_project" = testProject) AND ("artifacts"."dataset_name" = testName) AND ("artifacts"."dataset_domain" = testDomain) AND ("artifacts"."dataset_version" = testVersion) AND ("artifacts"."artifact_id" = 123)) ORDER BY "artifacts"."dataset_project" ASC LIMIT 1`).WithReply(expectedArtifactResponse)
+		`SELECT * FROM "artifacts"  WHERE "artifacts"."deleted_at" IS NULL AND (("artifacts"."dataset_project" = testProject) AND ("artifacts"."dataset_name" = testName) AND ("artifacts"."dataset_domain" = testDomain) AND ("artifacts"."dataset_version" = testVersion) AND ("artifacts"."artifact_id" = 123)) ORDER BY artifacts.created_at DESC,"artifacts"."dataset_project" ASC LIMIT 1`).WithReply(expectedArtifactResponse)
 	GlobalMock.NewMock().WithQuery(
 		`SELECT * FROM "artifact_data"  WHERE "artifact_data"."deleted_at" IS NULL AND ((("dataset_project","dataset_name","dataset_domain","dataset_version","artifact_id") IN ((testProject,testName,testDomain,testVersion,123)))) ORDER BY "artifact_data"."dataset_project" ASC`).WithReply(expectedArtifactDataResponse)
 	GlobalMock.NewMock().WithQuery(
 		`SELECT * FROM "partitions"  WHERE "partitions"."deleted_at" IS NULL AND (("artifact_id" IN (123))) ORDER BY "partitions"."dataset_uuid" ASC`).WithReply(expectedPartitionResponse)
+	GlobalMock.NewMock().WithQuery(
+		`SELECT * FROM "tags"  WHERE "tags"."deleted_at" IS NULL AND ((("artifact_id","dataset_uuid") IN ((123,test-uuid)))) ORDER BY "tags"."dataset_project" ASC`).WithReply(expectedTagResponse)
 	getInput := models.ArtifactKey{
 		DatasetProject: artifact.DatasetProject,
 		DatasetDomain:  artifact.DatasetDomain,
@@ -198,6 +201,7 @@ func TestGetArtifact(t *testing.T) {
 
 	assert.Equal(t, 1, len(response.ArtifactData))
 	assert.Equal(t, 1, len(response.Partitions))
+	assert.EqualValues(t, 1, len(response.Tags))
 }
 
 func TestGetArtifactDoesNotExist(t *testing.T) {

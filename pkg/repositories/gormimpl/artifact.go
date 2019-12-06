@@ -53,9 +53,12 @@ func (h *artifactRepo) Get(ctx context.Context, in models.ArtifactKey) (models.A
 	defer timer.Stop()
 
 	var artifact models.Artifact
-	result := h.db.Preload("ArtifactData").Preload("Partitions").First(&artifact, &models.Artifact{
-		ArtifactKey: in,
-	})
+	result := h.db.Preload("ArtifactData").Preload("Partitions").Preload("Tags").
+		Order("artifacts.created_at DESC").
+		First(
+			&artifact,
+			&models.Artifact{ArtifactKey: in},
+		)
 
 	if result.Error != nil {
 		return models.Artifact{}, h.errorTransformer.ToDataCatalogError(result.Error)
