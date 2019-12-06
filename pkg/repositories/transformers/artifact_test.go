@@ -32,6 +32,12 @@ func getTestPartitions() []models.Partition {
 	}
 }
 
+func getTestTags() []models.Tag {
+	return []models.Tag{
+		{TagKey: models.TagKey{TagName: "test"}},
+	}
+}
+
 func getDatasetModel() models.Dataset {
 	return models.Dataset{
 		DatasetKey: models.DatasetKey{
@@ -108,6 +114,9 @@ func TestFromArtifactModel(t *testing.T) {
 			{DatasetUUID: "test-uuid", Key: "key1", Value: "value1"},
 			{DatasetUUID: "test-uuid", Key: "key2", Value: "value2"},
 		},
+		Tags: []models.Tag{
+			{TagKey: models.TagKey{TagName: "test"}},
+		},
 	}
 
 	actual, err := FromArtifactModel(artifactModel)
@@ -120,6 +129,9 @@ func TestFromArtifactModel(t *testing.T) {
 
 	assert.Len(t, actual.Partitions, 2)
 	assert.EqualValues(t, artifactModel.Partitions, getTestPartitions())
+
+	assert.Len(t, actual.Tags, 1)
+	assert.EqualValues(t, artifactModel.Tags, getTestTags())
 }
 
 func TestToArtifactKey(t *testing.T) {

@@ -90,6 +90,17 @@ func getDBPartitionResponse(artifact models.Artifact) []map[string]interface{} {
 	return expectedPartitionResponse
 }
 
+// Raw db response to return on raw queries for tags
+func getDBTagResponse(artifact models.Artifact) []map[string]interface{} {
+	expectedTagResponse := make([]map[string]interface{}, 0)
+	sampleTags := make(map[string]interface{})
+	sampleTags["tag_name"] = "test-tag"
+	sampleTags["artifact_id"] = artifact.ArtifactID
+	sampleTags["dataset_uuid"] = "uuid"
+	expectedTagResponse = append(expectedTagResponse, sampleTags)
+	return expectedTagResponse
+}
+
 func TestCreateArtifact(t *testing.T) {
 	artifact := getTestArtifact()
 
@@ -238,6 +249,7 @@ func TestListArtifactsWithPartition(t *testing.T) {
 	expectedArtifactDataResponse := getDBArtifactDataResponse(artifact)
 	expectedArtifactResponse := getDBArtifactResponse(artifact)
 	expectedPartitionResponse := getDBPartitionResponse(artifact)
+	expectedTagResponse := getDBTagResponse(artifact)
 
 	GlobalMock.NewMock().WithQuery(
 		`SELECT "artifacts".* FROM "artifacts" JOIN partitions partitions0 ON artifacts.artifact_id = partitions0.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((partitions0.key = val1) AND (partitions0.val = val2) AND (artifacts.dataset_uuid = test-uuid)) ORDER BY artifacts.created_at desc LIMIT 10 OFFSET 10`).WithReply(expectedArtifactResponse)
@@ -245,6 +257,8 @@ func TestListArtifactsWithPartition(t *testing.T) {
 		`SELECT * FROM "artifact_data"  WHERE "artifact_data"."deleted_at" IS NULL AND ((("dataset_project","dataset_name","dataset_domain","dataset_version","artifact_id") IN ((testProject,testName,testDomain,testVersion,123))))`).WithReply(expectedArtifactDataResponse)
 	GlobalMock.NewMock().WithQuery(
 		`SELECT * FROM "partitions"  WHERE "partitions"."deleted_at" IS NULL AND (("artifact_id" IN (123)))`).WithReply(expectedPartitionResponse)
+	GlobalMock.NewMock().WithQuery(
+		`SELECT * FROM "tags"  WHERE "tags"."deleted_at" IS NULL AND ((("artifact_id","dataset_uuid") IN ((123,test-uuid))))`).WithReply(expectedTagResponse)
 
 	artifactRepo := NewArtifactRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
 	listInput := models.ListModelsInput{
@@ -267,6 +281,7 @@ func TestListArtifactsWithPartition(t *testing.T) {
 	assert.Equal(t, artifacts[0].ArtifactID, artifact.ArtifactID)
 	assert.Len(t, artifacts[0].ArtifactData, 1)
 	assert.Len(t, artifacts[0].Partitions, 1)
+	assert.Len(t, artifacts[0].Tags, 1)
 }
 
 func TestListArtifactsNoPartitions(t *testing.T) {
