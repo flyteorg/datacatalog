@@ -61,11 +61,7 @@ func FromArtifactModel(artifact models.Artifact) (datacatalog.Artifact, error) {
 
 	tags := make([]*datacatalog.Tag, len(artifact.Tags))
 	for i, tag := range artifact.Tags {
-		tags[i] = &datacatalog.Tag{
-			Name:       tag.TagName,
-			ArtifactId: tag.ArtifactID,
-			Dataset:    &datasetID,
-		}
+		tags[i] = FromTagModel(datasetID, tag)
 	}
 	return datacatalog.Artifact{
 		Id:         artifact.ArtifactID,

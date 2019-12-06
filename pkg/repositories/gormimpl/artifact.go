@@ -103,6 +103,5 @@ func (h *artifactRepo) List(ctx context.Context, datasetKey models.DatasetKey, i
 	if tx.Error != nil {
 		return []models.Artifact{}, h.errorTransformer.ToDataCatalogError(tx.Error)
 	}
-
 	return artifacts, nil
 }
