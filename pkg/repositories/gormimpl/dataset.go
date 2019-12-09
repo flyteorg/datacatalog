@@ -69,7 +69,6 @@ func (h *dataSetRepo) List(ctx context.Context, in models.ListModelsInput) ([]mo
 
 	// apply filters and joins
 	tx, err := applyListModelsInput(h.db, common.Dataset, in)
-
 	if err != nil {
 		return nil, err
 	} else if tx.Error != nil {
@@ -77,7 +76,7 @@ func (h *dataSetRepo) List(ctx context.Context, in models.ListModelsInput) ([]mo
 	}
 
 	datasets := make([]models.Dataset, 0)
-	tx = tx.Find(&datasets)
+	tx = tx.Preload("PartitionKeys").Find(&datasets)
 	if tx.Error != nil {
 		return []models.Dataset{}, h.errorTransformer.ToDataCatalogError(tx.Error)
 	}

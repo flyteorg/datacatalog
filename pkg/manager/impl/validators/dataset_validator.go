@@ -35,20 +35,20 @@ func ValidateDatasetID(ds *datacatalog.DatasetID) error {
 
 // Ensure list Datasets request is properly constructed
 func ValidateListDatasetsRequest(request *datacatalog.ListDatasetsRequest) error {
-	for _, filter := range request.Filter.Filters {
+	if request.Pagination != nil {
+		err := ValidatePagination(*request.Pagination)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, filter := range request.Filter.GetFilters() {
 		if filter.GetTagFilter() != nil {
 			return NewInvalidFilterError(common.Dataset, common.Tag)
 		} else if filter.GetPartitionFilter() != nil {
 			return NewInvalidFilterError(common.Dataset, common.Partition)
 		} else if filter.GetArtifactFilter() != nil {
 			return NewInvalidFilterError(common.Dataset, common.Artifact)
-		}
-	}
-
-	if request.Pagination != nil {
-		err := ValidatePagination(*request.Pagination)
-		if err != nil {
-			return err
 		}
 	}
 	return nil

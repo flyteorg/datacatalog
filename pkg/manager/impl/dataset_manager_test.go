@@ -283,37 +283,26 @@ func TestListDatasets(t *testing.T) {
 		datasetResponse, err := datasetManager.ListDatasets(ctx, datacatalog.ListDatasetsRequest{Filter: filter})
 		assert.NoError(t, err)
 		assert.NotEmpty(t, datasetResponse)
+		assert.Len(t, datasetResponse.Datasets, 1)
 	})
 
-	// t.Run("List Artifacts with No Partition", func(t *testing.T) {
-	// 	artifactManager := NewArtifactManager(dcRepo, datastore, testStoragePrefix, mockScope.NewTestScope())
-	// 	filter := &datacatalog.FilterExpression{Filters: nil}
-	//
-	// 	dcRepo.MockDatasetRepo.On("Get", mock.Anything,
-	// 		mock.MatchedBy(func(dataset models.DatasetKey) bool {
-	// 			return dataset.Project == expectedDataset.Id.Project &&
-	// 				dataset.Domain == expectedDataset.Id.Domain &&
-	// 				dataset.Name == expectedDataset.Id.Name &&
-	// 				dataset.Version == expectedDataset.Id.Version
-	// 		})).Return(mockDatasetModel, nil)
-	//
-	// 	mockArtifacts := []models.Artifact{
-	// 		mockArtifactModel,
-	// 		mockArtifactModel,
-	// 	}
-	// 	dcRepo.MockArtifactRepo.On("List", mock.Anything,
-	// 		mock.MatchedBy(func(dataset models.DatasetKey) bool {
-	// 			return dataset.Project == expectedDataset.Id.Project &&
-	// 				dataset.Domain == expectedDataset.Id.Domain &&
-	// 				dataset.Name == expectedDataset.Id.Name &&
-	// 				dataset.Version == expectedDataset.Id.Version
-	// 		}),
-	// 		mock.MatchedBy(func(listInput models.ListModelsInput) bool {
-	// 			return len(listInput.ModelFilters) == 0
-	// 		})).Return(mockArtifacts, nil)
-	//
-	// 	artifactResponse, err := artifactManager.ListArtifacts(ctx, datacatalog.ListArtifactsRequest{Dataset: expectedDataset.Id, Filter: filter})
-	// 	assert.NoError(t, err)
-	// 	assert.NotEmpty(t, artifactResponse)
-	// })
+	t.Run("List Datasets with no filtering", func(t *testing.T) {
+		datasetManager := NewDatasetManager(dcRepo, nil, mockScope.NewTestScope())
+
+		mockDatasets := []models.Dataset{
+			getDatasetModel(*expectedDataset),
+		}
+
+		dcRepo.MockDatasetRepo.On("List", mock.Anything,
+			mock.MatchedBy(func(listInput models.ListModelsInput) bool {
+				return len(listInput.ModelFilters) == 0 &&
+					listInput.Limit == 50 &&
+					listInput.Offset == 0
+			})).Return(mockDatasets, nil)
+
+		datasetResponse, err := datasetManager.ListDatasets(ctx, datacatalog.ListDatasetsRequest{})
+		assert.NoError(t, err)
+		assert.NotEmpty(t, datasetResponse)
+		assert.Len(t, datasetResponse.Datasets, 1)
+	})
 }
