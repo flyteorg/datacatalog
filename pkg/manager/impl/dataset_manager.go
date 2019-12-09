@@ -28,6 +28,8 @@ type datasetMetrics struct {
 	createErrorCounter      labeled.Counter
 	getSuccessCounter       labeled.Counter
 	getErrorCounter         labeled.Counter
+	listSuccessCounter      labeled.Counter
+	listFailureCounter      labeled.Counter
 	transformerErrorCounter labeled.Counter
 	validationErrorCounter  labeled.Counter
 	alreadyExistsCounter    labeled.Counter
@@ -198,6 +200,8 @@ func NewDatasetManager(repo repositories.RepositoryInterface, store *storage.Dat
 			validationErrorCounter:  labeled.NewCounter("validation_failed_count", "The number of times validation failed", datasetScope, labeled.EmitUnlabeledMetric),
 			alreadyExistsCounter:    labeled.NewCounter("already_exists_count", "The number of times a dataset already exists", datasetScope, labeled.EmitUnlabeledMetric),
 			doesNotExistCounter:     labeled.NewCounter("does_not_exists_count", "The number of times a dataset was not found", datasetScope, labeled.EmitUnlabeledMetric),
+			listSuccessCounter:      labeled.NewCounter("list_success_count", "The number of times list dataset succeeded", datasetScope, labeled.EmitUnlabeledMetric),
+			listFailureCounter:      labeled.NewCounter("list_failure_count", "The number of times list dataset failed", datasetScope, labeled.EmitUnlabeledMetric),
 		},
 	}
 }
