@@ -42,6 +42,7 @@ func ValidateListDatasetsRequest(request *datacatalog.ListDatasetsRequest) error
 		}
 	}
 
+	// Datasets cannot be filtered by tag, partitions or artifacts
 	for _, filter := range request.Filter.GetFilters() {
 		if filter.GetTagFilter() != nil {
 			return NewInvalidFilterError(common.Dataset, common.Tag)
