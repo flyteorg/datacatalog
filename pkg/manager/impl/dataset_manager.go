@@ -2,8 +2,10 @@ package impl
 
 import (
 	"context"
+	"strconv"
 	"time"
 
+	"github.com/lyft/datacatalog/pkg/common"
 	"github.com/lyft/datacatalog/pkg/manager/impl/validators"
 	"github.com/lyft/datacatalog/pkg/manager/interfaces"
 	"github.com/lyft/datacatalog/pkg/repositories"
@@ -127,6 +129,57 @@ func (dm *datasetManager) GetDataset(ctx context.Context, request datacatalog.Ge
 	return &datacatalog.GetDatasetResponse{
 		Dataset: datasetResponse,
 	}, nil
+}
+
+func (dm *datasetManager) ListDatasets(ctx context.Context, request datacatalog.ListDatasetsRequest) (*datacatalog.ListDatasetsResponse, error) {
+	// err := validators.ValidateListDatasetsRequest(&request) // TODO
+	// if err != nil {
+	// 	logger.Warningf(ctx, "Invalid list datasets request %v, err: %v", request, err)
+	// 	m.systemMetrics.validationErrorCounter.Inc(ctx)
+	// 	return nil, err
+	// }
+
+	// Get the list inputs
+	listInput, err := transformers.FilterToListInput(ctx, common.Dataset, request.GetFilter())
+	if err != nil {
+		logger.Warningf(ctx, "Invalid list artifact request %v, err: %v", request, err)
+		dm.systemMetrics.validationErrorCounter.Inc(ctx)
+		return nil, err
+	}
+
+	err = transformers.ApplyPagination(request.Pagination, &listInput)
+	if err != nil {
+		logger.Warningf(ctx, "Invalid pagination options in list artifact request %v, err: %v", request, err)
+		dm.systemMetrics.validationErrorCounter.Inc(ctx)
+		return nil, err
+	}
+
+	// Perform the list with the dataset and listInput filters
+	datasetModels, err := dm.repo.DatasetRepo().List(ctx, listInput)
+	if err != nil {
+		logger.Errorf(ctx, "Unable to list Artifacts err: %v", err)
+		dm.systemMetrics.listFailureCounter.Inc(ctx)
+		return nil, err
+	}
+
+	// convert returned models into entity list
+	datasetList := make([]*datacatalog.Dataset, 0, len(datasetModels))
+	for idx, datasetModel := range datasetModels {
+		dataset, err := transformers.FromDatasetModel(datasetModel)
+		if err != nil {
+			logger.Errorf(ctx, "Unable to transform Dataset %+v err: %v", datasetModel, err)
+			dm.systemMetrics.listFailureCounter.Inc(ctx)
+			return nil, err
+		}
+
+		datasetList[idx] = dataset
+	}
+
+	token := strconv.Itoa(int(listInput.Offset) + len(datasetList))
+
+	logger.Debugf(ctx, "Listed %v matching datasets successfully", len(datasetList))
+	dm.systemMetrics.listSuccessCounter.Inc(ctx)
+	return &datacatalog.ListDatasetsResponse{Datasets: datasetList, NextToken: token}, nil
 }
 
 func NewDatasetManager(repo repositories.RepositoryInterface, store *storage.DataStore, datasetScope promutils.Scope) interfaces.DatasetManager {

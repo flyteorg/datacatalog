@@ -16,6 +16,10 @@ const (
 	partitionKeyFieldName   = "key"
 	partitionValueFieldName = "value"
 	tagNameFieldName        = "tag_name"
+	projectFieldName        = "project"
+	domainFieldName         = "domain"
+	nameFieldName           = "name"
+	versionFieldName        = "version"
 )
 
 var comparisonOperatorMap = map[datacatalog.SinglePropertyFilter_ComparisonOperator]common.ComparisonOperator{
@@ -86,6 +90,62 @@ func constructModelFilter(ctx context.Context, singleFilter *datacatalog.SingleP
 				JoinCondition: gormimpl.NewGormJoinCondition(sourceEntity, common.Tag),
 			}, nil
 		}
+	case *datacatalog.SinglePropertyFilter_DatasetFilter:
+		switch datasetProperty := propertyFilter.DatasetFilter.GetProperty().(type) {
+		case *datacatalog.DatasetPropertyFilter_Project:
+			project := datasetProperty.Project
+			logger.Debugf(ctx, "Constructing Dataset filter project:[%v]", project)
+			if err := validators.ValidateEmptyStringField(datasetProperty.Project, "project"); err != nil {
+				return models.ModelFilter{}, err
+			}
+			projectFilter := gormimpl.NewGormValueFilter(operator, projectFieldName, project)
+			modelValueFilters := []models.ModelValueFilter{projectFilter}
+
+			return models.ModelFilter{
+				Entity:       common.Dataset,
+				ValueFilters: modelValueFilters,
+			}, nil
+		case *datacatalog.DatasetPropertyFilter_Domain:
+			domain := datasetProperty.Domain
+			logger.Debugf(ctx, "Constructing Dataset filter domain:[%v]", domain)
+			if err := validators.ValidateEmptyStringField(datasetProperty.Domain, "domain"); err != nil {
+				return models.ModelFilter{}, err
+			}
+			domainFilter := gormimpl.NewGormValueFilter(operator, domainFieldName, domain)
+			modelValueFilters := []models.ModelValueFilter{domainFilter}
+
+			return models.ModelFilter{
+				Entity:       common.Dataset,
+				ValueFilters: modelValueFilters,
+			}, nil
+		case *datacatalog.DatasetPropertyFilter_Name:
+			name := datasetProperty.Name
+			logger.Debugf(ctx, "Constructing Dataset filter name:[%v]", name)
+			if err := validators.ValidateEmptyStringField(datasetProperty.Name, "name"); err != nil {
+				return models.ModelFilter{}, err
+			}
+			nameFilter := gormimpl.NewGormValueFilter(operator, nameFieldName, name)
+			modelValueFilters := []models.ModelValueFilter{nameFilter}
+
+			return models.ModelFilter{
+				Entity:       common.Dataset,
+				ValueFilters: modelValueFilters,
+			}, nil
+		case *datacatalog.DatasetPropertyFilter_Version:
+			version := datasetProperty.Version
+			logger.Debugf(ctx, "Constructing Dataset filter version:[%v]", version)
+			if err := validators.ValidateEmptyStringField(datasetProperty.Version, "version"); err != nil {
+				return models.ModelFilter{}, err
+			}
+			versionFilter := gormimpl.NewGormValueFilter(operator, versionFieldName, version)
+			modelValueFilters := []models.ModelValueFilter{versionFilter}
+
+			return models.ModelFilter{
+				Entity:       common.Dataset,
+				ValueFilters: modelValueFilters,
+			}, nil
+		}
 	}
+
 	return models.ModelFilter{}, nil
 }

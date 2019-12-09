@@ -12,6 +12,7 @@ import (
 
 	"database/sql/driver"
 
+	"github.com/lyft/datacatalog/pkg/common"
 	datacatalog_error "github.com/lyft/datacatalog/pkg/errors"
 	"github.com/lyft/datacatalog/pkg/repositories/errors"
 	"github.com/lyft/datacatalog/pkg/repositories/models"
@@ -39,6 +40,18 @@ func getTestDataset() models.Dataset {
 			{Name: "key2"},
 		},
 	}
+}
+
+// Raw db response to return on raw queries for datasets
+func getDBDatasetResponse(dataset models.Dataset) []map[string]interface{} {
+	expectedDatasetResponse := make([]map[string]interface{}, 0)
+	sampleArtifact := make(map[string]interface{})
+	sampleArtifact["project"] = dataset.Project
+	sampleArtifact["domain"] = dataset.Domain
+	sampleArtifact["name"] = dataset.Name
+	sampleArtifact["version"] = dataset.Version
+	expectedDatasetResponse = append(expectedDatasetResponse, sampleArtifact)
+	return expectedDatasetResponse
 }
 
 // sql will generate a uuid
@@ -217,4 +230,56 @@ func TestCreateDatasetAlreadyExists(t *testing.T) {
 	dcErr, ok := err.(datacatalog_error.DataCatalogError)
 	assert.True(t, ok)
 	assert.Equal(t, dcErr.Code(), codes.AlreadyExists)
+}
+
+func TestListDatasets(t *testing.T) {
+	GlobalMock := mocket.Catcher.Reset()
+	GlobalMock.Logging = true
+
+	dataset := getTestDataset()
+	expectedDatasetDBResponse := getDBDatasetResponse(dataset)
+
+	GlobalMock.NewMock().WithQuery(
+		`SELECT * FROM "datasets"  WHERE "datasets"."deleted_at" IS NULL LIMIT 10 OFFSET 10`).WithReply(expectedDatasetDBResponse)
+	datasetRepo := NewDatasetRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
+	listInput := models.ListModelsInput{
+		Offset: 10,
+		Limit:  10,
+	}
+	datasets, err := datasetRepo.List(context.Background(), listInput)
+	assert.NoError(t, err)
+	assert.Len(t, datasets, 1)
+}
+
+func TestListDatasetWithFilter(t *testing.T) {
+	GlobalMock := mocket.Catcher.Reset()
+	GlobalMock.Logging = true
+
+	dataset := getTestDataset()
+	expectedDatasetDBResponse := getDBDatasetResponse(dataset)
+
+	GlobalMock.NewMock().WithQuery(
+		`SELECT * FROM "datasets"  WHERE "datasets"."deleted_at" IS NULL AND ((datasets.project = p) AND (datasets.domain = d)) LIMIT 10 OFFSET 10`).WithReply(expectedDatasetDBResponse)
+	datasetRepo := NewDatasetRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
+	listInput := models.ListModelsInput{
+		ModelFilters: []models.ModelFilter{
+			{
+				Entity: common.Dataset,
+				ValueFilters: []models.ModelValueFilter{
+					NewGormValueFilter(common.Equal, "project", "p"),
+				},
+			},
+			{
+				Entity: common.Dataset,
+				ValueFilters: []models.ModelValueFilter{
+					NewGormValueFilter(common.Equal, "domain", "d"),
+				},
+			},
+		},
+		Offset: 10,
+		Limit:  10,
+	}
+	datasets, err := datasetRepo.List(context.Background(), listInput)
+	assert.NoError(t, err)
+	assert.Len(t, datasets, 1)
 }
