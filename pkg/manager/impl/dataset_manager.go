@@ -6,13 +6,12 @@ import (
 	"time"
 
 	"github.com/lyft/datacatalog/pkg/common"
+	"github.com/lyft/datacatalog/pkg/errors"
 	"github.com/lyft/datacatalog/pkg/manager/impl/validators"
 	"github.com/lyft/datacatalog/pkg/manager/interfaces"
 	"github.com/lyft/datacatalog/pkg/repositories"
 	"github.com/lyft/datacatalog/pkg/repositories/transformers"
 	datacatalog "github.com/lyft/datacatalog/protos/gen"
-
-	"github.com/lyft/datacatalog/pkg/errors"
 	"github.com/lyft/flytestdlib/logger"
 	"github.com/lyft/flytestdlib/promutils"
 	"github.com/lyft/flytestdlib/promutils/labeled"
@@ -133,25 +132,26 @@ func (dm *datasetManager) GetDataset(ctx context.Context, request datacatalog.Ge
 	}, nil
 }
 
+// List Datasets with optional filtering and pagination
 func (dm *datasetManager) ListDatasets(ctx context.Context, request datacatalog.ListDatasetsRequest) (*datacatalog.ListDatasetsResponse, error) {
-	// err := validators.ValidateListDatasetsRequest(&request) // TODO
-	// if err != nil {
-	// 	logger.Warningf(ctx, "Invalid list datasets request %v, err: %v", request, err)
-	// 	m.systemMetrics.validationErrorCounter.Inc(ctx)
-	// 	return nil, err
-	// }
+	err := validators.ValidateListDatasetsRequest(&request)
+	if err != nil {
+		logger.Warningf(ctx, "Invalid list datasets request %v, err: %v", request, err)
+		dm.systemMetrics.validationErrorCounter.Inc(ctx)
+		return nil, err
+	}
 
 	// Get the list inputs
 	listInput, err := transformers.FilterToListInput(ctx, common.Dataset, request.GetFilter())
 	if err != nil {
-		logger.Warningf(ctx, "Invalid list artifact request %v, err: %v", request, err)
+		logger.Warningf(ctx, "Invalid list datasets request %v, err: %v", request, err)
 		dm.systemMetrics.validationErrorCounter.Inc(ctx)
 		return nil, err
 	}
 
 	err = transformers.ApplyPagination(request.Pagination, &listInput)
 	if err != nil {
-		logger.Warningf(ctx, "Invalid pagination options in list artifact request %v, err: %v", request, err)
+		logger.Warningf(ctx, "Invalid pagination options in list datasets request %v, err: %v", request, err)
 		dm.systemMetrics.validationErrorCounter.Inc(ctx)
 		return nil, err
 	}
@@ -159,13 +159,13 @@ func (dm *datasetManager) ListDatasets(ctx context.Context, request datacatalog.
 	// Perform the list with the dataset and listInput filters
 	datasetModels, err := dm.repo.DatasetRepo().List(ctx, listInput)
 	if err != nil {
-		logger.Errorf(ctx, "Unable to list Artifacts err: %v", err)
+		logger.Errorf(ctx, "Unable to list Datasets err: %v", err)
 		dm.systemMetrics.listFailureCounter.Inc(ctx)
 		return nil, err
 	}
 
 	// convert returned models into entity list
-	datasetList := make([]*datacatalog.Dataset, 0, len(datasetModels))
+	datasetList := make([]*datacatalog.Dataset, len(datasetModels))
 	for idx, datasetModel := range datasetModels {
 		dataset, err := transformers.FromDatasetModel(datasetModel)
 		if err != nil {

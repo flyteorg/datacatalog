@@ -20,6 +20,8 @@ import (
 	"github.com/lyft/flytestdlib/contextutils"
 	"github.com/lyft/flytestdlib/promutils"
 	"github.com/lyft/flytestdlib/promutils/labeled"
+
+	datacatalog "github.com/lyft/datacatalog/protos/gen"
 )
 
 func init() {
@@ -240,11 +242,10 @@ func TestListDatasets(t *testing.T) {
 	expectedDatasetDBResponse := getDBDatasetResponse(dataset)
 
 	GlobalMock.NewMock().WithQuery(
-		`SELECT * FROM "datasets"  WHERE "datasets"."deleted_at" IS NULL LIMIT 10 OFFSET 10`).WithReply(expectedDatasetDBResponse)
+		`SELECT * FROM "datasets"  WHERE "datasets"."deleted_at" IS NULL LIMIT 10`).WithReply(expectedDatasetDBResponse)
 	datasetRepo := NewDatasetRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
 	listInput := models.ListModelsInput{
-		Offset: 10,
-		Limit:  10,
+		Limit: 10,
 	}
 	datasets, err := datasetRepo.List(context.Background(), listInput)
 	assert.NoError(t, err)
@@ -259,7 +260,7 @@ func TestListDatasetWithFilter(t *testing.T) {
 	expectedDatasetDBResponse := getDBDatasetResponse(dataset)
 
 	GlobalMock.NewMock().WithQuery(
-		`SELECT * FROM "datasets"  WHERE "datasets"."deleted_at" IS NULL AND ((datasets.project = p) AND (datasets.domain = d)) LIMIT 10 OFFSET 10`).WithReply(expectedDatasetDBResponse)
+		`SELECT * FROM "datasets"  WHERE "datasets"."deleted_at" IS NULL AND ((datasets.project = p) AND (datasets.domain = d)) ORDER BY datasets.created_at desc LIMIT 10 OFFSET 10`).WithReply(expectedDatasetDBResponse)
 	datasetRepo := NewDatasetRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
 	listInput := models.ListModelsInput{
 		ModelFilters: []models.ModelFilter{
@@ -276,8 +277,9 @@ func TestListDatasetWithFilter(t *testing.T) {
 				},
 			},
 		},
-		Offset: 10,
-		Limit:  10,
+		Offset:        10,
+		Limit:         10,
+		SortParameter: NewGormSortParameter(datacatalog.PaginationOptions_CREATION_TIME, datacatalog.PaginationOptions_DESCENDING),
 	}
 	datasets, err := datasetRepo.List(context.Background(), listInput)
 	assert.NoError(t, err)
