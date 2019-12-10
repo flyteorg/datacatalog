@@ -166,15 +166,20 @@ func (dm *datasetManager) ListDatasets(ctx context.Context, request datacatalog.
 
 	// convert returned models into entity list
 	datasetList := make([]*datacatalog.Dataset, len(datasetModels))
+	transformerErrs := make([]error, 0)
 	for idx, datasetModel := range datasetModels {
 		dataset, err := transformers.FromDatasetModel(datasetModel)
 		if err != nil {
-			logger.Errorf(ctx, "Unable to transform Dataset %+v err: %v", datasetModel, err)
-			dm.systemMetrics.listFailureCounter.Inc(ctx)
-			return nil, err
+			logger.Errorf(ctx, "Unable to transform Dataset %+v err: %v", dataset.Id, err)
+			transformerErrs = append(transformerErrs, err)
 		}
 
 		datasetList[idx] = dataset
+	}
+
+	if len(transformerErrs) > 0 {
+		dm.systemMetrics.listFailureCounter.Inc(ctx)
+		return nil, errors.NewCollectedErrors(codes.Internal, transformerErrs)
 	}
 
 	token := strconv.Itoa(int(listInput.Offset) + len(datasetList))

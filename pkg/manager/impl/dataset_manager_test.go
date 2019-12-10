@@ -10,6 +10,7 @@ import (
 	"github.com/lyft/datacatalog/pkg/errors"
 	"github.com/lyft/datacatalog/pkg/repositories/mocks"
 	"github.com/lyft/datacatalog/pkg/repositories/models"
+	"github.com/lyft/datacatalog/pkg/repositories/transformers"
 	datacatalog "github.com/lyft/datacatalog/protos/gen"
 	"github.com/lyft/flytestdlib/contextutils"
 	mockScope "github.com/lyft/flytestdlib/promutils"
@@ -38,23 +39,6 @@ func getTestDataset() *datacatalog.Dataset {
 		},
 		PartitionKeys: []string{"key1", "key2"},
 	}
-}
-
-func getDatasetModel(dataset datacatalog.Dataset) models.Dataset {
-	serializedMetadata, _ := proto.Marshal(dataset.Metadata)
-
-	datasetModel := models.Dataset{
-		DatasetKey: models.DatasetKey{
-			Project: dataset.Id.Project,
-			Domain:  dataset.Id.Domain,
-			Version: dataset.Id.Version,
-			Name:    dataset.Id.Name,
-			UUID:    dataset.Id.UUID,
-		},
-		SerializedMetadata: serializedMetadata,
-		PartitionKeys:      []models.PartitionKey{{Name: dataset.PartitionKeys[0]}, {Name: dataset.PartitionKeys[1]}},
-	}
-	return datasetModel
 }
 
 func getDataCatalogRepo() *mocks.DataCatalogRepo {
@@ -171,7 +155,8 @@ func TestGetDataset(t *testing.T) {
 		dcRepo := getDataCatalogRepo()
 		datasetManager := NewDatasetManager(dcRepo, nil, mockScope.NewTestScope())
 
-		datasetModelResponse := getDatasetModel(*expectedDataset)
+		datasetModelResponse, err := transformers.CreateDatasetModel(expectedDataset)
+		assert.NoError(t, err)
 
 		dcRepo.MockDatasetRepo.On("Get",
 			mock.MatchedBy(func(ctx context.Context) bool { return true }),
@@ -181,7 +166,7 @@ func TestGetDataset(t *testing.T) {
 					datasetKey.Project == expectedDataset.Id.Project &&
 					datasetKey.Domain == expectedDataset.Id.Domain &&
 					datasetKey.Version == expectedDataset.Id.Version
-			})).Return(datasetModelResponse, nil)
+			})).Return(*datasetModelResponse, nil)
 		request := datacatalog.GetDatasetRequest{Dataset: getTestDataset().Id}
 		datasetResponse, err := datasetManager.GetDataset(context.Background(), request)
 		assert.NoError(t, err)
@@ -265,9 +250,8 @@ func TestListDatasets(t *testing.T) {
 			},
 		}
 
-		mockDatasets := []models.Dataset{
-			getDatasetModel(*expectedDataset),
-		}
+		datasetModel, err := transformers.CreateDatasetModel(expectedDataset)
+		assert.NoError(t, err)
 
 		dcRepo.MockDatasetRepo.On("List", mock.Anything,
 			mock.MatchedBy(func(listInput models.ListModelsInput) bool {
@@ -278,7 +262,7 @@ func TestListDatasets(t *testing.T) {
 					len(listInput.ModelFilters[1].ValueFilters) == 1 &&
 					listInput.Limit == 50 &&
 					listInput.Offset == 0
-			})).Return(mockDatasets, nil)
+			})).Return([]models.Dataset{*datasetModel}, nil)
 
 		datasetResponse, err := datasetManager.ListDatasets(ctx, datacatalog.ListDatasetsRequest{Filter: filter})
 		assert.NoError(t, err)
@@ -289,16 +273,15 @@ func TestListDatasets(t *testing.T) {
 	t.Run("List Datasets with no filtering", func(t *testing.T) {
 		datasetManager := NewDatasetManager(dcRepo, nil, mockScope.NewTestScope())
 
-		mockDatasets := []models.Dataset{
-			getDatasetModel(*expectedDataset),
-		}
+		datasetModel, err := transformers.CreateDatasetModel(expectedDataset)
+		assert.NoError(t, err)
 
 		dcRepo.MockDatasetRepo.On("List", mock.Anything,
 			mock.MatchedBy(func(listInput models.ListModelsInput) bool {
 				return len(listInput.ModelFilters) == 0 &&
 					listInput.Limit == 50 &&
 					listInput.Offset == 0
-			})).Return(mockDatasets, nil)
+			})).Return([]models.Dataset{*datasetModel}, nil)
 
 		datasetResponse, err := datasetManager.ListDatasets(ctx, datacatalog.ListDatasetsRequest{})
 		assert.NoError(t, err)

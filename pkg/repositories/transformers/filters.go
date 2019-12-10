@@ -46,6 +46,7 @@ func FilterToListInput(ctx context.Context, sourceEntity common.Entity, filterEx
 
 func constructModelFilter(ctx context.Context, singleFilter *datacatalog.SinglePropertyFilter, sourceEntity common.Entity) (models.ModelFilter, error) {
 	operator := comparisonOperatorMap[singleFilter.Operator]
+	var modelFilter models.ModelFilter
 
 	switch propertyFilter := singleFilter.GetPropertyFilter().(type) {
 	case *datacatalog.SinglePropertyFilter_PartitionFilter:
@@ -67,11 +68,11 @@ func constructModelFilter(ctx context.Context, singleFilter *datacatalog.SingleP
 			partitionValueFilter := gormimpl.NewGormValueFilter(operator, partitionValueFieldName, value)
 			modelValueFilters := []models.ModelValueFilter{partitionKeyFilter, partitionValueFilter}
 
-			return models.ModelFilter{
+			modelFilter = models.ModelFilter{
 				Entity:        common.Partition,
 				ValueFilters:  modelValueFilters,
 				JoinCondition: gormimpl.NewGormJoinCondition(sourceEntity, common.Partition),
-			}, nil
+			}
 		}
 	case *datacatalog.SinglePropertyFilter_TagFilter:
 		switch tagProperty := propertyFilter.TagFilter.GetProperty().(type) {
@@ -84,11 +85,11 @@ func constructModelFilter(ctx context.Context, singleFilter *datacatalog.SingleP
 			tagNameFilter := gormimpl.NewGormValueFilter(operator, tagNameFieldName, tagName)
 			modelValueFilters := []models.ModelValueFilter{tagNameFilter}
 
-			return models.ModelFilter{
+			modelFilter = models.ModelFilter{
 				Entity:        common.Tag,
 				ValueFilters:  modelValueFilters,
 				JoinCondition: gormimpl.NewGormJoinCondition(sourceEntity, common.Tag),
-			}, nil
+			}
 		}
 	case *datacatalog.SinglePropertyFilter_DatasetFilter:
 		switch datasetProperty := propertyFilter.DatasetFilter.GetProperty().(type) {
@@ -101,10 +102,10 @@ func constructModelFilter(ctx context.Context, singleFilter *datacatalog.SingleP
 			projectFilter := gormimpl.NewGormValueFilter(operator, projectFieldName, project)
 			modelValueFilters := []models.ModelValueFilter{projectFilter}
 
-			return models.ModelFilter{
+			modelFilter = models.ModelFilter{
 				Entity:       common.Dataset,
 				ValueFilters: modelValueFilters,
-			}, nil
+			}
 		case *datacatalog.DatasetPropertyFilter_Domain:
 			domain := datasetProperty.Domain
 			logger.Debugf(ctx, "Constructing Dataset filter domain:[%v]", domain)
@@ -114,10 +115,10 @@ func constructModelFilter(ctx context.Context, singleFilter *datacatalog.SingleP
 			domainFilter := gormimpl.NewGormValueFilter(operator, domainFieldName, domain)
 			modelValueFilters := []models.ModelValueFilter{domainFilter}
 
-			return models.ModelFilter{
+			modelFilter = models.ModelFilter{
 				Entity:       common.Dataset,
 				ValueFilters: modelValueFilters,
-			}, nil
+			}
 		case *datacatalog.DatasetPropertyFilter_Name:
 			name := datasetProperty.Name
 			logger.Debugf(ctx, "Constructing Dataset filter name:[%v]", name)
@@ -127,10 +128,10 @@ func constructModelFilter(ctx context.Context, singleFilter *datacatalog.SingleP
 			nameFilter := gormimpl.NewGormValueFilter(operator, nameFieldName, name)
 			modelValueFilters := []models.ModelValueFilter{nameFilter}
 
-			return models.ModelFilter{
+			modelFilter = models.ModelFilter{
 				Entity:       common.Dataset,
 				ValueFilters: modelValueFilters,
-			}, nil
+			}
 		case *datacatalog.DatasetPropertyFilter_Version:
 			version := datasetProperty.Version
 			logger.Debugf(ctx, "Constructing Dataset filter version:[%v]", version)
@@ -140,12 +141,12 @@ func constructModelFilter(ctx context.Context, singleFilter *datacatalog.SingleP
 			versionFilter := gormimpl.NewGormValueFilter(operator, versionFieldName, version)
 			modelValueFilters := []models.ModelValueFilter{versionFilter}
 
-			return models.ModelFilter{
+			modelFilter = models.ModelFilter{
 				Entity:       common.Dataset,
 				ValueFilters: modelValueFilters,
-			}, nil
+			}
 		}
 	}
 
-	return models.ModelFilter{}, nil
+	return modelFilter, nil
 }
