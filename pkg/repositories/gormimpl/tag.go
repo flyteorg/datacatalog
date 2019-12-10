@@ -50,7 +50,7 @@ func (h *tagRepo) Create(ctx context.Context, tag models.Tag) error {
 
 	filters = append(filters, NewGormValueFilter(common.Artifact, common.Equal, "tag_name", tag.TagName))
 
-	listTaggedArtifacts := models.ListModelsInput{
+	listTaggedInput := models.ListModelsInput{
 		JoinEntityToConditionMap: map[common.Entity]models.ModelJoinCondition{
 			common.Tag:       NewGormJoinCondition(common.Artifact, common.Tag),
 			common.Partition: NewGormJoinCondition(common.Artifact, common.Partition),
@@ -58,7 +58,7 @@ func (h *tagRepo) Create(ctx context.Context, tag models.Tag) error {
 		Filters: filters,
 	}
 
-	tx, err := applyListModelsInput(tx, common.Artifact, listTaggedArtifacts)
+	tx, err := applyListModelsInput(tx, common.Artifact, listTaggedInput)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -72,28 +72,30 @@ func (h *tagRepo) Create(ctx context.Context, tag models.Tag) error {
 		return h.errorTransformer.ToDataCatalogError(tx.Error)
 	}
 
-	if len(artifacts) != 0 {
-		// Soft-delete the existing tags on the artifacts that are tagged by this tag in the partition
-		oldTags := make([]models.Tag, 0, len(artifacts))
-		for _, artifact := range artifacts {
-			oldTags = append(oldTags, models.Tag{
-				TagKey:     models.TagKey{TagName: tag.TagName},
-				ArtifactID: artifact.ArtifactID,
-			})
-		}
-		tx = tx.Delete(&models.Tag{}, oldTags)
-	}
+	// if len(artifacts) != 0 {
+	// 	// Soft-delete the existing tags on the artifacts that are tagged by this tag in the partition
+	// 	for _, artifact := range artifacts {
+	// 		oldTag := models.Tag{
+	// 			TagKey:      models.TagKey{TagName: tag.TagName},
+	// 			ArtifactID:  artifact.ArtifactID,
+	// 			DatasetUUID: artifact.DatasetUUID,
+	// 		}
+	// 		tx = tx.Where(oldTag).Delete(&models.Tag{})
+	// 	}
+	// }
 
-	// Check if the artifact was ever previously tagged with this tag, if so undelete the record
-	var previouslyTagged *models.Artifact
-	tx.Unscoped().Find(previouslyTagged, tag)
-	if previouslyTagged != nil {
-		previouslyTagged.DeletedAt = nil
-		tx = tx.Update(previouslyTagged)
-	} else {
-		// Tag the new artifact
-		tx = tx.Create(&tag)
-	}
+	// If the artifact was ever previously tagged with this tag, we need to
+	// undelete the record because we cannot tag the artifact again since
+	// the primary keys are the same.
+	// var previouslyTagged *models.Artifact
+	// tx = tx.Unscoped().Find(previouslyTagged, tag) // unscope will ignore deletedAt
+	// if previouslyTagged != nil {
+	// 	previouslyTagged.DeletedAt = nil
+	// 	tx = tx.Update(previouslyTagged)
+	// } else {
+	// 	// Tag the new artifact
+	// 	tx = tx.Create(&tag)
+	// }
 
 	tx = tx.Commit()
 	if tx.Error != nil {

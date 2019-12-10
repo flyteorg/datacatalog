@@ -49,12 +49,17 @@ func TestCreateTag(t *testing.T) {
 	GlobalMock := mocket.Catcher.Reset()
 	GlobalMock.Logging = true
 
+	oldArtifact := getTestArtifact()
+
 	// Only match on queries that append expected filters
 	GlobalMock.NewMock().WithQuery(
-		`SELECT * FROM "artifacts"  WHERE "artifacts"."deleted_at" IS NULL AND (("artifacts"."artifact_id" = 123))`).WithReply(getDBArtifactResponse(getTestArtifact()))
+		`SELECT * FROM "artifacts"  WHERE "artifacts"."deleted_at" IS NULL AND (("artifacts"."artifact_id" = 123))`).WithReply(getDBArtifactResponse(oldArtifact))
 
 	GlobalMock.NewMock().WithQuery(
-		`SELECT * FROM "partitions"  WHERE "partitions"."deleted_at" IS NULL AND (("artifact_id" IN (123)))`).WithReply(getDBArtifactResponse(getTestArtifact()))
+		`SELECT * FROM "partitions"  WHERE "partitions"."deleted_at" IS NULL AND (("artifact_id" IN (123)))`).WithReply(getDBPartitionResponse(oldArtifact))
+
+	GlobalMock.NewMock().WithQuery(
+		`SELECT "artifacts".* FROM "artifacts" JOIN tags ON artifacts.artifact_id = tags.artifact_id JOIN partitions ON artifacts.artifact_id = partitions.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((partitions.key = region) AND (partitions.value = SEA) AND (artifacts.tag_name = test-tagname)) LIMIT 0 OFFSET 0`).WithReply(getDBArtifactResponse(oldArtifact))
 
 	GlobalMock.NewMock().WithQuery(
 		`INSERT  INTO "tags" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","artifact_id","dataset_uuid") VALUES (?,?,?,?,?,?,?,?,?,?)`).WithCallback(
