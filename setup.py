@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = '0.0.1b2'
+__version__ = '0.0.1b3'
 
 setup(
     name='flyte-datacatalog',
