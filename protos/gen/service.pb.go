@@ -622,7 +622,7 @@ func (m *ListArtifactsResponse) GetNextToken() string {
 type ListDatasetsRequest struct {
 	// Apply the filter expression to this query
 	Filter *FilterExpression `protobuf:"bytes,1,opt,name=filter,proto3" json:"filter,omitempty"`
-	// Pagination options to get a page of artifacts
+	// Pagination options to get a page of datasetes
 	Pagination           *PaginationOptions `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
 	XXX_unrecognized     []byte             `json:"-"`
@@ -670,7 +670,7 @@ func (m *ListDatasetsRequest) GetPagination() *PaginationOptions {
 
 // List the datasets response with token for next pagination
 type ListDatasetsResponse struct {
-	// The list of artifacts
+	// The list of datasets
 	Datasets []*Dataset `protobuf:"bytes,1,rep,name=datasets,proto3" json:"datasets,omitempty"`
 	// Token to use to request the next page, pass this into the next requests PaginationOptions
 	NextToken            string   `protobuf:"bytes,2,opt,name=next_token,json=nextToken,proto3" json:"next_token,omitempty"`
