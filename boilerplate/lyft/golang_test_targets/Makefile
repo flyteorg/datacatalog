@@ -3,12 +3,13 @@
 # 
 # TO OPT OUT OF UPDATES, SEE https://github.com/lyft/boilerplate/blob/master/Readme.rst
 
+
+.PHONY: download_tooling
+download_tooling: #download dependencies (including test deps) for the package
+	@boilerplate/lyft/golang_test_targets/download_tooling.sh
+
 .PHONY: lint
-lint: #lints the package for common code smells
-	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint
-	# Calling lint twice here is a hack. The first call seem to fail when internally calling `go list...`
-	# However, that call seem to have some effects (e.g. https://github.com/golang/go/issues/29452) which, for some
-	# reason, allows the subsequent calls to succeed.
+lint: download_tooling #lints the package for common code smells
 	GL_DEBUG=linters_output,env golangci-lint run --deadline=5m --exclude deprecated -v
 
 # If code is failing goimports linter, this will fix.
@@ -17,9 +18,12 @@ lint: #lints the package for common code smells
 goimports:
 	@boilerplate/lyft/golang_test_targets/goimports
 
-.PHONY: install
-install: #download dependencies (including test deps) for the package
+.PHONY: mod_download
+mod_download: #download dependencies (including test deps) for the package
 	go mod download
+
+.PHONY: install
+install: download_tooling mod_download
 
 .PHONY: test_unit
 test_unit:
