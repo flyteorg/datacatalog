@@ -1,7 +1,7 @@
 Golang Test Targets
 ~~~~~~~~~~~~~~~~~~~
 
-Provides an ``install`` make target that uses ``go mod`` install golang dependencies.
+Provides an ``install`` make target that uses ``go mod`` to install golang dependencies.
 
 Provides a ``lint`` make target that uses golangci to lint your code.
 
