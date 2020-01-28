@@ -3,7 +3,6 @@
 # 
 # TO OPT OUT OF UPDATES, SEE https://github.com/lyft/boilerplate/blob/master/Readme.rst
 
-# Using go1.10.4
 FROM golang:1.13.3-alpine3.10 as builder
 RUN apk add git openssh-client make curl
 
