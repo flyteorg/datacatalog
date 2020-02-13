@@ -34,72 +34,106 @@ func (h *tagRepo) Create(ctx context.Context, tag models.Tag) error {
 	timer := h.repoMetrics.CreateDuration.Start(ctx)
 	defer timer.Stop()
 
+	// There are several steps that need to be done in a transaction in order for tag stealing to occur
 	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
+	// 1. Find the set of partitions this artifact belongs to
 	var artifactToTag models.Artifact
-	tx = tx.Preload("Partitions").Find(&artifactToTag, models.Artifact{
+	tx.Preload("Partitions").Find(&artifactToTag, models.Artifact{
 		ArtifactKey: models.ArtifactKey{ArtifactID: tag.ArtifactID},
 	})
 
-	// List artifacts with the same partitions and tag
-	filters := make([]models.ModelValueFilter, 0, len(artifactToTag.Partitions)*2+1)
+	// 2. List artifacts in the partitions that are currently tagged
+	modelFilters := make([]models.ModelFilter, 0, len(artifactToTag.Partitions)+2)
 	for _, partition := range artifactToTag.Partitions {
-		filters = append(filters, NewGormValueFilter(common.Partition, common.Equal, "key", partition.Key))
-		filters = append(filters, NewGormValueFilter(common.Partition, common.Equal, "value", partition.Value))
+		modelFilters = append(modelFilters, models.ModelFilter{
+			Entity: common.Partition,
+			ValueFilters: []models.ModelValueFilter{
+				NewGormValueFilter(common.Equal, "key", partition.Key),
+				NewGormValueFilter(common.Equal, "value", partition.Value),
+			},
+			JoinCondition: NewGormJoinCondition(common.Artifact, common.Partition),
+		})
 	}
 
-	filters = append(filters, NewGormValueFilter(common.Artifact, common.Equal, "tag_name", tag.TagName))
+	modelFilters = append(modelFilters, models.ModelFilter{
+		Entity: common.Tag,
+		ValueFilters: []models.ModelValueFilter{
+			NewGormValueFilter(common.Equal, "tag_name", tag.TagName),
+			NewGormValueFilter(common.Equal, "deleted_at", gorm.Expr("NULL")), // AC: this may not work, may have to specially handle nil
+		},
+		JoinCondition: NewGormJoinCondition(common.Artifact, common.Tag),
+	})
 
 	listTaggedInput := models.ListModelsInput{
-		JoinEntityToConditionMap: map[common.Entity]models.ModelJoinCondition{
-			common.Tag:       NewGormJoinCondition(common.Artifact, common.Tag),
-			common.Partition: NewGormJoinCondition(common.Artifact, common.Partition),
-		},
-		Filters: filters,
+		ModelFilters: modelFilters,
+		Limit:        100,
 	}
 
-	tx, err := applyListModelsInput(tx, common.Artifact, listTaggedInput)
+	listArtifactsScope, err := applyListModelsInput(tx, common.Artifact, listTaggedInput)
 	if err != nil {
+		logger.Errorf(ctx, "Unable to construct artiact list, rolling back, tag: [%v], err [%v]", tag, tx.Error)
 		tx.Rollback()
-		return err
+		return h.errorTransformer.ToDataCatalogError(err)
+
 	}
 
 	var artifacts []models.Artifact
-	tx = tx.Find(&artifacts)
-	if tx.Error != nil {
-		logger.Errorf(ctx, "Unable to find previously tagged artifacts, rolling back, tag: [%v], err [%v]", tag, tx.Error)
+	if listArtifactsScope.Find(&artifacts).Error != nil {
+		logger.Errorf(ctx, "Unable to find previously tagged artifacts, rolling back, tag: [%v], err [%v]", tag, listArtifactsScope.Error)
+		tx.Rollback()
+		return h.errorTransformer.ToDataCatalogError(listArtifactsScope.Error)
+	}
+
+	// 3. Remove the tags from the currently tagged artifacts
+	if len(artifacts) != 0 {
+		// Soft-delete the existing tags on the artifacts that are currently tagged
+		for _, artifact := range artifacts {
+
+			// if the artifact to tag is already tagged, no need to remove it
+			if artifactToTag.ArtifactID != artifact.ArtifactID {
+				oldTag := models.Tag{
+					TagKey:      models.TagKey{TagName: tag.TagName},
+					ArtifactID:  artifact.ArtifactID,
+					DatasetUUID: artifact.DatasetUUID,
+				}
+				deleteScope := tx.NewScope(&models.Tag{}).DB().Delete(&models.Tag{}, oldTag)
+				if deleteScope.Error != nil {
+					logger.Errorf(ctx, "Unable to delete previously tagged artifacts, rolling back, tag: [%v], err [%v]", tag, deleteScope.Error)
+					tx.Rollback()
+					return h.errorTransformer.ToDataCatalogError(deleteScope.Error)
+				}
+			}
+		}
+	}
+
+	// 4. If the artifact was ever previously tagged with this tag, we need to
+	// un-delete the record because we cannot tag the artifact again since
+	// the primary keys are the same.
+	undeleteScope := tx.Unscoped().Model(&tag).Update("deleted_at", gorm.Expr("NULL")) // unscope will ignore deletedAt
+	if undeleteScope.Error != nil {
+		logger.Errorf(ctx, "Unable to undelete tag tag, rolling back, tag: [%v], err [%v]", tag, tx.Error)
 		tx.Rollback()
 		return h.errorTransformer.ToDataCatalogError(tx.Error)
 	}
 
-	// if len(artifacts) != 0 {
-	// 	// Soft-delete the existing tags on the artifacts that are tagged by this tag in the partition
-	// 	for _, artifact := range artifacts {
-	// 		oldTag := models.Tag{
-	// 			TagKey:      models.TagKey{TagName: tag.TagName},
-	// 			ArtifactID:  artifact.ArtifactID,
-	// 			DatasetUUID: artifact.DatasetUUID,
-	// 		}
-	// 		tx = tx.Where(oldTag).Delete(&models.Tag{})
-	// 	}
-	// }
-
-	// If the artifact was ever previously tagged with this tag, we need to
-	// undelete the record because we cannot tag the artifact again since
-	// the primary keys are the same.
-	// var previouslyTagged *models.Artifact
-	// tx = tx.Unscoped().Find(previouslyTagged, tag) // unscope will ignore deletedAt
-	// if previouslyTagged != nil {
-	// 	previouslyTagged.DeletedAt = nil
-	// 	tx = tx.Update(previouslyTagged)
-	// } else {
-	// 	// Tag the new artifact
-	// 	tx = tx.Create(&tag)
-	// }
+	// 5. Tag the new artifact
+	if undeleteScope.RowsAffected == 0 {
+		if err := tx.Create(&tag).Error; err != nil {
+			logger.Errorf(ctx, "Unable to create tag, rolling back, tag: [%v], err [%v]", tag, err)
+			tx.Rollback()
+			return h.errorTransformer.ToDataCatalogError(err)
+		}
+	}
 
 	tx = tx.Commit()
 	if tx.Error != nil {
-		logger.Errorf(ctx, "Unable to create tag, rolling back, tag: [%v], err [%v]", tag, tx.Error)
+		logger.Errorf(ctx, "Unable to commit transaction, rolling back, tag: [%v], err [%v]", tag, tx.Error)
 		tx.Rollback()
 		return h.errorTransformer.ToDataCatalogError(tx.Error)
 	}
