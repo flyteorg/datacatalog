@@ -65,7 +65,7 @@ func (h *tagRepo) Create(ctx context.Context, tag models.Tag) error {
 		Entity: common.Tag,
 		ValueFilters: []models.ModelValueFilter{
 			NewGormValueFilter(common.Equal, "tag_name", tag.TagName),
-			NewGormValueFilter(common.Equal, "deleted_at", gorm.Expr("NULL")), // AC: this may not work, may have to specially handle nil
+			NewGormNullFilter("deleted_at"),
 		},
 		JoinCondition: NewGormJoinCondition(common.Artifact, common.Tag),
 	})
@@ -84,10 +84,10 @@ func (h *tagRepo) Create(ctx context.Context, tag models.Tag) error {
 	}
 
 	var artifacts []models.Artifact
-	if listArtifactsScope.Find(&artifacts).Error != nil {
-		logger.Errorf(ctx, "Unable to find previously tagged artifacts, rolling back, tag: [%v], err [%v]", tag, listArtifactsScope.Error)
+	if err := listArtifactsScope.Find(&artifacts).Error; err != nil {
+		logger.Errorf(ctx, "Unable to find previously tagged artifacts, rolling back, tag: [%v], err [%v]", tag, err)
 		tx.Rollback()
-		return h.errorTransformer.ToDataCatalogError(listArtifactsScope.Error)
+		return h.errorTransformer.ToDataCatalogError(err)
 	}
 
 	// 3. Remove the tags from the currently tagged artifacts
@@ -122,7 +122,7 @@ func (h *tagRepo) Create(ctx context.Context, tag models.Tag) error {
 		return h.errorTransformer.ToDataCatalogError(tx.Error)
 	}
 
-	// 5. Tag the new artifact
+	// 5. Tag the new artifact, if it didn't previously exist
 	if undeleteScope.RowsAffected == 0 {
 		if err := tx.Create(&tag).Error; err != nil {
 			logger.Errorf(ctx, "Unable to create tag, rolling back, tag: [%v], err [%v]", tag, err)

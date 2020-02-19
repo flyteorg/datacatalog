@@ -59,7 +59,7 @@ func TestCreateTagNew(t *testing.T) {
 		`SELECT * FROM "partitions"  WHERE "partitions"."deleted_at" IS NULL AND (("artifact_id" IN (123)))`).WithReply(getDBPartitionResponse(newArtifact))
 
 	GlobalMock.NewMock().WithQuery(
-		`SELECT "artifacts".* FROM "artifacts" JOIN partitions partitions0 ON artifacts.artifact_id = partitions0.artifact_id JOIN tags tags1 ON artifacts.artifact_id = tags1.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((partitions0.key = region) AND (partitions0.value = SEA) AND (tags1.tag_name = test-tagname) AND (tags1.deleted_at = NULL)) LIMIT 100 OFFSET 0`).WithReply([]map[string]interface{}{})
+		`SELECT "artifacts".* FROM "artifacts" JOIN partitions partitions0 ON artifacts.artifact_id = partitions0.artifact_id JOIN tags tags1 ON artifacts.artifact_id = tags1.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((partitions0.key = region) AND (partitions0.value = SEA) AND (tags1.tag_name = test-tagname) AND (tags1.deleted_at IS NULL)) LIMIT 100 OFFSET 0`).WithReply([]map[string]interface{}{})
 
 	GlobalMock.NewMock().WithQuery(
 		`INSERT  INTO "tags" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","artifact_id","dataset_uuid") VALUES (?,?,?,?,?,?,?,?,?,?)`).WithCallback(
@@ -95,7 +95,7 @@ func TestStealOldTag(t *testing.T) {
 		`SELECT * FROM "partitions"  WHERE "partitions"."deleted_at" IS NULL AND (("artifact_id" IN (111)))`).WithReply(getDBPartitionResponse(newArtifact))
 
 	GlobalMock.NewMock().WithQuery(
-		`SELECT "artifacts".* FROM "artifacts" JOIN partitions partitions0 ON artifacts.artifact_id = partitions0.artifact_id JOIN tags tags1 ON artifacts.artifact_id = tags1.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((partitions0.key = region) AND (partitions0.value = SEA) AND (tags1.tag_name = test-tagname) AND (tags1.deleted_at = NULL)) LIMIT 100 OFFSET 0`).WithReply(getDBArtifactResponse(oldArtifact))
+		`SELECT "artifacts".* FROM "artifacts" JOIN partitions partitions0 ON artifacts.artifact_id = partitions0.artifact_id JOIN tags tags1 ON artifacts.artifact_id = tags1.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((partitions0.key = region) AND (partitions0.value = SEA) AND (tags1.tag_name = test-tagname) AND (tags1.deleted_at IS NULL)) LIMIT 100 OFFSET 0`).WithReply(getDBArtifactResponse(oldArtifact))
 
 	GlobalMock.NewMock().WithQuery(
 		`INSERT  INTO "tags" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","artifact_id","dataset_uuid") VALUES (?,?,?,?,?,?,?,?,?,?)`).WithCallback(

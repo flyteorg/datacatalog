@@ -35,6 +35,7 @@ func GetRepository(repoType RepoConfig, dbConfig config.DbConfig, scope promutil
 		if err != nil {
 			panic(err)
 		}
+		db.LogMode(true)
 		return NewPostgresRepo(
 			db,
 			errors.NewPostgresErrorTransformer(),

@@ -21,5 +21,6 @@ type ComparisonOperator int
 
 const (
 	Equal ComparisonOperator = iota
+	IsNull
 	// Add more operators as needed, ie., gte, lte
 )

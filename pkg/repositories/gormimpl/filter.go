@@ -10,7 +10,8 @@ import (
 
 // String formats for various GORM expression queries
 const (
-	equalQuery = "%s.%s = ?"
+	equalQuery  = "%s.%s = ?"
+	isNullQuery = "%s.%s IS NULL"
 )
 
 type gormValueFilterImpl struct {
@@ -27,7 +28,13 @@ func (g *gormValueFilterImpl) GetDBQueryExpression(tableName string) (models.DBQ
 			Query: fmt.Sprintf(equalQuery, tableName, g.field),
 			Args:  g.value,
 		}, nil
+	case common.IsNull:
+		return models.DBQueryExpr{
+			Query: fmt.Sprintf(isNullQuery, tableName, g.field),
+			Args:  g.value,
+		}, nil
 	}
+
 	return models.DBQueryExpr{}, errors.GetUnsupportedFilterExpressionErr(g.comparisonOperator)
 }
 
@@ -37,5 +44,12 @@ func NewGormValueFilter(comparisonOperator common.ComparisonOperator, field stri
 		comparisonOperator: comparisonOperator,
 		field:              field,
 		value:              value,
+	}
+}
+
+func NewGormNullFilter(field string) models.ModelValueFilter {
+	return &gormValueFilterImpl{
+		comparisonOperator: common.IsNull,
+		field:              field,
 	}
 }
