@@ -25,7 +25,7 @@ var serveCmd = &cobra.Command{
 
 		// serve a http healthcheck endpoint
 		go func() {
-			err := serveHealthcheck(ctx, cfg)
+			err := serveHTTPHealthcheck(ctx, cfg)
 			if err != nil {
 				logger.Errorf(ctx, "Unable to serve http", config.GetConfig().GetHTTPHostAddress(), err)
 			}
@@ -67,7 +67,7 @@ func newGRPCServer(_ context.Context, cfg *config.Config) *grpc.Server {
 	return grpcServer
 }
 
-func serveHealthcheck(ctx context.Context, cfg *config.Config) error {
+func serveHTTPHealthcheck(ctx context.Context, cfg *config.Config) error {
 	mux := http.NewServeMux()
 
 	// Register Healthcheck
