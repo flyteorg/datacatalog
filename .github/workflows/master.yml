@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - container-registry
 
 jobs:
   # Duplicated from pull request workflow because sharing is not yet supported
