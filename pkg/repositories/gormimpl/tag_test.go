@@ -44,12 +44,23 @@ func getTestTag() models.Tag {
 	}
 }
 
-func TestCreateTag(t *testing.T) {
+func TestCreateTagNew(t *testing.T) {
 	tagCreated := false
 	GlobalMock := mocket.Catcher.Reset()
 	GlobalMock.Logging = true
 
+	newArtifact := getTestArtifact()
+
 	// Only match on queries that append expected filters
+	GlobalMock.NewMock().WithQuery(
+		`SELECT * FROM "artifacts"  WHERE "artifacts"."deleted_at" IS NULL AND (("artifacts"."artifact_id" = 123))`).WithReply(getDBArtifactResponse(newArtifact))
+
+	GlobalMock.NewMock().WithQuery(
+		`SELECT * FROM "partitions"  WHERE "partitions"."deleted_at" IS NULL AND (("artifact_id" IN (123)))`).WithReply(getDBPartitionResponse(newArtifact))
+
+	GlobalMock.NewMock().WithQuery(
+		`SELECT "artifacts".* FROM "artifacts" JOIN partitions partitions0 ON artifacts.artifact_id = partitions0.artifact_id JOIN tags tags1 ON artifacts.artifact_id = tags1.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((partitions0.key = region) AND (partitions0.value = SEA) AND (tags1.tag_name = test-tagname) AND (tags1.deleted_at IS NULL)) LIMIT 100 OFFSET 0`).WithReply([]map[string]interface{}{})
+
 	GlobalMock.NewMock().WithQuery(
 		`INSERT  INTO "tags" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","artifact_id","dataset_uuid") VALUES (?,?,?,?,?,?,?,?,?,?)`).WithCallback(
 		func(s string, values []driver.NamedValue) {
@@ -57,8 +68,48 @@ func TestCreateTag(t *testing.T) {
 		},
 	)
 
+	newTag := getTestTag()
+	newTag.ArtifactID = newArtifact.ArtifactID
+
 	tagRepo := NewTagRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
-	err := tagRepo.Create(context.Background(), getTestTag())
+	err := tagRepo.Create(context.Background(), newTag)
+
+	assert.NoError(t, err)
+	assert.True(t, tagCreated)
+}
+
+func TestStealOldTag(t *testing.T) {
+	tagCreated := false
+	GlobalMock := mocket.Catcher.Reset()
+	GlobalMock.Logging = true
+
+	oldArtifact := getTestArtifact()
+	newArtifact := getTestArtifact()
+	newArtifact.ArtifactID = "111"
+
+	// Only match on queries that append expected filters
+	GlobalMock.NewMock().WithQuery(
+		`SELECT * FROM "artifacts"  WHERE "artifacts"."deleted_at" IS NULL AND (("artifacts"."artifact_id" = 111))`).WithReply(getDBArtifactResponse(newArtifact))
+
+	GlobalMock.NewMock().WithQuery(
+		`SELECT * FROM "partitions"  WHERE "partitions"."deleted_at" IS NULL AND (("artifact_id" IN (111)))`).WithReply(getDBPartitionResponse(newArtifact))
+
+	GlobalMock.NewMock().WithQuery(
+		`SELECT "artifacts".* FROM "artifacts" JOIN partitions partitions0 ON artifacts.artifact_id = partitions0.artifact_id JOIN tags tags1 ON artifacts.artifact_id = tags1.artifact_id WHERE "artifacts"."deleted_at" IS NULL AND ((partitions0.key = region) AND (partitions0.value = SEA) AND (tags1.tag_name = test-tagname) AND (tags1.deleted_at IS NULL)) LIMIT 100 OFFSET 0`).WithReply(getDBArtifactResponse(oldArtifact))
+
+	GlobalMock.NewMock().WithQuery(
+		`INSERT  INTO "tags" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","artifact_id","dataset_uuid") VALUES (?,?,?,?,?,?,?,?,?,?)`).WithCallback(
+		func(s string, values []driver.NamedValue) {
+			tagCreated = true
+		},
+	)
+
+	newTag := getTestTag()
+	newTag.ArtifactID = newArtifact.ArtifactID
+
+	tagRepo := NewTagRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
+	err := tagRepo.Create(context.Background(), newTag)
+
 	assert.NoError(t, err)
 	assert.True(t, tagCreated)
 }
@@ -71,7 +122,7 @@ func TestGetTag(t *testing.T) {
 
 	// Only match on queries that append expected filters
 	GlobalMock.NewMock().WithQuery(
-		`SELECT * FROM "tags"  WHERE "tags"."deleted_at" IS NULL AND (("tags"."dataset_project" = testProject) AND ("tags"."dataset_name" = testName) AND ("tags"."dataset_domain" = testDomain) AND ("tags"."dataset_version" = testVersion) AND ("tags"."tag_name" = test-tag)) ORDER BY tags.created_at DESC,"tags"."dataset_project" ASC LIMIT 1`).WithReply(getDBTagResponse(artifact))
+		`SELECT * FROM "tags"  WHERE "tags"."deleted_at" IS NULL AND (("tags"."dataset_project" = testProject) AND ("tags"."dataset_name" = testName) AND ("tags"."dataset_domain" = testDomain) AND ("tags"."dataset_version" = testVersion) AND ("tags"."tag_name" = test-tag)) ORDER BY tags.created_at DESC,"tags"."tag_name" ASC LIMIT 1`).WithReply(getDBTagResponse(artifact))
 	GlobalMock.NewMock().WithQuery(
 		`SELECT * FROM "artifacts"  WHERE "artifacts"."deleted_at" IS NULL AND ((("dataset_project","dataset_name","dataset_domain","dataset_version","artifact_id") IN ((testProject,testName,testDomain,testVersion,123))))`).WithReply(getDBArtifactResponse(artifact))
 	GlobalMock.NewMock().WithQuery(

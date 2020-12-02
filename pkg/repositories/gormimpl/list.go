@@ -56,7 +56,12 @@ func applyListModelsInput(tx *gorm.DB, sourceEntity common.Entity, in models.Lis
 			if err != nil {
 				return nil, err
 			}
-			tx = tx.Where(dbQueryExpr.Query, dbQueryExpr.Args)
+
+			if dbQueryExpr.Args == nil {
+				tx = tx.Where(dbQueryExpr.Query)
+			} else {
+				tx = tx.Where(dbQueryExpr.Query, dbQueryExpr.Args)
+			}
 		}
 	}
 
