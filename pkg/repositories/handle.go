@@ -6,10 +6,10 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
-	"github.com/lyft/datacatalog/pkg/repositories/config"
-	"github.com/lyft/datacatalog/pkg/repositories/models"
-	"github.com/lyft/flytestdlib/logger"
-	"github.com/lyft/flytestdlib/promutils"
+	"github.com/flyteorg/datacatalog/pkg/repositories/config"
+	"github.com/flyteorg/datacatalog/pkg/repositories/models"
+	"github.com/flyteorg/flytestdlib/logger"
+	"github.com/flyteorg/flytestdlib/promutils"
 )
 
 type DBHandle struct {

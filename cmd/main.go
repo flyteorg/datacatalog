@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/golang/glog"
-	"github.com/lyft/datacatalog/cmd/entrypoints"
+	"github.com/flyteorg/datacatalog/cmd/entrypoints"
 )
 
 func main() {

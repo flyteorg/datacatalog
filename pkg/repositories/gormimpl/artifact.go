@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/jinzhu/gorm"
-	"github.com/lyft/datacatalog/pkg/common"
-	"github.com/lyft/datacatalog/pkg/repositories/errors"
-	"github.com/lyft/datacatalog/pkg/repositories/interfaces"
-	"github.com/lyft/datacatalog/pkg/repositories/models"
-	datacatalog "github.com/lyft/datacatalog/protos/gen"
-	"github.com/lyft/flytestdlib/promutils"
+	"github.com/flyteorg/datacatalog/pkg/common"
+	"github.com/flyteorg/datacatalog/pkg/repositories/errors"
+	"github.com/flyteorg/datacatalog/pkg/repositories/interfaces"
+	"github.com/flyteorg/datacatalog/pkg/repositories/models"
+	datacatalog "github.com/flyteorg/datacatalog/protos/gen"
+	"github.com/flyteorg/flytestdlib/promutils"
 )
 
 type artifactRepo struct {

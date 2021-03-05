@@ -3,7 +3,7 @@ package interfaces
 import (
 	"context"
 
-	datacatalog "github.com/lyft/datacatalog/protos/gen"
+	datacatalog "github.com/flyteorg/datacatalog/protos/gen"
 )
 
 type TagManager interface {

@@ -2,9 +2,9 @@ package transformers
 
 import (
 	"github.com/golang/protobuf/ptypes"
-	"github.com/lyft/datacatalog/pkg/errors"
-	"github.com/lyft/datacatalog/pkg/repositories/models"
-	datacatalog "github.com/lyft/datacatalog/protos/gen"
+	"github.com/flyteorg/datacatalog/pkg/errors"
+	"github.com/flyteorg/datacatalog/pkg/repositories/models"
+	datacatalog "github.com/flyteorg/datacatalog/protos/gen"
 	"google.golang.org/grpc/codes"
 )
 

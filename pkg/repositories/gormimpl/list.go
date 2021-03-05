@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
-	"github.com/lyft/datacatalog/pkg/common"
-	"github.com/lyft/datacatalog/pkg/repositories/errors"
-	"github.com/lyft/datacatalog/pkg/repositories/models"
+	"github.com/flyteorg/datacatalog/pkg/common"
+	"github.com/flyteorg/datacatalog/pkg/repositories/errors"
+	"github.com/flyteorg/datacatalog/pkg/repositories/models"
 )
 
 const (

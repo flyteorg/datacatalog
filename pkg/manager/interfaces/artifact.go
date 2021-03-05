@@ -3,7 +3,7 @@ package interfaces
 import (
 	"context"
 
-	idl_datacatalog "github.com/lyft/datacatalog/protos/gen"
+	idl_datacatalog "github.com/flyteorg/datacatalog/protos/gen"
 )
 
 type ArtifactManager interface {

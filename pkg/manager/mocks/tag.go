@@ -3,7 +3,7 @@
 package mocks
 
 import context "context"
-import idl_datacatalog "github.com/lyft/datacatalog/protos/gen"
+import idl_datacatalog "github.com/flyteorg/datacatalog/protos/gen"
 
 import mock "github.com/stretchr/testify/mock"
 

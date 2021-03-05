@@ -4,20 +4,20 @@ import (
 	"context"
 	"time"
 
-	"github.com/lyft/datacatalog/pkg/manager/impl/validators"
-	"github.com/lyft/datacatalog/pkg/manager/interfaces"
-	"github.com/lyft/datacatalog/pkg/repositories"
+	"github.com/flyteorg/datacatalog/pkg/manager/impl/validators"
+	"github.com/flyteorg/datacatalog/pkg/manager/interfaces"
+	"github.com/flyteorg/datacatalog/pkg/repositories"
 
-	"github.com/lyft/datacatalog/pkg/repositories/models"
-	"github.com/lyft/datacatalog/pkg/repositories/transformers"
-	datacatalog "github.com/lyft/datacatalog/protos/gen"
+	"github.com/flyteorg/datacatalog/pkg/repositories/models"
+	"github.com/flyteorg/datacatalog/pkg/repositories/transformers"
+	datacatalog "github.com/flyteorg/datacatalog/protos/gen"
 
-	"github.com/lyft/datacatalog/pkg/errors"
-	"github.com/lyft/flytestdlib/contextutils"
-	"github.com/lyft/flytestdlib/logger"
-	"github.com/lyft/flytestdlib/promutils"
-	"github.com/lyft/flytestdlib/promutils/labeled"
-	"github.com/lyft/flytestdlib/storage"
+	"github.com/flyteorg/datacatalog/pkg/errors"
+	"github.com/flyteorg/flytestdlib/contextutils"
+	"github.com/flyteorg/flytestdlib/logger"
+	"github.com/flyteorg/flytestdlib/promutils"
+	"github.com/flyteorg/flytestdlib/promutils/labeled"
+	"github.com/flyteorg/flytestdlib/storage"
 )
 
 type tagMetrics struct {

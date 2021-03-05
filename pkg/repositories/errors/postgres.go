@@ -5,7 +5,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
-	"github.com/lyft/datacatalog/pkg/errors"
+	"github.com/flyteorg/datacatalog/pkg/errors"
 	"google.golang.org/grpc/codes"
 )
 

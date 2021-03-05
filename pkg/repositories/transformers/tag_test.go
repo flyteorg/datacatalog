@@ -3,8 +3,8 @@ package transformers
 import (
 	"testing"
 
-	"github.com/lyft/datacatalog/pkg/repositories/models"
-	datacatalog "github.com/lyft/datacatalog/protos/gen"
+	"github.com/flyteorg/datacatalog/pkg/repositories/models"
+	datacatalog "github.com/flyteorg/datacatalog/protos/gen"
 	"github.com/stretchr/testify/assert"
 )
 

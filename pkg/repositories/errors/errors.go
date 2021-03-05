@@ -3,8 +3,8 @@ package errors
 
 import (
 	"github.com/golang/protobuf/proto"
-	"github.com/lyft/datacatalog/pkg/common"
-	"github.com/lyft/datacatalog/pkg/errors"
+	"github.com/flyteorg/datacatalog/pkg/common"
+	"github.com/flyteorg/datacatalog/pkg/errors"
 	"google.golang.org/grpc/codes"
 )
 
