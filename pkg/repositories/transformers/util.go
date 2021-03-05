@@ -1,9 +1,9 @@
 package transformers
 
 import (
-	"github.com/golang/protobuf/proto"
 	"github.com/flyteorg/datacatalog/pkg/errors"
 	datacatalog "github.com/flyteorg/datacatalog/protos/gen"
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 )
 

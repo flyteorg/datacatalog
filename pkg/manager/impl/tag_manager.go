@@ -35,7 +35,7 @@ type tagManager struct {
 	systemMetrics tagMetrics
 }
 
-func (m *tagManager) AddTag(ctx context.Context, request datacatalog.AddTagRequest) (*datacatalog.AddTagResponse, error) {
+func (m *tagManager) AddTag(ctx context.Context, request *datacatalog.AddTagRequest) (*datacatalog.AddTagResponse, error) {
 	timer := m.systemMetrics.createResponseTime.Start(ctx)
 	defer timer.Stop()
 
@@ -49,7 +49,7 @@ func (m *tagManager) AddTag(ctx context.Context, request datacatalog.AddTagReque
 	datasetID := request.Tag.Dataset
 	ctx = contextutils.WithProjectDomain(ctx, datasetID.Project, datasetID.Domain)
 
-	datasetKey := transformers.FromDatasetID(*datasetID)
+	datasetKey := transformers.FromDatasetID(datasetID)
 	dataset, err := m.repo.DatasetRepo().Get(ctx, datasetKey)
 	if err != nil {
 		m.systemMetrics.addTagFailureCounter.Inc(ctx)
@@ -63,7 +63,7 @@ func (m *tagManager) AddTag(ctx context.Context, request datacatalog.AddTagReque
 		return nil, err
 	}
 
-	tagKey := transformers.ToTagKey(*datasetID, request.Tag.Name)
+	tagKey := transformers.ToTagKey(datasetID, request.Tag.Name)
 	err = m.repo.TagRepo().Create(ctx, models.Tag{
 		TagKey:      tagKey,
 		ArtifactID:  request.Tag.ArtifactId,

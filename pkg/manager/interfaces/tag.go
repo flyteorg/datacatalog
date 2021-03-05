@@ -7,5 +7,5 @@ import (
 )
 
 type TagManager interface {
-	AddTag(ctx context.Context, request datacatalog.AddTagRequest) (*datacatalog.AddTagResponse, error)
+	AddTag(ctx context.Context, request *datacatalog.AddTagRequest) (*datacatalog.AddTagResponse, error)
 }

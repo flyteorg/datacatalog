@@ -2,9 +2,9 @@
 package errors
 
 import (
-	"github.com/golang/protobuf/proto"
 	"github.com/flyteorg/datacatalog/pkg/common"
 	"github.com/flyteorg/datacatalog/pkg/errors"
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 )
 

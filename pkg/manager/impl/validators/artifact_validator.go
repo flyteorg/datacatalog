@@ -13,7 +13,7 @@ const (
 	artifactEntity     = "artifact"
 )
 
-func ValidateGetArtifactRequest(request datacatalog.GetArtifactRequest) error {
+func ValidateGetArtifactRequest(request *datacatalog.GetArtifactRequest) error {
 	if request.QueryHandle == nil {
 		return NewMissingArgumentError(fmt.Sprintf("one of %s/%s", artifactID, tagName))
 	}
@@ -84,7 +84,7 @@ func ValidateListArtifactRequest(request *datacatalog.ListArtifactsRequest) erro
 	}
 
 	if request.Pagination != nil {
-		err := ValidatePagination(*request.Pagination)
+		err := ValidatePagination(request.Pagination)
 		if err != nil {
 			return err
 		}

@@ -13,12 +13,12 @@ import (
 	datacatalog_error "github.com/flyteorg/datacatalog/pkg/errors"
 	"github.com/flyteorg/datacatalog/pkg/repositories/errors"
 
-	"github.com/lib/pq"
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
 	"github.com/flyteorg/datacatalog/pkg/repositories/utils"
 	"github.com/flyteorg/flytestdlib/contextutils"
 	"github.com/flyteorg/flytestdlib/promutils"
 	"github.com/flyteorg/flytestdlib/promutils/labeled"
+	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 )
 

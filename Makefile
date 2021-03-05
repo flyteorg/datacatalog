@@ -20,7 +20,7 @@ generate_idl:
 	# TODO, move the protos to flyteidl. Currently to generate protos it is
 	# assumed that the flyteidl repo is checked out in an adjoining directory.
 	# We could use vendoring - but that causes problems when compiling
-	protoc -I ../flyteidl/protos/ -I ./protos/idl/. --go_out=plugins=grpc:. ./protos/idl/service.proto
+	protoc -I ../flyteidl/protos/ -I ./protos/idl/. --go_out=plugins=grpc:protos/gen ./protos/idl/service.proto
 
 .PHONY: generate
 generate:

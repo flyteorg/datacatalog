@@ -9,7 +9,7 @@ import (
 )
 
 func TestToTagKey(t *testing.T) {
-	datasetID := datacatalog.DatasetID{
+	datasetID := &datacatalog.DatasetID{
 		Project: "testProj",
 		Domain:  "testDomain",
 		Name:    "testName",
@@ -28,7 +28,7 @@ func TestToTagKey(t *testing.T) {
 }
 
 func TestFromTagModel(t *testing.T) {
-	datasetID := datacatalog.DatasetID{
+	datasetID := &datacatalog.DatasetID{
 		Project: "testProj",
 		Domain:  "testDomain",
 		Name:    "testName",

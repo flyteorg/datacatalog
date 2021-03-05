@@ -36,7 +36,7 @@ func ValidateDatasetID(ds *datacatalog.DatasetID) error {
 // Ensure list Datasets request is properly constructed
 func ValidateListDatasetsRequest(request *datacatalog.ListDatasetsRequest) error {
 	if request.Pagination != nil {
-		err := ValidatePagination(*request.Pagination)
+		err := ValidatePagination(request.Pagination)
 		if err != nil {
 			return err
 		}

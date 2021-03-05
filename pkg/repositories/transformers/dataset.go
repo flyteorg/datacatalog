@@ -34,7 +34,7 @@ func CreateDatasetModel(dataset *datacatalog.Dataset) (*models.Dataset, error) {
 }
 
 // Create a dataset ID from the dataset key model
-func FromDatasetID(datasetID datacatalog.DatasetID) models.DatasetKey {
+func FromDatasetID(datasetID *datacatalog.DatasetID) models.DatasetKey {
 	return models.DatasetKey{
 		Project: datasetID.Project,
 		Domain:  datasetID.Domain,

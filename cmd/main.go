@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/golang/glog"
 	"github.com/flyteorg/datacatalog/cmd/entrypoints"
+	"github.com/golang/glog"
 )
 
 func main() {

@@ -1,11 +1,11 @@
 package entrypoints
 
 import (
-	"github.com/lib/pq"
 	"github.com/flyteorg/datacatalog/pkg/repositories"
 	"github.com/flyteorg/datacatalog/pkg/runtime"
 	"github.com/flyteorg/flytestdlib/logger"
 	"github.com/flyteorg/flytestdlib/promutils"
+	"github.com/lib/pq"
 
 	"context"
 

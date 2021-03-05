@@ -25,7 +25,7 @@ func ValidateToken(token string) error {
 }
 
 // Validate the pagination options and set default limits
-func ValidatePagination(options datacatalog.PaginationOptions) error {
+func ValidatePagination(options *datacatalog.PaginationOptions) error {
 	err := ValidateToken(options.Token)
 	if err != nil {
 		return err

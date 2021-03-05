@@ -93,7 +93,7 @@ func TestAddTag(t *testing.T) {
 			})).Return(dataset, nil)
 
 		tagManager := NewTagManager(dcRepo, nil, mockScope.NewTestScope())
-		_, err := tagManager.AddTag(context.Background(), datacatalog.AddTagRequest{
+		_, err := tagManager.AddTag(context.Background(), &datacatalog.AddTagRequest{
 			Tag: &datacatalog.Tag{
 				Name:       expectedTag.TagName,
 				ArtifactId: expectedTag.ArtifactID,
@@ -112,7 +112,7 @@ func TestAddTag(t *testing.T) {
 
 	t.Run("NoDataset", func(t *testing.T) {
 		tagManager := NewTagManager(dcRepo, nil, mockScope.NewTestScope())
-		_, err := tagManager.AddTag(context.Background(), datacatalog.AddTagRequest{
+		_, err := tagManager.AddTag(context.Background(), &datacatalog.AddTagRequest{
 			Tag: &datacatalog.Tag{
 				Name:       "noDataset",
 				ArtifactId: "noDataset",
@@ -126,7 +126,7 @@ func TestAddTag(t *testing.T) {
 
 	t.Run("NoTagName", func(t *testing.T) {
 		tagManager := NewTagManager(dcRepo, nil, mockScope.NewTestScope())
-		_, err := tagManager.AddTag(context.Background(), datacatalog.AddTagRequest{
+		_, err := tagManager.AddTag(context.Background(), &datacatalog.AddTagRequest{
 			Tag: &datacatalog.Tag{
 				ArtifactId: "noArtifact",
 				Dataset:    getTestDataset().Id,
@@ -140,7 +140,7 @@ func TestAddTag(t *testing.T) {
 
 	t.Run("NoArtifactID", func(t *testing.T) {
 		tagManager := NewTagManager(dcRepo, nil, mockScope.NewTestScope())
-		_, err := tagManager.AddTag(context.Background(), datacatalog.AddTagRequest{
+		_, err := tagManager.AddTag(context.Background(), &datacatalog.AddTagRequest{
 			Tag: &datacatalog.Tag{
 				Name:    "noArtifact",
 				Dataset: getTestDataset().Id,
