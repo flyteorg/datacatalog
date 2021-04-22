@@ -23,6 +23,7 @@ type DataCatalogService struct {
 	DatasetManager  interfaces.DatasetManager
 	ArtifactManager interfaces.ArtifactManager
 	TagManager      interfaces.TagManager
+	ReservationManager interfaces.ReservationManager
 }
 
 func (s *DataCatalogService) CreateDataset(ctx context.Context, request *catalog.CreateDatasetRequest) (*catalog.CreateDatasetResponse, error) {
@@ -51,6 +52,18 @@ func (s *DataCatalogService) AddTag(ctx context.Context, request *catalog.AddTag
 
 func (s *DataCatalogService) ListDatasets(ctx context.Context, request *catalog.ListDatasetsRequest) (*catalog.ListDatasetsResponse, error) {
 	return s.DatasetManager.ListDatasets(ctx, request)
+}
+
+func (s *DataCatalogService) GetOrReserveArtifact(ctx context.Context, request *catalog.GetOrReserveArtifactRequest) (*catalog.GetOrReserveArtifactResponse, error) {
+	return s.ReservationManager.GetOrReserveArtifact(ctx, request)
+}
+
+func (s *DataCatalogService) ExtendReservation(ctx context.Context, request *catalog.ExtendReservationRequest) (*catalog.ExtendReservationResponse, error) {
+	return s.ReservationManager.ExtendReservation(ctx, request)
+}
+
+func (s *DataCatalogService) ReleaseReservation(ctx context.Context, request *catalog.ReleaseReservationRequest) (*catalog.ReleaseReservationResponse, error) {
+	return s.ReservationManager.ReleaseReservation(ctx, request)
 }
 
 func NewDataCatalogService() *DataCatalogService {
