@@ -76,6 +76,7 @@ func (h *DBHandle) Migrate() {
 	h.db.AutoMigrate(&models.Tag{})
 	h.db.AutoMigrate(&models.PartitionKey{})
 	h.db.AutoMigrate(&models.Partition{})
+	h.db.AutoMigrate(&models.Reservation{})
 }
 
 func (h *DBHandle) Close() error {
