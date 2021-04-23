@@ -20,9 +20,9 @@ import (
 )
 
 type DataCatalogService struct {
-	DatasetManager  interfaces.DatasetManager
-	ArtifactManager interfaces.ArtifactManager
-	TagManager      interfaces.TagManager
+	DatasetManager     interfaces.DatasetManager
+	ArtifactManager    interfaces.ArtifactManager
+	TagManager         interfaces.TagManager
 	ReservationManager interfaces.ReservationManager
 }
 
@@ -120,8 +120,9 @@ func NewDataCatalogService() *DataCatalogService {
 	}()
 
 	return &DataCatalogService{
-		DatasetManager:  impl.NewDatasetManager(repos, dataStorageClient, catalogScope.NewSubScope("dataset")),
-		ArtifactManager: impl.NewArtifactManager(repos, dataStorageClient, storagePrefix, catalogScope.NewSubScope("artifact")),
-		TagManager:      impl.NewTagManager(repos, dataStorageClient, catalogScope.NewSubScope("tag")),
+		DatasetManager:     impl.NewDatasetManager(repos, dataStorageClient, catalogScope.NewSubScope("dataset")),
+		ArtifactManager:    impl.NewArtifactManager(repos, dataStorageClient, storagePrefix, catalogScope.NewSubScope("artifact")),
+		TagManager:         impl.NewTagManager(repos, dataStorageClient, catalogScope.NewSubScope("tag")),
+		ReservationManager: impl.NewReservationManager(),
 	}
 }
