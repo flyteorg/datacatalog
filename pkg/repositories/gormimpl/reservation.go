@@ -39,9 +39,22 @@ func (r *reservationRepo) Create(ctx context.Context, reservation models.Reserva
 }
 
 func (r *reservationRepo) Get(ctx context.Context, reservationKey models.ReservationKey) (models.Reservation, error) {
-	return models.Reservation{}, errors.New("not implemented")
+	timer := r.repoMetrics.GetDuration.Start(ctx)
+	defer timer.Stop()
+
+	var reservation models.Reservation
+
+	result := r.db.Where(&models.Reservation{
+		ReservationKey:     reservationKey,
+	}).First(&reservation)
+
+	if result.Error != nil {
+		return reservation, r.errorTransformer.ToDataCatalogError(result.Error)
+	}
+
+	return reservation, nil
 }
 
-func (r *reservationRepo) Update(ctx context.Context, reservationKey models.ReservationKey, expirationDate time.Time) (int, error) {
+func (r *reservationRepo) Update(ctx context.Context, reservationKey models.ReservationKey, expirationDate time.Time, ownerID string) (int, error) {
 	return 0, errors.New("not implemented")
 }
