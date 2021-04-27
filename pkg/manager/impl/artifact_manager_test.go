@@ -92,6 +92,7 @@ func newMockDataCatalogRepo() *mocks.DataCatalogRepo {
 	return &mocks.DataCatalogRepo{
 		MockDatasetRepo:  &mocks.DatasetRepo{},
 		MockArtifactRepo: &mocks.ArtifactRepo{},
+		MockReservationRepo: &mocks.ReservationRepo{},
 	}
 }
 

@@ -6,6 +6,7 @@ type DataCatalogRepo struct {
 	MockDatasetRepo  *DatasetRepo
 	MockArtifactRepo *ArtifactRepo
 	MockTagRepo      *TagRepo
+	MockReservationRepo *ReservationRepo
 }
 
 func (m *DataCatalogRepo) DatasetRepo() interfaces.DatasetRepo {
@@ -18,4 +19,8 @@ func (m *DataCatalogRepo) ArtifactRepo() interfaces.ArtifactRepo {
 
 func (m *DataCatalogRepo) TagRepo() interfaces.TagRepo {
 	return m.MockTagRepo
+}
+
+func (m *DataCatalogRepo) ReservationRepo() interfaces.ReservationRepo {
+	return m.MockReservationRepo
 }
