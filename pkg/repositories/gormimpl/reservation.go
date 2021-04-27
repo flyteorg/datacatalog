@@ -2,7 +2,6 @@ package gormimpl
 
 import (
 	"context"
-	"errors"
 
 	errors2 "github.com/flyteorg/datacatalog/pkg/repositories/errors"
 	errors3 "github.com/flyteorg/datacatalog/pkg/repositories/errors"
@@ -45,7 +44,7 @@ func (r *reservationRepo) Get(ctx context.Context, reservationKey models.Reserva
 	var reservation models.Reservation
 
 	result := r.db.Where(&models.Reservation{
-		ReservationKey:     reservationKey,
+		ReservationKey: reservationKey,
 	}).First(&reservation)
 
 	if result.Error != nil {
@@ -55,6 +54,22 @@ func (r *reservationRepo) Get(ctx context.Context, reservationKey models.Reserva
 	return reservation, nil
 }
 
-func (r *reservationRepo) Update(ctx context.Context, reservationKey models.ReservationKey, expirationDate time.Time, ownerID string) (int, error) {
-	return 0, errors.New("not implemented")
+func (r *reservationRepo) Update(ctx context.Context, reservationKey models.ReservationKey, expireAt time.Time, ownerID string) (int64, error) {
+	timer := r.repoMetrics.UpdateDuration.Start(ctx)
+	defer timer.Stop()
+
+	result := r.db.Where(
+		&models.Reservation{
+			ReservationKey: reservationKey,
+		},
+	).Updates(
+		models.Reservation{
+			OwnerID:  ownerID,
+			ExpireAt: expireAt,
+		})
+	if result.Error != nil {
+		return 0, r.errorTransformer.ToDataCatalogError(result.Error)
+	}
+
+	return result.RowsAffected, nil
 }
