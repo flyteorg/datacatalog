@@ -9,9 +9,9 @@ import (
 )
 
 type PostgresRepo struct {
-	datasetRepo  interfaces.DatasetRepo
-	artifactRepo interfaces.ArtifactRepo
-	tagRepo      interfaces.TagRepo
+	datasetRepo     interfaces.DatasetRepo
+	artifactRepo    interfaces.ArtifactRepo
+	tagRepo         interfaces.TagRepo
 	reservationRepo interfaces.ReservationRepo
 }
 
@@ -33,9 +33,9 @@ func (dc *PostgresRepo) ReservationRepo() interfaces.ReservationRepo {
 
 func NewPostgresRepo(db *gorm.DB, errorTransformer errors.ErrorTransformer, scope promutils.Scope) interfaces.DataCatalogRepo {
 	return &PostgresRepo{
-		datasetRepo:  gormimpl.NewDatasetRepo(db, errorTransformer, scope.NewSubScope("dataset")),
-		artifactRepo: gormimpl.NewArtifactRepo(db, errorTransformer, scope.NewSubScope("artifact")),
-		tagRepo:      gormimpl.NewTagRepo(db, errorTransformer, scope.NewSubScope("tag")),
+		datasetRepo:     gormimpl.NewDatasetRepo(db, errorTransformer, scope.NewSubScope("dataset")),
+		artifactRepo:    gormimpl.NewArtifactRepo(db, errorTransformer, scope.NewSubScope("artifact")),
+		tagRepo:         gormimpl.NewTagRepo(db, errorTransformer, scope.NewSubScope("tag")),
 		reservationRepo: gormimpl.NewReservationRepo(db, errorTransformer, scope.NewSubScope("reservation")),
 	}
 }

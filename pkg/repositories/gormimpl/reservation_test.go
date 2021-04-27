@@ -3,11 +3,12 @@ package gormimpl
 import (
 	"context"
 	"database/sql/driver"
+	"testing"
+	"time"
+
 	apiErrors "github.com/flyteorg/datacatalog/pkg/errors"
 	"github.com/jinzhu/gorm"
 	"google.golang.org/grpc/codes"
-	"testing"
-	"time"
 
 	mocket "github.com/Selvatico/go-mocket"
 	"github.com/flyteorg/datacatalog/pkg/repositories/errors"
@@ -67,7 +68,7 @@ func TestGet(t *testing.T) {
 
 	GlobalMock.NewMock().WithQuery(
 		`SELECT * FROM "reservations"  WHERE "reservations"."deleted_at" IS NULL AND (("reservations"."dataset_project" = testProject) AND ("reservations"."dataset_name" = testDataset) AND ("reservations"."dataset_domain" = testDomain) AND ("reservations"."dataset_version" = testVersion) AND ("reservations"."tag_name" = testTag)) ORDER BY "reservations"."dataset_project" ASC LIMIT 1`,
-		).WithReply(getDBResponse(expectedReservation))
+	).WithReply(getDBResponse(expectedReservation))
 
 	reservationRepo := NewReservationRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
 	reservation, err := reservationRepo.Get(context.Background(), expectedReservation.ReservationKey)
@@ -105,8 +106,8 @@ func getDBResponse(reservation models.Reservation) []map[string]interface{} {
 			"dataset_domain":  reservation.DatasetDomain,
 			"dataset_version": reservation.DatasetVersion,
 			"tag_name":        reservation.TagName,
-			"owner_id": 	   reservation.OwnerID,
-			"expire_at":      reservation.ExpireAt,
+			"owner_id":        reservation.OwnerID,
+			"expire_at":       reservation.ExpireAt,
 		},
 	}
 }
@@ -124,8 +125,8 @@ func getReservationKey() models.ReservationKey {
 func getReservation() models.Reservation {
 	reservation := models.Reservation{
 		ReservationKey: getReservationKey(),
-		OwnerID:  "batman",
-		ExpireAt: time.Unix(1,1),
+		OwnerID:        "batman",
+		ExpireAt:       time.Unix(1, 1),
 	}
 	return reservation
 }

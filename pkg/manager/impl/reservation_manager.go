@@ -3,6 +3,7 @@ package impl
 import (
 	"context"
 	"errors"
+
 	errors2 "github.com/flyteorg/datacatalog/pkg/errors"
 	"github.com/flyteorg/datacatalog/pkg/repositories"
 	"github.com/flyteorg/datacatalog/pkg/repositories/transformers"
@@ -12,7 +13,7 @@ import (
 	"github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/datacatalog"
 )
 
-type reservationManager struct{
+type reservationManager struct {
 	repo repositories.RepositoryInterface
 }
 
