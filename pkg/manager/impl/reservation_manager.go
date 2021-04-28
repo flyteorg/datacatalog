@@ -3,9 +3,11 @@ package impl
 import (
 	"context"
 	"errors"
+	"time"
 
 	errors2 "github.com/flyteorg/datacatalog/pkg/errors"
 	"github.com/flyteorg/datacatalog/pkg/repositories"
+	"github.com/flyteorg/datacatalog/pkg/repositories/models"
 	"github.com/flyteorg/datacatalog/pkg/repositories/transformers"
 
 	"github.com/flyteorg/datacatalog/pkg/manager/interfaces"
@@ -14,11 +16,14 @@ import (
 )
 
 type reservationManager struct {
-	repo repositories.RepositoryInterface
+	repo               repositories.RepositoryInterface
+	reservationTimeout time.Duration
 }
 
-func NewReservationManager() interfaces.ReservationManager {
-	return &reservationManager{}
+func NewReservationManager(reservationTimeout time.Duration) interfaces.ReservationManager {
+	return &reservationManager{
+		reservationTimeout: reservationTimeout,
+	}
 }
 
 func (r *reservationManager) GetOrReserveArtifact(ctx context.Context, request *datacatalog.GetOrReserveArtifactRequest) (*datacatalog.GetOrReserveArtifactResponse, error) {
@@ -28,7 +33,18 @@ func (r *reservationManager) GetOrReserveArtifact(ctx context.Context, request *
 		if errors2.IsDoesNotExistError(err) {
 			// Tag does not exist yet, let's reserve a spot to work on
 			// generating the artifact.
-			r.makeReservation(ctx, request)
+			state, err := r.makeReservation(ctx, request)
+			if err != nil {
+				return nil, err
+			}
+
+			return &datacatalog.GetOrReserveArtifactResponse{
+				Value: &datacatalog.GetOrReserveArtifactResponse_ReservationStatus{
+					ReservationStatus: &datacatalog.ReservationStatus{
+						State:                state,
+					},
+				},
+			}, nil
 		}
 		return nil, err
 	}
@@ -45,19 +61,53 @@ func (r *reservationManager) GetOrReserveArtifact(ctx context.Context, request *
 	}, nil
 }
 
-func (r *reservationManager) makeReservation(ctx context.Context, request *datacatalog.GetOrReserveArtifactRequest) {
-	_, err := r.repo.ReservationRepo().Get(ctx, transformers.ToReservationKey(
-		*request.DatasetId,
-		request.TagName,
-	))
+func (r *reservationManager) makeReservation(ctx context.Context, request *datacatalog.GetOrReserveArtifactRequest) (datacatalog.ReservationStatus, error) {
+	repo := r.repo.ReservationRepo()
+	reservationKey := transformers.ToReservationKey(*request.DatasetId, request.TagName)
+	rsv, err := repo.Get(ctx, reservationKey)
+
 	if err != nil {
 		if errors2.IsDoesNotExistError(err) {
-			// Reservation does not exist yet, let's create one
+			// Reservation does not exist yet so let's create one
+			err := repo.Create(ctx, models.Reservation{
+				ReservationKey: reservationKey,
+				OwnerID:        request.OwnerId,
+				ExpireAt:       time.Now().Add(r.reservationTimeout),
+			})
+
+			if err != nil {
+				return datacatalog.ReservationStatus{}, err
+			}
+
+			return datacatalog.ReservationStatus{
+				State:                datacatalog.ReservationStatus_ACQUIRED,
+				OwnerId:              request.OwnerId,
+			}, nil
+		}
+		return datacatalog.ReservationStatus{}, err
+	}
+
+	// Reservation already exists so there is a task already working on it
+	// Let's check if the reservation is expired.
+	if rsv.ExpireAt.Before(time.Now()) {
+		// The reservation is expired, let's try to grab the reservation
+		rowsAffected, err := repo.Update(ctx, reservationKey, time.Now().Add(r.reservationTimeout), request.OwnerId)
+		if err != nil {
+			return datacatalog.ReservationStatus{}, err
+		}
+
+		if rowsAffected > 0 {
+			return datacatalog.ReservationStatus{
+				State:                datacatalog.ReservationStatus_ACQUIRED,
+				OwnerId:              request.OwnerId,
+			}, nil
 		}
 	}
 
-	// Reservation already exists so there is a task already start working on it
-	// Let's check if the reservation is expired.
+	return datacatalog.ReservationStatus{
+		State:                datacatalog.ReservationStatus_ALREADY_IN_PROGRESS,
+		OwnerId:              rsv.OwnerID,
+	}, nil
 }
 
 func (r *reservationManager) ExtendReservation(context.Context, *datacatalog.ExtendReservationRequest) (*datacatalog.ExtendReservationResponse, error) {
