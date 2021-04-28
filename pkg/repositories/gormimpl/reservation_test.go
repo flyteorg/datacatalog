@@ -98,6 +98,10 @@ func TestGetNotFound(t *testing.T) {
 
 }
 
+func TestUpdate(t *testing.T) {
+	assert.FailNow(t, "not implemented yet")
+}
+
 func getDBResponse(reservation models.Reservation) []map[string]interface{} {
 	return []map[string]interface{}{
 		{
