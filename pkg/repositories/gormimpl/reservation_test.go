@@ -3,6 +3,7 @@ package gormimpl
 import (
 	"context"
 	"database/sql/driver"
+	"github.com/flyteorg/datacatalog/pkg/repositories/interfaces"
 	"testing"
 	"time"
 
@@ -32,7 +33,7 @@ func TestCreate(t *testing.T) {
 		},
 	)
 
-	reservationRepo := NewReservationRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
+	reservationRepo := getReservationRepo(t)
 
 	err := reservationRepo.Create(context.Background(), reservation)
 	assert.Nil(t, err)
@@ -51,7 +52,7 @@ func TestCreateAlreadyExists(t *testing.T) {
 		getAlreadyExistsErr(),
 	)
 
-	reservationRepo := NewReservationRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
+	reservationRepo := getReservationRepo(t)
 
 	err := reservationRepo.Create(context.Background(), reservation)
 	assert.NotNil(t, err)
@@ -70,7 +71,7 @@ func TestGet(t *testing.T) {
 		`SELECT * FROM "reservations"  WHERE "reservations"."deleted_at" IS NULL AND (("reservations"."dataset_project" = testProject) AND ("reservations"."dataset_name" = testDataset) AND ("reservations"."dataset_domain" = testDomain) AND ("reservations"."dataset_version" = testVersion) AND ("reservations"."tag_name" = testTag)) ORDER BY "reservations"."dataset_project" ASC LIMIT 1`,
 	).WithReply(getDBResponse(expectedReservation))
 
-	reservationRepo := NewReservationRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
+	reservationRepo := getReservationRepo(t)
 	reservation, err := reservationRepo.Get(context.Background(), expectedReservation.ReservationKey)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedReservation.DatasetProject, reservation.DatasetProject)
@@ -89,7 +90,7 @@ func TestGetNotFound(t *testing.T) {
 
 	GlobalMock.NewMock().WithError(gorm.ErrRecordNotFound)
 
-	reservationRepo := NewReservationRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
+	reservationRepo := getReservationRepo(t)
 	_, err := reservationRepo.Get(context.Background(), expectedReservation.ReservationKey)
 	assert.Error(t, err)
 	dcErr, ok := err.(apiErrors.DataCatalogError)
@@ -99,7 +100,28 @@ func TestGetNotFound(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	assert.FailNow(t, "not implemented yet")
+	GlobalMock := mocket.Catcher.Reset()
+	GlobalMock.Logging = true
+
+	GlobalMock.NewMock().WithQuery(
+		`UPDATE "" SET "expire_at" = ?, "owner_id" = ?  WHERE ("reservations"."dataset_project" = ?) AND ("reservations"."dataset_name" = ?) AND ("reservations"."dataset_domain" = ?) AND ("reservations"."dataset_version" = ?) AND ("reservations"."tag_name" = ?) AND ("reservations"."expire_at" = ?)`,
+		).WithRowsNum(1)
+
+	reservationRepo := getReservationRepo(t)
+
+	reservationKey := getReservationKey()
+	prevExpireAt := time.Now()
+	expireAt := prevExpireAt.Add(time.Second*50)
+	ownerID := "hello"
+
+	rows, err := reservationRepo.Update(context.Background(), reservationKey, prevExpireAt, expireAt, ownerID)
+
+	assert.Nil(t, err)
+	assert.Equal(t, rows, int64(1))
+}
+
+func getReservationRepo(t *testing.T) interfaces.ReservationRepo {
+	return NewReservationRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
 }
 
 func getDBResponse(reservation models.Reservation) []map[string]interface{} {

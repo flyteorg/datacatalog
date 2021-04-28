@@ -54,13 +54,14 @@ func (r *reservationRepo) Get(ctx context.Context, reservationKey models.Reserva
 	return reservation, nil
 }
 
-func (r *reservationRepo) Update(ctx context.Context, reservationKey models.ReservationKey, expireAt time.Time, ownerID string) (int64, error) {
+func (r *reservationRepo) Update(ctx context.Context, reservationKey models.ReservationKey, prevExpireAt time.Time, expireAt time.Time, ownerID string) (int64, error) {
 	timer := r.repoMetrics.UpdateDuration.Start(ctx)
 	defer timer.Stop()
 
 	result := r.db.Where(
 		&models.Reservation{
 			ReservationKey: reservationKey,
+			ExpireAt:       prevExpireAt,
 		},
 	).Updates(
 		models.Reservation{
