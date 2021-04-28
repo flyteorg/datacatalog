@@ -89,7 +89,9 @@ func (r *reservationManager) makeReservation(ctx context.Context, request *datac
 	// Let's check if the reservation is expired.
 	if rsv.ExpireAt.Before(time.Now()) {
 		// The reservation is expired, let's try to grab the reservation
-		rowsAffected, err := repo.Update(ctx, reservationKey, time.Now().Add(r.reservationTimeout), request.OwnerId)
+		rowsAffected, err := repo.Update(ctx, reservationKey,
+			rsv.ExpireAt,
+			time.Now().Add(r.reservationTimeout), request.OwnerId)
 		if err != nil {
 			return datacatalog.ReservationStatus{}, err
 		}

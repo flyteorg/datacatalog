@@ -96,8 +96,8 @@ func (_m ReservationRepo_Update) Return(_a0 int64, _a1 error) *ReservationRepo_U
 	return &ReservationRepo_Update{Call: _m.Call.Return(_a0, _a1)}
 }
 
-func (_m *ReservationRepo) OnUpdate(ctx context.Context, reservationKey models.ReservationKey, expirationDate time.Time, OwnerID string) *ReservationRepo_Update {
-	c := _m.On("Update", ctx, reservationKey, expirationDate, OwnerID)
+func (_m *ReservationRepo) OnUpdate(ctx context.Context, reservationKey models.ReservationKey, prevExpireAt time.Time, expireAt time.Time, OwnerID string) *ReservationRepo_Update {
+	c := _m.On("Update", ctx, reservationKey, prevExpireAt, expireAt, OwnerID)
 	return &ReservationRepo_Update{Call: c}
 }
 
@@ -106,20 +106,20 @@ func (_m *ReservationRepo) OnUpdateMatch(matchers ...interface{}) *ReservationRe
 	return &ReservationRepo_Update{Call: c}
 }
 
-// Update provides a mock function with given fields: ctx, reservationKey, expirationDate, OwnerID
-func (_m *ReservationRepo) Update(ctx context.Context, reservationKey models.ReservationKey, expirationDate time.Time, OwnerID string) (int64, error) {
-	ret := _m.Called(ctx, reservationKey, expirationDate, OwnerID)
+// Update provides a mock function with given fields: ctx, reservationKey, prevExpireAt, expireAt, OwnerID
+func (_m *ReservationRepo) Update(ctx context.Context, reservationKey models.ReservationKey, prevExpireAt time.Time, expireAt time.Time, OwnerID string) (int64, error) {
+	ret := _m.Called(ctx, reservationKey, prevExpireAt, expireAt, OwnerID)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, models.ReservationKey, time.Time, string) int64); ok {
-		r0 = rf(ctx, reservationKey, expirationDate, OwnerID)
+	if rf, ok := ret.Get(0).(func(context.Context, models.ReservationKey, time.Time, time.Time, string) int64); ok {
+		r0 = rf(ctx, reservationKey, prevExpireAt, expireAt, OwnerID)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.ReservationKey, time.Time, string) error); ok {
-		r1 = rf(ctx, reservationKey, expirationDate, OwnerID)
+	if rf, ok := ret.Get(1).(func(context.Context, models.ReservationKey, time.Time, time.Time, string) error); ok {
+		r1 = rf(ctx, reservationKey, prevExpireAt, expireAt, OwnerID)
 	} else {
 		r1 = ret.Error(1)
 	}
