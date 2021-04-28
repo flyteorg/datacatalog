@@ -3,9 +3,9 @@ package mocks
 import "github.com/flyteorg/datacatalog/pkg/repositories/interfaces"
 
 type DataCatalogRepo struct {
-	MockDatasetRepo  *DatasetRepo
-	MockArtifactRepo *ArtifactRepo
-	MockTagRepo      *TagRepo
+	MockDatasetRepo     *DatasetRepo
+	MockArtifactRepo    *ArtifactRepo
+	MockTagRepo         *TagRepo
 	MockReservationRepo *ReservationRepo
 }
 

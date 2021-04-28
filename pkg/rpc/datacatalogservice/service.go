@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"runtime/debug"
+	"time"
 
 	"github.com/flyteorg/datacatalog/pkg/manager/impl"
 	"github.com/flyteorg/datacatalog/pkg/manager/interfaces"
@@ -123,6 +124,6 @@ func NewDataCatalogService() *DataCatalogService {
 		DatasetManager:     impl.NewDatasetManager(repos, dataStorageClient, catalogScope.NewSubScope("dataset")),
 		ArtifactManager:    impl.NewArtifactManager(repos, dataStorageClient, storagePrefix, catalogScope.NewSubScope("artifact")),
 		TagManager:         impl.NewTagManager(repos, dataStorageClient, catalogScope.NewSubScope("tag")),
-		ReservationManager: impl.NewReservationManager(),
+		ReservationManager: impl.NewReservationManager(time.Second * time.Duration(dataCatalogConfig.ReservationTimeoutSec)),
 	}
 }
