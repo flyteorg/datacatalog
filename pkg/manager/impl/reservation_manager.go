@@ -33,16 +33,14 @@ func (r *reservationManager) GetOrReserveArtifact(ctx context.Context, request *
 		if errors2.IsDoesNotExistError(err) {
 			// Tag does not exist yet, let's reserve a spot to work on
 			// generating the artifact.
-			state, err := r.makeReservation(ctx, request)
+			status, err := r.makeReservation(ctx, request)
 			if err != nil {
 				return nil, err
 			}
 
 			return &datacatalog.GetOrReserveArtifactResponse{
 				Value: &datacatalog.GetOrReserveArtifactResponse_ReservationStatus{
-					ReservationStatus: &datacatalog.ReservationStatus{
-						State:                state,
-					},
+					ReservationStatus: &status,
 				},
 			}, nil
 		}
@@ -80,8 +78,8 @@ func (r *reservationManager) makeReservation(ctx context.Context, request *datac
 			}
 
 			return datacatalog.ReservationStatus{
-				State:                datacatalog.ReservationStatus_ACQUIRED,
-				OwnerId:              request.OwnerId,
+				State:   datacatalog.ReservationStatus_ACQUIRED,
+				OwnerId: request.OwnerId,
 			}, nil
 		}
 		return datacatalog.ReservationStatus{}, err
@@ -98,15 +96,15 @@ func (r *reservationManager) makeReservation(ctx context.Context, request *datac
 
 		if rowsAffected > 0 {
 			return datacatalog.ReservationStatus{
-				State:                datacatalog.ReservationStatus_ACQUIRED,
-				OwnerId:              request.OwnerId,
+				State:   datacatalog.ReservationStatus_ACQUIRED,
+				OwnerId: request.OwnerId,
 			}, nil
 		}
 	}
 
 	return datacatalog.ReservationStatus{
-		State:                datacatalog.ReservationStatus_ALREADY_IN_PROGRESS,
-		OwnerId:              rsv.OwnerID,
+		State:   datacatalog.ReservationStatus_ALREADY_IN_PROGRESS,
+		OwnerId: rsv.OwnerID,
 	}, nil
 }
 
