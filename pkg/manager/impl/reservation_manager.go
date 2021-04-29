@@ -3,10 +3,11 @@ package impl
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/flyteorg/flytestdlib/logger"
 	"github.com/flyteorg/flytestdlib/promutils"
 	"github.com/flyteorg/flytestdlib/promutils/labeled"
-	"time"
 
 	errors2 "github.com/flyteorg/datacatalog/pkg/errors"
 	"github.com/flyteorg/datacatalog/pkg/repositories"
@@ -19,7 +20,7 @@ import (
 )
 
 type reservationMetrics struct {
-	scope promutils.Scope
+	scope                        promutils.Scope
 	reservationAcquiredViaCreate labeled.Counter
 	reservationAcquiredViaUpdate labeled.Counter
 	reservationAlreadyInProgress labeled.Counter
@@ -39,11 +40,11 @@ type reservationManager struct {
 func NewReservationManager(
 	repo repositories.RepositoryInterface,
 	reservationTimeout time.Duration,
-	nowFunc NowFunc,  // Easier to mock time.Time for testing
+	nowFunc NowFunc, // Easier to mock time.Time for testing
 	reservationScope promutils.Scope,
 ) interfaces.ReservationManager {
 	systemMetrics := reservationMetrics{
-		scope:                        reservationScope,
+		scope: reservationScope,
 		reservationAcquiredViaCreate: labeled.NewCounter(
 			"reservation_acquired_via_create",
 			"Number of times a reservation was acquired via create",
@@ -56,24 +57,24 @@ func NewReservationManager(
 			"reservation_already_in_progress",
 			"Number of times we try of acquire a reservation but the reservation is in progress",
 			reservationScope,
-			),
-		makeReservationFailure:       labeled.NewCounter(
+		),
+		makeReservationFailure: labeled.NewCounter(
 			"make_reservation_failure",
 			"Number of times we failed to make reservation",
 			reservationScope,
-			),
-		getTagFailure:                labeled.NewCounter(
+		),
+		getTagFailure: labeled.NewCounter(
 			"get_tag_failure",
 			"Number of times we failed to get tag",
 			reservationScope,
-			),
+		),
 	}
 
 	return &reservationManager{
 		repo:               repo,
 		reservationTimeout: reservationTimeout,
 		now:                nowFunc,
-		systemMetrics:systemMetrics,
+		systemMetrics:      systemMetrics,
 	}
 }
 
