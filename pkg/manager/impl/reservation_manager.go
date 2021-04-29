@@ -3,6 +3,9 @@ package impl
 import (
 	"context"
 	"errors"
+	"github.com/flyteorg/flytestdlib/logger"
+	"github.com/flyteorg/flytestdlib/promutils"
+	"github.com/flyteorg/flytestdlib/promutils/labeled"
 	"time"
 
 	errors2 "github.com/flyteorg/datacatalog/pkg/errors"
@@ -15,12 +18,22 @@ import (
 	"github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/datacatalog"
 )
 
+type reservationMetrics struct {
+	scope promutils.Scope
+	reservationAcquiredViaCreate labeled.Counter
+	reservationAcquiredViaUpdate labeled.Counter
+	reservationAlreadyInProgress labeled.Counter
+	makeReservationFailure       labeled.Counter
+	getTagFailure                labeled.Counter
+}
+
 type NowFunc func() time.Time
 
 type reservationManager struct {
 	repo               repositories.RepositoryInterface
 	reservationTimeout time.Duration
 	now                NowFunc
+	systemMetrics      reservationMetrics
 }
 
 func NewReservationManager(
@@ -44,6 +57,7 @@ func (r *reservationManager) GetOrReserveArtifact(ctx context.Context, request *
 			// generating the artifact.
 			status, err := r.makeReservation(ctx, request)
 			if err != nil {
+				r.systemMetrics.makeReservationFailure.Inc(ctx)
 				return nil, err
 			}
 
@@ -53,6 +67,8 @@ func (r *reservationManager) GetOrReserveArtifact(ctx context.Context, request *
 				},
 			}, nil
 		}
+		logger.Errorf(ctx, "Failed retrieve tag: %+v, err: %v", tagKey, err)
+		r.systemMetrics.getTagFailure.Inc(ctx)
 		return nil, err
 	}
 
@@ -83,8 +99,12 @@ func (r *reservationManager) makeReservation(ctx context.Context, request *datac
 			})
 
 			if err != nil {
+				logger.Errorf(ctx, "Failed to create reservation: %+v, err %v", reservationKey, err)
+
 				return datacatalog.ReservationStatus{}, err
 			}
+
+			r.systemMetrics.reservationAcquiredViaCreate.Inc(ctx)
 
 			return datacatalog.ReservationStatus{
 				State:   datacatalog.ReservationStatus_ACQUIRED,
@@ -107,6 +127,7 @@ func (r *reservationManager) makeReservation(ctx context.Context, request *datac
 		}
 
 		if rowsAffected > 0 {
+			r.systemMetrics.reservationAcquiredViaUpdate.Inc(ctx)
 			return datacatalog.ReservationStatus{
 				State:   datacatalog.ReservationStatus_ACQUIRED,
 				OwnerId: request.OwnerId,
@@ -114,6 +135,9 @@ func (r *reservationManager) makeReservation(ctx context.Context, request *datac
 		}
 	}
 
+	logger.Debugf(ctx, "Reservation: %+v is hold by %s", reservationKey, rsv.OwnerID)
+
+	r.systemMetrics.reservationAlreadyInProgress.Inc(ctx)
 	return datacatalog.ReservationStatus{
 		State:   datacatalog.ReservationStatus_ALREADY_IN_PROGRESS,
 		OwnerId: rsv.OwnerID,
