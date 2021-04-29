@@ -39,12 +39,41 @@ type reservationManager struct {
 func NewReservationManager(
 	repo repositories.RepositoryInterface,
 	reservationTimeout time.Duration,
-	nowFunc NowFunc,
+	nowFunc NowFunc,  // Easier to mock time.Time for testing
+	reservationScope promutils.Scope,
 ) interfaces.ReservationManager {
+	systemMetrics := reservationMetrics{
+		scope:                        reservationScope,
+		reservationAcquiredViaCreate: labeled.NewCounter(
+			"reservation_acquired_via_create",
+			"Number of times a reservation was acquired via create",
+			reservationScope),
+		reservationAcquiredViaUpdate: labeled.NewCounter(
+			"reservation_acquired_via_update",
+			"Number of times a reservation was acquired via update",
+			reservationScope),
+		reservationAlreadyInProgress: labeled.NewCounter(
+			"reservation_already_in_progress",
+			"Number of times we try of acquire a reservation but the reservation is in progress",
+			reservationScope,
+			),
+		makeReservationFailure:       labeled.NewCounter(
+			"make_reservation_failure",
+			"Number of times we failed to make reservation",
+			reservationScope,
+			),
+		getTagFailure:                labeled.NewCounter(
+			"get_tag_failure",
+			"Number of times we failed to get tag",
+			reservationScope,
+			),
+	}
+
 	return &reservationManager{
 		repo:               repo,
 		reservationTimeout: reservationTimeout,
 		now:                nowFunc,
+		systemMetrics:systemMetrics,
 	}
 }
 

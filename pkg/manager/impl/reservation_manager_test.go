@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	mockScope "github.com/flyteorg/flytestdlib/promutils"
 
 	"testing"
 	"time"
@@ -56,7 +57,7 @@ func TestGetOrReserveArtifact_ArtifactExists(t *testing.T) {
 		Artifact: expectedArtifact,
 	}, nil)
 
-	reservationManager := NewReservationManager(&dcRepo, timeout, time.Now)
+	reservationManager := NewReservationManager(&dcRepo, timeout, time.Now, mockScope.NewTestScope())
 
 	req := datacatalog.GetOrReserveArtifactRequest{
 		DatasetId: &datasetID,
@@ -108,7 +109,8 @@ func TestGetOrReserveArtifact_CreateReservation(t *testing.T) {
 		}),
 	).Return(nil)
 
-	reservationManager := NewReservationManager(&dcRepo, timeout, func() time.Time { return now })
+	reservationManager := NewReservationManager(&dcRepo, timeout, func() time.Time { return now },
+		mockScope.NewTestScope())
 
 	req := datacatalog.GetOrReserveArtifactRequest{
 		DatasetId: &datasetID,
@@ -152,7 +154,8 @@ func TestGetOrReserveArtifact_TakeOverReservation(t *testing.T) {
 			return ownerID == currentOwner
 		})).Return(int64(1), nil)
 
-	reservationManager := NewReservationManager(&dcRepo, timeout, func() time.Time { return now })
+	reservationManager := NewReservationManager(&dcRepo, timeout, func() time.Time { return now },
+		mockScope.NewTestScope())
 
 	req := datacatalog.GetOrReserveArtifactRequest{
 		DatasetId: &datasetID,
@@ -212,7 +215,8 @@ func TestGetOrReserveArtifact_AlreadyInProgress(t *testing.T) {
 
 	setUpReservationRepoGet(&dcRepo, prevExpireAt)
 
-	reservationManager := NewReservationManager(&dcRepo, timeout, func() time.Time { return now })
+	reservationManager := NewReservationManager(&dcRepo, timeout, func() time.Time { return now },
+		mockScope.NewTestScope())
 
 	req := datacatalog.GetOrReserveArtifactRequest{
 		DatasetId: &datasetID,
