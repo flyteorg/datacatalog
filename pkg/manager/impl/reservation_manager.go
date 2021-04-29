@@ -156,6 +156,9 @@ func (r *reservationManager) makeReservation(ctx context.Context, request *datac
 			return datacatalog.ReservationStatus{}, err
 		}
 
+		// If rows affected is 0, possibly someone else is also
+		// trying to grab the reservation at the same time and
+		// they won.
 		if rowsAffected > 0 {
 			r.systemMetrics.reservationAcquiredViaUpdate.Inc(ctx)
 			return datacatalog.ReservationStatus{
@@ -163,6 +166,8 @@ func (r *reservationManager) makeReservation(ctx context.Context, request *datac
 				OwnerId: request.OwnerId,
 			}, nil
 		}
+		logger.Debugf(ctx, "Failed to reserve a spot: %+v, owner: %s", reservationKey,
+			request.OwnerId)
 	}
 
 	logger.Debugf(ctx, "Reservation: %+v is hold by %s", reservationKey, rsv.OwnerID)
