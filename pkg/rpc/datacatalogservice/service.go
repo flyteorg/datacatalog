@@ -124,6 +124,6 @@ func NewDataCatalogService() *DataCatalogService {
 		DatasetManager:     impl.NewDatasetManager(repos, dataStorageClient, catalogScope.NewSubScope("dataset")),
 		ArtifactManager:    impl.NewArtifactManager(repos, dataStorageClient, storagePrefix, catalogScope.NewSubScope("artifact")),
 		TagManager:         impl.NewTagManager(repos, dataStorageClient, catalogScope.NewSubScope("tag")),
-		ReservationManager: impl.NewReservationManager(time.Second * time.Duration(dataCatalogConfig.ReservationTimeoutSec)),
+		ReservationManager: impl.NewReservationManager(repos, time.Second*time.Duration(dataCatalogConfig.ReservationTimeoutSec), time.Now),
 	}
 }

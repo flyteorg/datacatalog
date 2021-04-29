@@ -15,14 +15,23 @@ import (
 	"github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/datacatalog"
 )
 
+type NowFunc func() time.Time
+
 type reservationManager struct {
 	repo               repositories.RepositoryInterface
 	reservationTimeout time.Duration
+	now                NowFunc
 }
 
-func NewReservationManager(reservationTimeout time.Duration) interfaces.ReservationManager {
+func NewReservationManager(
+	repo repositories.RepositoryInterface,
+	reservationTimeout time.Duration,
+	nowFunc NowFunc,
+) interfaces.ReservationManager {
 	return &reservationManager{
+		repo:               repo,
 		reservationTimeout: reservationTimeout,
+		now:                nowFunc,
 	}
 }
 
@@ -70,7 +79,7 @@ func (r *reservationManager) makeReservation(ctx context.Context, request *datac
 			err := repo.Create(ctx, models.Reservation{
 				ReservationKey: reservationKey,
 				OwnerID:        request.OwnerId,
-				ExpireAt:       time.Now().Add(r.reservationTimeout),
+				ExpireAt:       r.now().Add(r.reservationTimeout),
 			})
 
 			if err != nil {
@@ -85,13 +94,14 @@ func (r *reservationManager) makeReservation(ctx context.Context, request *datac
 		return datacatalog.ReservationStatus{}, err
 	}
 
+	now := r.now()
 	// Reservation already exists so there is a task already working on it
 	// Let's check if the reservation is expired.
-	if rsv.ExpireAt.Before(time.Now()) {
+	if rsv.ExpireAt.Before(now) {
 		// The reservation is expired, let's try to grab the reservation
 		rowsAffected, err := repo.Update(ctx, reservationKey,
 			rsv.ExpireAt,
-			time.Now().Add(r.reservationTimeout), request.OwnerId)
+			now.Add(r.reservationTimeout), request.OwnerId)
 		if err != nil {
 			return datacatalog.ReservationStatus{}, err
 		}
