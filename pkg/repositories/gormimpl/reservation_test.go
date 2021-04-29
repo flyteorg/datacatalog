@@ -3,9 +3,10 @@ package gormimpl
 import (
 	"context"
 	"database/sql/driver"
-	"github.com/flyteorg/datacatalog/pkg/repositories/interfaces"
 	"testing"
 	"time"
+
+	"github.com/flyteorg/datacatalog/pkg/repositories/interfaces"
 
 	apiErrors "github.com/flyteorg/datacatalog/pkg/errors"
 	"github.com/jinzhu/gorm"
@@ -20,7 +21,7 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-	reservation := getReservation()
+	reservation := GetReservation()
 
 	GlobalMock := mocket.Catcher.Reset()
 	GlobalMock.Logging = true
@@ -42,7 +43,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestCreateAlreadyExists(t *testing.T) {
-	reservation := getReservation()
+	reservation := GetReservation()
 
 	GlobalMock := mocket.Catcher.Reset()
 	GlobalMock.Logging = true
@@ -62,7 +63,7 @@ func TestCreateAlreadyExists(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	expectedReservation := getReservation()
+	expectedReservation := GetReservation()
 
 	GlobalMock := mocket.Catcher.Reset()
 	GlobalMock.Logging = true
@@ -83,7 +84,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestGetNotFound(t *testing.T) {
-	expectedReservation := getReservation()
+	expectedReservation := GetReservation()
 
 	GlobalMock := mocket.Catcher.Reset()
 	GlobalMock.Logging = true
@@ -105,13 +106,13 @@ func TestUpdate(t *testing.T) {
 
 	GlobalMock.NewMock().WithQuery(
 		`UPDATE "" SET "expire_at" = ?, "owner_id" = ?  WHERE ("reservations"."dataset_project" = ?) AND ("reservations"."dataset_name" = ?) AND ("reservations"."dataset_domain" = ?) AND ("reservations"."dataset_version" = ?) AND ("reservations"."tag_name" = ?) AND ("reservations"."expire_at" = ?)`,
-		).WithRowsNum(1)
+	).WithRowsNum(1)
 
 	reservationRepo := getReservationRepo(t)
 
-	reservationKey := getReservationKey()
+	reservationKey := GetReservationKey()
 	prevExpireAt := time.Now()
-	expireAt := prevExpireAt.Add(time.Second*50)
+	expireAt := prevExpireAt.Add(time.Second * 50)
 	ownerID := "hello"
 
 	rows, err := reservationRepo.Update(context.Background(), reservationKey, prevExpireAt, expireAt, ownerID)
@@ -138,7 +139,7 @@ func getDBResponse(reservation models.Reservation) []map[string]interface{} {
 	}
 }
 
-func getReservationKey() models.ReservationKey {
+func GetReservationKey() models.ReservationKey {
 	return models.ReservationKey{
 		DatasetProject: "testProject",
 		DatasetName:    "testDataset",
@@ -148,9 +149,9 @@ func getReservationKey() models.ReservationKey {
 	}
 }
 
-func getReservation() models.Reservation {
+func GetReservation() models.Reservation {
 	reservation := models.Reservation{
-		ReservationKey: getReservationKey(),
+		ReservationKey: GetReservationKey(),
 		OwnerID:        "batman",
 		ExpireAt:       time.Unix(1, 1),
 	}
