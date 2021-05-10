@@ -45,7 +45,7 @@ func (r *reservationRepo) Get(ctx context.Context, reservationKey models.Reserva
 
 	result := r.db.Where(&models.Reservation{
 		ReservationKey: reservationKey,
-	}).First(&reservation)
+	}).Take(&reservation)
 
 	if result.Error != nil {
 		return reservation, r.errorTransformer.ToDataCatalogError(result.Error)
