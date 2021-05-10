@@ -69,7 +69,7 @@ func TestGet(t *testing.T) {
 	GlobalMock.Logging = true
 
 	GlobalMock.NewMock().WithQuery(
-		`SELECT * FROM "reservations"  WHERE "reservations"."deleted_at" IS NULL AND (("reservations"."dataset_project" = testProject) AND ("reservations"."dataset_name" = testDataset) AND ("reservations"."dataset_domain" = testDomain) AND ("reservations"."dataset_version" = testVersion) AND ("reservations"."tag_name" = testTag)) ORDER BY "reservations"."dataset_project" ASC LIMIT 1`,
+		`SELECT * FROM "reservations"  WHERE "reservations"."deleted_at" IS NULL AND (("reservations"."dataset_project" = testProject) AND ("reservations"."dataset_name" = testDataset) AND ("reservations"."dataset_domain" = testDomain) AND ("reservations"."dataset_version" = testVersion) AND ("reservations"."tag_name" = testTag)) LIMIT 1`,
 	).WithReply(getDBResponse(expectedReservation))
 
 	reservationRepo := getReservationRepo(t)
