@@ -8,8 +8,8 @@ import (
 	"github.com/flyteorg/datacatalog/pkg/repositories/interfaces"
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
 	"github.com/flyteorg/flytestdlib/promutils"
-	"github.com/jinzhu/gorm"
-
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"time"
 )
 
@@ -68,6 +68,24 @@ func (r *reservationRepo) Update(ctx context.Context, reservationKey models.Rese
 			OwnerID:  ownerID,
 			ExpireAt: expireAt,
 		})
+	if result.Error != nil {
+		return 0, r.errorTransformer.ToDataCatalogError(result.Error)
+	}
+
+	return result.RowsAffected, nil
+}
+
+func (r *reservationRepo) CreateOrUpdate(ctx context.Context, reservation models.Reservation, now time.Time) (int64, error) {
+
+	expressions := make([]clause.Expression, 0)
+	expressions = append(expressions, clause.Lte{Column: "expire_at", Value: now})
+
+	result := r.db.Clauses(
+		clause.OnConflict{
+			Where: clause.Where{Exprs: expressions},
+			UpdateAll: true,
+		},
+		).Create(&reservation)
 	if result.Error != nil {
 		return 0, r.errorTransformer.ToDataCatalogError(result.Error)
 	}
