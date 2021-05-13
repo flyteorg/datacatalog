@@ -2,20 +2,23 @@ package gormimpl
 
 import (
 	"context"
+	"database/sql"
 	"database/sql/driver"
+	"fmt"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"testing"
 	"time"
 
 	"github.com/flyteorg/datacatalog/pkg/repositories/interfaces"
 
 	apiErrors "github.com/flyteorg/datacatalog/pkg/errors"
-	"github.com/jinzhu/gorm"
 	"google.golang.org/grpc/codes"
 
 	mocket "github.com/Selvatico/go-mocket"
 	"github.com/flyteorg/datacatalog/pkg/repositories/errors"
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
-	"github.com/flyteorg/datacatalog/pkg/repositories/utils"
 	"github.com/flyteorg/flytestdlib/promutils"
 	"github.com/stretchr/testify/assert"
 )
@@ -69,7 +72,7 @@ func TestGet(t *testing.T) {
 	GlobalMock.Logging = true
 
 	GlobalMock.NewMock().WithQuery(
-		`SELECT * FROM "reservations"  WHERE "reservations"."deleted_at" IS NULL AND (("reservations"."dataset_project" = testProject) AND ("reservations"."dataset_name" = testDataset) AND ("reservations"."dataset_domain" = testDomain) AND ("reservations"."dataset_version" = testVersion) AND ("reservations"."tag_name" = testTag)) LIMIT 1`,
+		`SELECT * FROM "reservations" WHERE "reservations"."dataset_project" = $1 AND "reservations"."dataset_name" = $2 AND "reservations"."dataset_domain" = $3 AND "reservations"."dataset_version" = $4 AND "reservations"."tag_name" = $5 LIMIT 1%!!(string=testTag)!(string=testVersion)!(string=testDomain)!(string=testDataset)(EXTRA string=testProject)`,
 	).WithReply(getDBResponse(expectedReservation))
 
 	reservationRepo := getReservationRepo(t)
@@ -121,8 +124,33 @@ func TestUpdate(t *testing.T) {
 	assert.Equal(t, rows, int64(1))
 }
 
+func TestCreateOrUpdate(t *testing.T) {
+	GlobalMock := mocket.Catcher.Reset()
+	GlobalMock.Logging = true
+	expectedReservation := GetReservation()
+
+	GlobalMock.NewMock().WithQuery(
+		`INSERT INTO "reservations" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","owner_id","expire_at","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT ("dataset_project","dataset_name","dataset_domain","dataset_version","tag_name") DO UPDATE SET "updated_at"="excluded"."updated_at","deleted_at"="excluded"."deleted_at","owner_id"="excluded"."owner_id","expire_at"="excluded"."expire_at","serialized_metadata"="excluded"."serialized_metadata"WHERE "expire_at" <= $12`,
+	).WithRowsNum(1)
+
+	reservationRepo := getReservationRepo(t)
+
+	rows, err := reservationRepo.CreateOrUpdate(context.Background(), expectedReservation, time.Now())
+	assert.Nil(t, err)
+	assert.Equal(t, int64(1), rows)
+}
+
 func getReservationRepo(t *testing.T) interfaces.ReservationRepo {
-	return NewReservationRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
+	mocket.Catcher.Register()
+	sqlDB, err := sql.Open(mocket.DriverName, "blah")
+	assert.Nil(t, err)
+
+	db, err := gorm.Open(postgres.New(postgres.Config{Conn:sqlDB}))
+	if err != nil {
+		t.Fatal(fmt.Sprintf("Failed to open mock db with err %v", err))
+	}
+
+	return NewReservationRepo(db, errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
 }
 
 func getDBResponse(reservation models.Reservation) []map[string]interface{} {
