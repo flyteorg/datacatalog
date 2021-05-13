@@ -18,6 +18,8 @@ type DbConnectionConfigProvider interface {
 	GetDialector() gorm.Dialector
 
 	GetLogLevel() logger.LogLevel
+
+	GetDSN() string
 }
 
 type BaseConfig struct {
@@ -38,7 +40,7 @@ func NewPostgresConfigProvider(config DbConfig, scope promutils.Scope) DbConnect
 	}
 }
 
-func (p *PostgresConfigProvider) getDSN() string {
+func (p *PostgresConfigProvider) GetDSN() string {
 	if p.config.Password == "" {
 		// Switch for development
 		return fmt.Sprintf("host=%s port=%d dbname=%s user=%s sslmode=disable",
@@ -49,7 +51,7 @@ func (p *PostgresConfigProvider) getDSN() string {
 }
 
 func (p *PostgresConfigProvider) GetDialector() gorm.Dialector {
-	return postgres.Open(p.getDSN())
+	return postgres.Open(p.GetDSN())
 }
 
 func (p *PostgresConfigProvider) GetLogLevel() logger.LogLevel {
