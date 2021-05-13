@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/flyteorg/datacatalog/pkg/errors"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 )

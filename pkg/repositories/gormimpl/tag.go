@@ -8,7 +8,7 @@ import (
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
 	idl_datacatalog "github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/datacatalog"
 	"github.com/flyteorg/flytestdlib/promutils"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type tagRepo struct {
@@ -54,12 +54,14 @@ func (h *tagRepo) Get(ctx context.Context, in models.TagKey) (models.Tag, error)
 		})
 
 	if result.Error != nil {
-		return models.Tag{}, h.errorTransformer.ToDataCatalogError(result.Error)
-	}
-	if result.RecordNotFound() {
-		return models.Tag{}, errors.GetMissingEntityError("Tag", &idl_datacatalog.Tag{
-			Name: tag.TagName,
-		})
+		switch result.Error.Error() {
+		case gorm.ErrRecordNotFound.Error():
+			return models.Tag{}, errors.GetMissingEntityError("Tag", &idl_datacatalog.Tag{
+				Name: tag.TagName,
+			})
+		default:
+			return models.Tag{}, h.errorTransformer.ToDataCatalogError(result.Error)
+		}
 	}
 
 	return tag, nil

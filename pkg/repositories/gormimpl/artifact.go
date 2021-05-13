@@ -9,7 +9,7 @@ import (
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
 	"github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/datacatalog"
 	"github.com/flyteorg/flytestdlib/promutils"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type artifactRepo struct {
@@ -65,18 +65,20 @@ func (h *artifactRepo) Get(ctx context.Context, in models.ArtifactKey) (models.A
 		)
 
 	if result.Error != nil {
-		return models.Artifact{}, h.errorTransformer.ToDataCatalogError(result.Error)
-	}
-	if result.RecordNotFound() {
-		return models.Artifact{}, errors.GetMissingEntityError("Artifact", &datacatalog.Artifact{
-			Dataset: &datacatalog.DatasetID{
-				Project: in.DatasetProject,
-				Domain:  in.DatasetDomain,
-				Name:    in.DatasetName,
-				Version: in.DatasetVersion,
-			},
-			Id: in.ArtifactID,
-		})
+		switch result.Error.Error() {
+		case gorm.ErrRecordNotFound.Error():
+			return models.Artifact{}, errors.GetMissingEntityError("Artifact", &datacatalog.Artifact{
+				Dataset: &datacatalog.DatasetID{
+					Project: in.DatasetProject,
+					Domain:  in.DatasetDomain,
+					Name:    in.DatasetName,
+					Version: in.DatasetVersion,
+				},
+				Id: in.ArtifactID,
+			})
+		default:
+			return models.Artifact{}, h.errorTransformer.ToDataCatalogError(result.Error)
+		}
 	}
 
 	return artifact, nil

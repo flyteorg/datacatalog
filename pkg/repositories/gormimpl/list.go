@@ -6,7 +6,7 @@ import (
 	"github.com/flyteorg/datacatalog/pkg/common"
 	"github.com/flyteorg/datacatalog/pkg/repositories/errors"
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 const (
@@ -20,6 +20,13 @@ var entityToModel = map[common.Entity]interface{}{
 	common.Tag:       models.Tag{},
 }
 
+func getTableName(tx *gorm.DB, model interface{}) string {
+	stmt := gorm.Statement{DB: tx}
+	stmt.Parse(model)
+	return stmt.Schema.Table
+}
+
+
 // Apply the list query on the source model. This method will apply the necessary joins, filters and
 // pagination on the database for the given ListModelInputs.
 func applyListModelsInput(tx *gorm.DB, sourceEntity common.Entity, in models.ListModelsInput) (*gorm.DB, error) {
@@ -28,14 +35,14 @@ func applyListModelsInput(tx *gorm.DB, sourceEntity common.Entity, in models.Lis
 		return nil, errors.GetInvalidEntityError(sourceEntity)
 	}
 
-	sourceTableName := tx.NewScope(sourceModel).TableName()
+	sourceTableName := getTableName(tx, sourceModel)
 	for modelIndex, modelFilter := range in.ModelFilters {
 		entity := modelFilter.Entity
 		filterModel, ok := entityToModel[entity]
 		if !ok {
 			return nil, errors.GetInvalidEntityError(entity)
 		}
-		tableName := tx.NewScope(filterModel).TableName()
+		tableName := getTableName(tx, filterModel)
 		tableAlias := tableName
 
 		// Optionally add the join condition if the entity we need isn't the source

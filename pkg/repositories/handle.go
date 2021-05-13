@@ -9,7 +9,7 @@ import (
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
 	"github.com/flyteorg/flytestdlib/logger"
 	"github.com/flyteorg/flytestdlib/promutils"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type DBHandle struct {
@@ -66,7 +66,7 @@ func (h *DBHandle) CreateDB(dbName string) error {
 }
 
 func (h *DBHandle) Migrate() {
-	if h.db.Dialect().GetName() == config.Postgres {
+	if h.db.Config.Dialector.Name() == config.Postgres {
 		logger.Infof(context.TODO(), "Creating postgres extension uuid-ossp if it does not exist")
 		h.db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
 	}
@@ -76,8 +76,4 @@ func (h *DBHandle) Migrate() {
 	h.db.AutoMigrate(&models.Tag{})
 	h.db.AutoMigrate(&models.PartitionKey{})
 	h.db.AutoMigrate(&models.Partition{})
-}
-
-func (h *DBHandle) Close() error {
-	return h.db.Close()
 }
