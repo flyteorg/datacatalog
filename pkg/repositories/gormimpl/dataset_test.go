@@ -237,7 +237,7 @@ func TestCreateDatasetAlreadyExists(t *testing.T) {
 
 	// Only match on queries that append expected filters
 	GlobalMock.NewMock().WithQuery(
-		`INSERT  INTO "datasets" ("created_at","updated_at","deleted_at","project","name","domain","version","serialized_metadata") VALUES (?,?,?,?,?,?,?,?)`).WithError(
+		`INSERT INTO "datasets" ("created_at","updated_at","deleted_at","project","name","domain","version","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`).WithError(
 		getAlreadyExistsErr(),
 	)
 
@@ -258,10 +258,10 @@ func TestListDatasets(t *testing.T) {
 	expectedDatasetDBResponse := getDBDatasetResponse(dataset)
 
 	GlobalMock.NewMock().WithQuery(
-		`SELECT * FROM "datasets"  WHERE "datasets"."deleted_at" IS NULL LIMIT 10 OFFSET 0`).WithReply(expectedDatasetDBResponse)
+		`SELECT * FROM "datasets" LIMIT 10`).WithReply(expectedDatasetDBResponse)
 
 	expectedPartitionKeyResponse := getDBPartitionKeysResponse([]models.Dataset{dataset})
-	GlobalMock.NewMock().WithQuery(`SELECT * FROM "partition_keys"  WHERE "partition_keys"."deleted_at" IS NULL AND (("dataset_uuid" IN (test-uuid)))`).WithReply(expectedPartitionKeyResponse)
+	GlobalMock.NewMock().WithQuery(`SELECT * FROM "partition_keys" WHERE "partition_keys"."dataset_uuid" = $1`).WithReply(expectedPartitionKeyResponse)
 	datasetRepo := NewDatasetRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
 	listInput := models.ListModelsInput{
 		Limit: 10,
@@ -286,10 +286,10 @@ func TestListDatasetWithFilter(t *testing.T) {
 	expectedDatasetDBResponse := getDBDatasetResponse(dataset)
 
 	GlobalMock.NewMock().WithQuery(
-		`SELECT * FROM "datasets"  WHERE "datasets"."deleted_at" IS NULL AND ((datasets.project = p) AND (datasets.domain = d)) ORDER BY datasets.created_at desc LIMIT 10 OFFSET 10`).WithReply(expectedDatasetDBResponse)
+		`SELECT * FROM "datasets" WHERE datasets.project = $1 AND datasets.domain = $2 ORDER BY datasets.created_at desc LIMIT 10 OFFSET 10`).WithReply(expectedDatasetDBResponse)
 
 	expectedPartitionKeyResponse := getDBPartitionKeysResponse([]models.Dataset{dataset})
-	GlobalMock.NewMock().WithQuery(`SELECT * FROM "partition_keys"  WHERE "partition_keys"."deleted_at" IS NULL AND (("dataset_uuid" IN (test-uuid)))`).WithReply(expectedPartitionKeyResponse)
+	GlobalMock.NewMock().WithQuery(`SELECT * FROM "partition_keys" WHERE "partition_keys"."dataset_uuid" = $1%!(EXTRA string=test-uuid)`).WithReply(expectedPartitionKeyResponse)
 
 	datasetRepo := NewDatasetRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
 	listInput := models.ListModelsInput{
