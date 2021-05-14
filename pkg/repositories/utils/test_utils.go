@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	mocket "github.com/Selvatico/go-mocket"
-	"gorm.io/gorm"
 	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func GetDbForTest(t *testing.T) *gorm.DB {

@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/flyteorg/datacatalog/pkg/errors"
-	"gorm.io/gorm"
 	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
+	"gorm.io/gorm"
 )
 
 // Postgres error codes

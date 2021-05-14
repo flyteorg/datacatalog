@@ -2,12 +2,13 @@ package config
 
 import (
 	"fmt"
+
 	"gorm.io/gorm/logger"
 
 	"github.com/flyteorg/flytestdlib/promutils"
 
-	"gorm.io/gorm"
 	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 const Postgres = "postgres"
@@ -57,7 +58,6 @@ func (p *PostgresConfigProvider) GetDialector() gorm.Dialector {
 func (p *PostgresConfigProvider) GetLogLevel() logger.LogLevel {
 	return p.config.LogLevel
 }
-
 
 // Opens a connection to the database specified in the config.
 // You must call CloseDbConnection at the end of your session!

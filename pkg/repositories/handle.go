@@ -65,15 +65,34 @@ func (h *DBHandle) CreateDB(dbName string) error {
 	return nil
 }
 
-func (h *DBHandle) Migrate() {
+func (h *DBHandle) Migrate() error {
 	if h.db.Config.Dialector.Name() == config.Postgres {
 		logger.Infof(context.TODO(), "Creating postgres extension uuid-ossp if it does not exist")
 		h.db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
 	}
-	h.db.AutoMigrate(&models.Dataset{})
-	h.db.AutoMigrate(&models.Artifact{})
-	h.db.AutoMigrate(&models.ArtifactData{})
-	h.db.AutoMigrate(&models.Tag{})
-	h.db.AutoMigrate(&models.PartitionKey{})
-	h.db.AutoMigrate(&models.Partition{})
+	if err := h.db.AutoMigrate(&models.Dataset{}); err != nil {
+		return err
+	}
+
+	if err := h.db.AutoMigrate(&models.Artifact{}); err != nil {
+		return err
+	}
+
+	if err := h.db.AutoMigrate(&models.ArtifactData{}); err != nil {
+		return err
+	}
+
+	if err := h.db.AutoMigrate(&models.Tag{}); err != nil {
+		return err
+	}
+
+	if err := h.db.AutoMigrate(&models.PartitionKey{}); err != nil {
+		return err
+	}
+
+	if err := h.db.AutoMigrate(&models.Partition{}); err != nil {
+		return err
+	}
+
+	return nil
 }

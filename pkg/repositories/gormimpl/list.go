@@ -20,12 +20,14 @@ var entityToModel = map[common.Entity]interface{}{
 	common.Tag:       models.Tag{},
 }
 
-func getTableName(tx *gorm.DB, model interface{}) string {
+func getTableName(tx *gorm.DB, model interface{}) (string, error) {
 	stmt := gorm.Statement{DB: tx}
-	stmt.Parse(model)
-	return stmt.Schema.Table
-}
 
+	if err := stmt.Parse(model); err != nil {
+		return "", err
+	}
+	return stmt.Schema.Table, nil
+}
 
 // Apply the list query on the source model. This method will apply the necessary joins, filters and
 // pagination on the database for the given ListModelInputs.
@@ -35,14 +37,21 @@ func applyListModelsInput(tx *gorm.DB, sourceEntity common.Entity, in models.Lis
 		return nil, errors.GetInvalidEntityError(sourceEntity)
 	}
 
-	sourceTableName := getTableName(tx, sourceModel)
+	sourceTableName, err := getTableName(tx, sourceModel)
+	if err != nil {
+		return nil, err
+	}
+
 	for modelIndex, modelFilter := range in.ModelFilters {
 		entity := modelFilter.Entity
 		filterModel, ok := entityToModel[entity]
 		if !ok {
 			return nil, errors.GetInvalidEntityError(entity)
 		}
-		tableName := getTableName(tx, filterModel)
+		tableName, err := getTableName(tx, filterModel)
+		if err != nil {
+			return nil, err
+		}
 		tableAlias := tableName
 
 		// Optionally add the join condition if the entity we need isn't the source
