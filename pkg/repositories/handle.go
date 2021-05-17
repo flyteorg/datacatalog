@@ -65,32 +65,38 @@ func (h *DBHandle) CreateDB(dbName string) error {
 	return nil
 }
 
-func (h *DBHandle) Migrate() error {
+func (h *DBHandle) Migrate(ctx context.Context) error {
 	if h.db.Config.Dialector.Name() == config.Postgres {
 		logger.Infof(context.TODO(), "Creating postgres extension uuid-ossp if it does not exist")
 		h.db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
 	}
 	if err := h.db.AutoMigrate(&models.Dataset{}); err != nil {
+		logger.Errorf(ctx, "Failed to migrate Dataset. err: %v", err)
 		return err
 	}
 
 	if err := h.db.AutoMigrate(&models.Artifact{}); err != nil {
+		logger.Errorf(ctx, "Failed to migrate Artifact. err: %v", err)
 		return err
 	}
 
 	if err := h.db.AutoMigrate(&models.ArtifactData{}); err != nil {
+		logger.Errorf(ctx, "Failed to migrate ArtifactData. err: %v", err)
 		return err
 	}
 
 	if err := h.db.AutoMigrate(&models.Tag{}); err != nil {
+		logger.Errorf(ctx, "Failed to migrate Tag. err: %v", err)
 		return err
 	}
 
 	if err := h.db.AutoMigrate(&models.PartitionKey{}); err != nil {
+		logger.Errorf(ctx, "Failed to migrate PartitionKey. err: %v", err)
 		return err
 	}
 
 	if err := h.db.AutoMigrate(&models.Partition{}); err != nil {
+		logger.Errorf(ctx, "Failed to migrate Partition. err: %v", err)
 		return err
 	}
 
