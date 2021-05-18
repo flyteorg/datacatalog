@@ -24,6 +24,9 @@ func NewDBHandle(dbConfigValues config.DbConfig, catalogScope promutils.Scope) (
 		User:         dbConfigValues.User,
 		Password:     dbConfigValues.Password,
 		ExtraOptions: dbConfigValues.ExtraOptions,
+		BaseConfig: config.BaseConfig{
+			DisableForeignKeyConstraintWhenMigrating: true,
+		},
 	}
 
 	//TODO: abstract away the type of db we are connecting to

@@ -18,13 +18,14 @@ type DbConnectionConfigProvider interface {
 	// Returns database dialector
 	GetDialector() gorm.Dialector
 
-	GetLogLevel() logger.LogLevel
+	GetDBConfig() DbConfig
 
 	GetDSN() string
 }
 
 type BaseConfig struct {
-	LogLevel logger.LogLevel `json:"log_level"`
+	LogLevel                                 logger.LogLevel `json:"log_level"`
+	DisableForeignKeyConstraintWhenMigrating bool
 }
 
 // PostgreSQL implementation for DbConnectionConfigProvider.
@@ -55,16 +56,16 @@ func (p *PostgresConfigProvider) GetDialector() gorm.Dialector {
 	return postgres.Open(p.GetDSN())
 }
 
-func (p *PostgresConfigProvider) GetLogLevel() logger.LogLevel {
-	return p.config.LogLevel
+func (p *PostgresConfigProvider) GetDBConfig() DbConfig {
+	return p.config
 }
 
 // Opens a connection to the database specified in the config.
 // You must call CloseDbConnection at the end of your session!
 func OpenDbConnection(config DbConnectionConfigProvider) (*gorm.DB, error) {
 	db, err := gorm.Open(config.GetDialector(), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info), // TODO: change back to the config
-		DisableForeignKeyConstraintWhenMigrating: true,
+		Logger:                                   logger.Default.LogMode(config.GetDBConfig().LogLevel),
+		DisableForeignKeyConstraintWhenMigrating: config.GetDBConfig().DisableForeignKeyConstraintWhenMigrating,
 	})
 	if err != nil {
 		return nil, err
