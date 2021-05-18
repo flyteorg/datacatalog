@@ -74,32 +74,26 @@ func (h *DBHandle) Migrate(ctx context.Context) error {
 		h.db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
 	}
 	if err := h.db.AutoMigrate(&models.Dataset{}); err != nil {
-		logger.Errorf(ctx, "Failed to migrate Dataset. err: %v", err)
 		return err
 	}
 
 	if err := h.db.Debug().AutoMigrate(&models.Artifact{}); err != nil {
-		logger.Errorf(ctx, "Failed to migrate Artifact1. err: %v", err)
 		return err
 	}
 
 	if err := h.db.AutoMigrate(&models.ArtifactData{}); err != nil {
-		logger.Errorf(ctx, "Failed to migrate ArtifactData. err: %v", err)
 		return err
 	}
 
 	if err := h.db.AutoMigrate(&models.Tag{}); err != nil {
-		logger.Errorf(ctx, "Failed to migrate Tag. err: %v", err)
 		return err
 	}
 
 	if err := h.db.AutoMigrate(&models.PartitionKey{}); err != nil {
-		logger.Errorf(ctx, "Failed to migrate PartitionKey. err: %v", err)
 		return err
 	}
 
 	if err := h.db.AutoMigrate(&models.Partition{}); err != nil {
-		logger.Errorf(ctx, "Failed to migrate Partition. err: %v", err)
 		return err
 	}
 

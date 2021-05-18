@@ -1,6 +1,7 @@
 package gormimpl
 
 import (
+	"gorm.io/gorm"
 	"testing"
 
 	"context"
@@ -96,6 +97,31 @@ func TestGetTag(t *testing.T) {
 	assert.Len(t, response.Artifact.ArtifactData, 1)
 	assert.Len(t, response.Artifact.Partitions, 1)
 	assert.Len(t, response.Artifact.Tags, 1)
+}
+
+func TestTagNotFound(t *testing.T) {
+	artifact := getTestArtifact()
+
+	GlobalMock := mocket.Catcher.Reset()
+	GlobalMock.Logging = true
+
+	// Only match on queries that append expected filters
+	GlobalMock.NewMock().WithQuery(
+		`SELECT * FROM "tags" WHERE "tags"."dataset_project" = $1 AND "tags"."dataset_name" = $2 AND "tags"."dataset_domain" = $3 AND "tags"."dataset_version" = $4 AND "tags"."tag_name" = $5 ORDER BY tags.created_at DESC,"tags"."created_at" LIMIT 1%!!(string=test-tag)!(string=testVersion)!(string=testDomain)!(string=testName)(EXTRA string=testProject)`).WithError(
+			gorm.ErrRecordNotFound,
+			)
+	getInput := models.TagKey{
+		DatasetProject: artifact.DatasetProject,
+		DatasetDomain:  artifact.DatasetDomain,
+		DatasetName:    artifact.DatasetName,
+		DatasetVersion: artifact.DatasetVersion,
+		TagName:        "test-tag",
+	}
+
+	tagRepo := NewTagRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
+	_, err := tagRepo.Get(context.Background(), getInput)
+	assert.Error(t, err)
+	assert.Equal(t, "missing entity of type Tag with identifier ", err.Error(),)
 }
 
 func TestTagAlreadyExists(t *testing.T) {

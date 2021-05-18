@@ -72,8 +72,8 @@ var migrateCmd = &cobra.Command{
 		logger.Infof(ctx, "Created DB connection.")
 
 		// 	TODO: checkpoints for migrations
-		if err := dbHandle.
-			Migrate(ctx); err != nil {
+		if err := dbHandle.Migrate(ctx); err != nil {
+			logger.Errorf(ctx, "Failed to migrate. err: %v", err)
 			panic(err)
 		}
 		logger.Infof(ctx, "Ran DB migration successfully.")

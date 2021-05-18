@@ -83,3 +83,11 @@ func TestApplyFilterEmpty(t *testing.T) {
 	tx.Find(models.Artifact{})
 	assert.True(t, validInputApply)
 }
+
+func TestGetTableErr(t *testing.T) {
+	testDB := utils.GetDbForTest(t)
+
+	tableName, err := getTableName(testDB, "")
+	assert.Error(t, err)
+	assert.Equal(t, "", tableName)
+}
