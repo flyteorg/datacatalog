@@ -76,7 +76,7 @@ func (h *DBHandle) Migrate(ctx context.Context) error {
 	}
 
 	if err := h.db.Debug().AutoMigrate(&models.Artifact{}); err != nil {
-		logger.Errorf(ctx, "Failed to migrate Artifact. err: %v", err)
+		logger.Errorf(ctx, "Failed to migrate Artifact1. err: %v", err)
 		return err
 	}
 
