@@ -12,6 +12,6 @@ type Tag struct {
 	BaseModel
 	TagKey
 	ArtifactID  string
-	DatasetUUID string   `gorm:"type:uuid;index:tags_dataset_uuid_idx,unique"`
+	DatasetUUID string   `gorm:"type:uuid;index:tags_dataset_uuid_idx"`
 	Artifact    Artifact `gorm:"references:DatasetProject,DatasetName,DatasetDomain,DatasetVersion,ArtifactID;foreignkey:DatasetProject,DatasetName,DatasetDomain,DatasetVersion,ArtifactID"`
 }
