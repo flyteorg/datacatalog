@@ -30,4 +30,4 @@ database:
   host: localhost
   dbname: datacatalog
   options: "sslmode=disable"
-  log_level: 3
+  log_level: 0
