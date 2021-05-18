@@ -64,6 +64,7 @@ func (p *PostgresConfigProvider) GetLogLevel() logger.LogLevel {
 func OpenDbConnection(config DbConnectionConfigProvider) (*gorm.DB, error) {
 	db, err := gorm.Open(config.GetDialector(), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info), // TODO: change back to the config
+		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
 		return nil, err
