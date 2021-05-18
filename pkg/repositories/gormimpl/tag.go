@@ -3,10 +3,11 @@ package gormimpl
 import (
 	"context"
 
+	idl_datacatalog "github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/datacatalog"
+
 	"github.com/flyteorg/datacatalog/pkg/repositories/errors"
 	"github.com/flyteorg/datacatalog/pkg/repositories/interfaces"
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
-	idl_datacatalog "github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/datacatalog"
 	"github.com/flyteorg/flytestdlib/promutils"
 	"gorm.io/gorm"
 )
@@ -54,14 +55,12 @@ func (h *tagRepo) Get(ctx context.Context, in models.TagKey) (models.Tag, error)
 		})
 
 	if result.Error != nil {
-		switch result.Error.Error() {
-		case gorm.ErrRecordNotFound.Error():
+		if result.Error.Error() == gorm.ErrRecordNotFound.Error() {
 			return models.Tag{}, errors.GetMissingEntityError("Tag", &idl_datacatalog.Tag{
 				Name: tag.TagName,
 			})
-		default:
-			return models.Tag{}, h.errorTransformer.ToDataCatalogError(result.Error)
 		}
+		return models.Tag{}, h.errorTransformer.ToDataCatalogError(result.Error)
 	}
 
 	return tag, nil

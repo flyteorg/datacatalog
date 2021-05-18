@@ -3,11 +3,12 @@ package gormimpl
 import (
 	"context"
 
+	"github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/datacatalog"
+
 	"github.com/flyteorg/datacatalog/pkg/common"
 	"github.com/flyteorg/datacatalog/pkg/repositories/errors"
 	"github.com/flyteorg/datacatalog/pkg/repositories/interfaces"
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
-	"github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/datacatalog"
 	"github.com/flyteorg/flytestdlib/promutils"
 	"gorm.io/gorm"
 )
@@ -65,8 +66,7 @@ func (h *artifactRepo) Get(ctx context.Context, in models.ArtifactKey) (models.A
 		)
 
 	if result.Error != nil {
-		switch result.Error.Error() {
-		case gorm.ErrRecordNotFound.Error():
+		if result.Error.Error() == gorm.ErrRecordNotFound.Error() {
 			return models.Artifact{}, errors.GetMissingEntityError("Artifact", &datacatalog.Artifact{
 				Dataset: &datacatalog.DatasetID{
 					Project: in.DatasetProject,
@@ -76,9 +76,9 @@ func (h *artifactRepo) Get(ctx context.Context, in models.ArtifactKey) (models.A
 				},
 				Id: in.ArtifactID,
 			})
-		default:
-			return models.Artifact{}, h.errorTransformer.ToDataCatalogError(result.Error)
 		}
+
+		return models.Artifact{}, h.errorTransformer.ToDataCatalogError(result.Error)
 	}
 
 	return artifact, nil
