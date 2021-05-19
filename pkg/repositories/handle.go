@@ -25,7 +25,7 @@ func NewDBHandle(dbConfigValues config.DbConfig, catalogScope promutils.Scope) (
 		Password:     dbConfigValues.Password,
 		ExtraOptions: dbConfigValues.ExtraOptions,
 		BaseConfig: config.BaseConfig{
-			DisableForeignKeyConstraintWhenMigrating: false,
+			DisableForeignKeyConstraintWhenMigrating: true,
 		},
 	}
 
