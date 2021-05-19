@@ -2,12 +2,13 @@ package gormimpl
 
 import (
 	"fmt"
+
 	errors2 "github.com/flyteorg/datacatalog/pkg/errors"
 
-	"google.golang.org/grpc/codes"
 	"github.com/flyteorg/datacatalog/pkg/common"
 	"github.com/flyteorg/datacatalog/pkg/repositories/errors"
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
+	"google.golang.org/grpc/codes"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +27,7 @@ func getTableName(tx *gorm.DB, model interface{}) (string, error) {
 	stmt := gorm.Statement{DB: tx}
 
 	if err := stmt.Parse(model); err != nil {
-		return "", errors2.NewDataCatalogError(codes.InvalidArgument ,err.Error())
+		return "", errors2.NewDataCatalogError(codes.InvalidArgument, err.Error())
 	}
 	return stmt.Schema.Table, nil
 }

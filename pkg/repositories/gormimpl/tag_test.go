@@ -1,8 +1,9 @@
 package gormimpl
 
 import (
-	"gorm.io/gorm"
 	"testing"
+
+	"gorm.io/gorm"
 
 	"context"
 
@@ -108,8 +109,8 @@ func TestTagNotFound(t *testing.T) {
 	// Only match on queries that append expected filters
 	GlobalMock.NewMock().WithQuery(
 		`SELECT * FROM "tags" WHERE "tags"."dataset_project" = $1 AND "tags"."dataset_name" = $2 AND "tags"."dataset_domain" = $3 AND "tags"."dataset_version" = $4 AND "tags"."tag_name" = $5 ORDER BY tags.created_at DESC,"tags"."created_at" LIMIT 1%!!(string=test-tag)!(string=testVersion)!(string=testDomain)!(string=testName)(EXTRA string=testProject)`).WithError(
-			gorm.ErrRecordNotFound,
-			)
+		gorm.ErrRecordNotFound,
+	)
 	getInput := models.TagKey{
 		DatasetProject: artifact.DatasetProject,
 		DatasetDomain:  artifact.DatasetDomain,
@@ -121,7 +122,7 @@ func TestTagNotFound(t *testing.T) {
 	tagRepo := NewTagRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
 	_, err := tagRepo.Get(context.Background(), getInput)
 	assert.Error(t, err)
-	assert.Equal(t, "missing entity of type Tag with identifier ", err.Error(),)
+	assert.Equal(t, "missing entity of type Tag with identifier ", err.Error())
 }
 
 func TestTagAlreadyExists(t *testing.T) {

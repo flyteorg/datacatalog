@@ -1,8 +1,9 @@
 package config
 
 import (
-	"gorm.io/gorm/logger"
 	"testing"
+
+	"gorm.io/gorm/logger"
 
 	mockScope "github.com/flyteorg/flytestdlib/promutils"
 
