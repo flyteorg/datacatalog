@@ -5,4 +5,10 @@
 # 
 # TO OPT OUT OF UPDATES, SEE https://github.com/lyft/boilerplate/blob/master/Readme.rst
 
-goimports -w $(find . -type f -name '*.go' -not -path "./vendor/*" -not -path "./pkg/client/*")
+set -e
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
+# Clone the config.yml file
+echo "     - copying ${DIR}/config.yml to the root directory."
+cp ${DIR}/config.yml ${DIR}/../../.github/config.yml
