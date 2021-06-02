@@ -13,7 +13,7 @@ type gormMetrics struct {
 	CreateDuration labeled.StopWatch
 	GetDuration    labeled.StopWatch
 	ListDuration   labeled.StopWatch
-	UpdateDuration labeled.StopWatch
+	CreateOrUpdateDuration labeled.StopWatch
 }
 
 func newGormMetrics(scope promutils.Scope) gormMetrics {
@@ -25,7 +25,7 @@ func newGormMetrics(scope promutils.Scope) gormMetrics {
 			"get", "Duration for retrieving an entity ", time.Millisecond, scope),
 		ListDuration: labeled.NewStopWatch(
 			"list", "Duration for listing entities ", time.Millisecond, scope),
-		UpdateDuration: labeled.NewStopWatch(
-			"update", "Duration for updating entities ", time.Millisecond, scope),
+		CreateOrUpdateDuration: labeled.NewStopWatch(
+			"update", "Duration for creating/updating entities ", time.Millisecond, scope),
 	}
 }

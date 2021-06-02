@@ -48,6 +48,8 @@ func (r *reservationRepo) Get(ctx context.Context, reservationKey models.Reserva
 }
 
 func (r *reservationRepo) CreateOrUpdate(ctx context.Context, reservation models.Reservation, now time.Time) error {
+	timer := r.repoMetrics.CreateOrUpdateDuration.Start(ctx)
+	defer timer.Stop()
 
 	expressions := make([]clause.Expression, 0)
 	expressions = append(expressions, clause.Lte{Column: "expire_at", Value: now})
