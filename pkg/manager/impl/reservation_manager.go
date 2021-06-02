@@ -50,7 +50,7 @@ func NewReservationManager(
 			"Number of times a reservation was acquired",
 			reservationScope),
 		reservationAlreadyInProgress: labeled.NewCounter(
-			"reservation_alrea dy_in_progress",
+			"reservation_already_in_progress",
 			"Number of times we try of acquire a reservation but the reservation is in progress",
 			reservationScope,
 		),
