@@ -17,31 +17,31 @@ type ReservationRepo struct {
 	mock.Mock
 }
 
-type ReservationRepo_Create struct {
+type ReservationRepo_CreateOrUpdate struct {
 	*mock.Call
 }
 
-func (_m ReservationRepo_Create) Return(_a0 error) *ReservationRepo_Create {
-	return &ReservationRepo_Create{Call: _m.Call.Return(_a0)}
+func (_m ReservationRepo_CreateOrUpdate) Return(_a0 error) *ReservationRepo_CreateOrUpdate {
+	return &ReservationRepo_CreateOrUpdate{Call: _m.Call.Return(_a0)}
 }
 
-func (_m *ReservationRepo) OnCreate(ctx context.Context, reservation models.Reservation) *ReservationRepo_Create {
-	c := _m.On("Create", ctx, reservation)
-	return &ReservationRepo_Create{Call: c}
+func (_m *ReservationRepo) OnCreateOrUpdate(ctx context.Context, reservation models.Reservation, now time.Time) *ReservationRepo_CreateOrUpdate {
+	c := _m.On("CreateOrUpdate", ctx, reservation, now)
+	return &ReservationRepo_CreateOrUpdate{Call: c}
 }
 
-func (_m *ReservationRepo) OnCreateMatch(matchers ...interface{}) *ReservationRepo_Create {
-	c := _m.On("Create", matchers...)
-	return &ReservationRepo_Create{Call: c}
+func (_m *ReservationRepo) OnCreateOrUpdateMatch(matchers ...interface{}) *ReservationRepo_CreateOrUpdate {
+	c := _m.On("CreateOrUpdate", matchers...)
+	return &ReservationRepo_CreateOrUpdate{Call: c}
 }
 
-// Create provides a mock function with given fields: ctx, reservation
-func (_m *ReservationRepo) Create(ctx context.Context, reservation models.Reservation) error {
-	ret := _m.Called(ctx, reservation)
+// CreateOrUpdate provides a mock function with given fields: ctx, reservation, now
+func (_m *ReservationRepo) CreateOrUpdate(ctx context.Context, reservation models.Reservation, now time.Time) error {
+	ret := _m.Called(ctx, reservation, now)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, models.Reservation) error); ok {
-		r0 = rf(ctx, reservation)
+	if rf, ok := ret.Get(0).(func(context.Context, models.Reservation, time.Time) error); ok {
+		r0 = rf(ctx, reservation, now)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -81,45 +81,6 @@ func (_m *ReservationRepo) Get(ctx context.Context, reservationKey models.Reserv
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, models.ReservationKey) error); ok {
 		r1 = rf(ctx, reservationKey)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-type ReservationRepo_Update struct {
-	*mock.Call
-}
-
-func (_m ReservationRepo_Update) Return(_a0 int64, _a1 error) *ReservationRepo_Update {
-	return &ReservationRepo_Update{Call: _m.Call.Return(_a0, _a1)}
-}
-
-func (_m *ReservationRepo) OnUpdate(ctx context.Context, reservationKey models.ReservationKey, prevExpireAt time.Time, expireAt time.Time, OwnerID string) *ReservationRepo_Update {
-	c := _m.On("Update", ctx, reservationKey, prevExpireAt, expireAt, OwnerID)
-	return &ReservationRepo_Update{Call: c}
-}
-
-func (_m *ReservationRepo) OnUpdateMatch(matchers ...interface{}) *ReservationRepo_Update {
-	c := _m.On("Update", matchers...)
-	return &ReservationRepo_Update{Call: c}
-}
-
-// Update provides a mock function with given fields: ctx, reservationKey, prevExpireAt, expireAt, OwnerID
-func (_m *ReservationRepo) Update(ctx context.Context, reservationKey models.ReservationKey, prevExpireAt time.Time, expireAt time.Time, OwnerID string) (int64, error) {
-	ret := _m.Called(ctx, reservationKey, prevExpireAt, expireAt, OwnerID)
-
-	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, models.ReservationKey, time.Time, time.Time, string) int64); ok {
-		r0 = rf(ctx, reservationKey, prevExpireAt, expireAt, OwnerID)
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.ReservationKey, time.Time, time.Time, string) error); ok {
-		r1 = rf(ctx, reservationKey, prevExpireAt, expireAt, OwnerID)
 	} else {
 		r1 = ret.Error(1)
 	}

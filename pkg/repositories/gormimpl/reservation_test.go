@@ -3,13 +3,13 @@ package gormimpl
 import (
 	"context"
 	"database/sql"
-	"database/sql/driver"
 	"fmt"
+
+	"testing"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"testing"
-	"time"
 
 	"github.com/flyteorg/datacatalog/pkg/repositories/interfaces"
 
@@ -22,48 +22,6 @@ import (
 	"github.com/flyteorg/flytestdlib/promutils"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestCreate(t *testing.T) {
-	reservation := GetReservation()
-
-	GlobalMock := mocket.Catcher.Reset()
-	GlobalMock.Logging = true
-
-	reservationCreated := false
-	GlobalMock.NewMock().WithQuery(
-		`INSERT  INTO "reservations" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","owner_id","expire_at","serialized_metadata") VALUES (?,?,?,?,?,?,?,?,?,?,?)`).WithCallback(
-		func(s string, values []driver.NamedValue) {
-			reservationCreated = true
-		},
-	)
-
-	reservationRepo := getReservationRepo(t)
-
-	err := reservationRepo.Create(context.Background(), reservation)
-	assert.Nil(t, err)
-
-	assert.True(t, reservationCreated)
-}
-
-func TestCreateAlreadyExists(t *testing.T) {
-	reservation := GetReservation()
-
-	GlobalMock := mocket.Catcher.Reset()
-	GlobalMock.Logging = true
-
-	GlobalMock.NewMock().WithQuery(
-		`INSERT  INTO "reservations" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","owner_id","expire_at","serialized_metadata") VALUES (?,?,?,?,?,?,?,?,?,?,?)`).WithError(
-		getAlreadyExistsErr(),
-	)
-
-	reservationRepo := getReservationRepo(t)
-
-	err := reservationRepo.Create(context.Background(), reservation)
-	assert.NotNil(t, err)
-	dcErr, ok := err.(apiErrors.DataCatalogError)
-	assert.True(t, ok)
-	assert.Equal(t, dcErr.Code(), codes.AlreadyExists)
-}
 
 func TestGet(t *testing.T) {
 	expectedReservation := GetReservation()
@@ -103,27 +61,6 @@ func TestGetNotFound(t *testing.T) {
 
 }
 
-func TestUpdate(t *testing.T) {
-	GlobalMock := mocket.Catcher.Reset()
-	GlobalMock.Logging = true
-
-	GlobalMock.NewMock().WithQuery(
-		`UPDATE "" SET "expire_at" = ?, "owner_id" = ?  WHERE ("reservations"."dataset_project" = ?) AND ("reservations"."dataset_name" = ?) AND ("reservations"."dataset_domain" = ?) AND ("reservations"."dataset_version" = ?) AND ("reservations"."tag_name" = ?) AND ("reservations"."expire_at" = ?)`,
-	).WithRowsNum(1)
-
-	reservationRepo := getReservationRepo(t)
-
-	reservationKey := GetReservationKey()
-	prevExpireAt := time.Now()
-	expireAt := prevExpireAt.Add(time.Second * 50)
-	ownerID := "hello"
-
-	rows, err := reservationRepo.Update(context.Background(), reservationKey, prevExpireAt, expireAt, ownerID)
-
-	assert.Nil(t, err)
-	assert.Equal(t, rows, int64(1))
-}
-
 func TestCreateOrUpdate(t *testing.T) {
 	GlobalMock := mocket.Catcher.Reset()
 	GlobalMock.Logging = true
@@ -135,9 +72,8 @@ func TestCreateOrUpdate(t *testing.T) {
 
 	reservationRepo := getReservationRepo(t)
 
-	rows, err := reservationRepo.CreateOrUpdate(context.Background(), expectedReservation, time.Now())
-	assert.Nil(t, err)
-	assert.Equal(t, int64(1), rows)
+	err := reservationRepo.CreateOrUpdate(context.Background(), expectedReservation, time.Now())
+	assert.NoError(t, err)
 }
 
 func getReservationRepo(t *testing.T) interfaces.ReservationRepo {
@@ -145,7 +81,7 @@ func getReservationRepo(t *testing.T) interfaces.ReservationRepo {
 	sqlDB, err := sql.Open(mocket.DriverName, "blah")
 	assert.Nil(t, err)
 
-	db, err := gorm.Open(postgres.New(postgres.Config{Conn:sqlDB}))
+	db, err := gorm.Open(postgres.New(postgres.Config{Conn: sqlDB}))
 	if err != nil {
 		t.Fatal(fmt.Sprintf("Failed to open mock db with err %v", err))
 	}

@@ -97,7 +97,7 @@ func TestGetOrReserveArtifact_CreateReservation(t *testing.T) {
 
 	now := time.Now()
 
-	dcRepo.MockReservationRepo.On("Create",
+	dcRepo.MockReservationRepo.On("CreateOrUpdate",
 		mock.MatchedBy(func(ctx context.Context) bool { return true }),
 		mock.MatchedBy(func(reservation models.Reservation) bool {
 			return reservation.DatasetProject == datasetID.Project &&
@@ -108,6 +108,7 @@ func TestGetOrReserveArtifact_CreateReservation(t *testing.T) {
 				reservation.OwnerID == currentOwner &&
 				reservation.ExpireAt == now.Add(timeout)
 		}),
+		mock.MatchedBy(func(now time.Time) bool { return true }),
 	).Return(nil)
 
 	reservationManager := NewReservationManager(&dcRepo, timeout, func() time.Time { return now },
@@ -136,24 +137,19 @@ func TestGetOrReserveArtifact_TakeOverReservation(t *testing.T) {
 
 	setUpReservationRepoGet(&dcRepo, prevExpireAt)
 
-	dcRepo.MockReservationRepo.On("Update",
+	dcRepo.MockReservationRepo.On("CreateOrUpdate",
 		mock.MatchedBy(func(ctx context.Context) bool { return true }),
-		mock.MatchedBy(func(key models.ReservationKey) bool {
-			return key.DatasetProject == datasetID.Project &&
-				key.DatasetDomain == datasetID.Domain &&
-				key.DatasetVersion == datasetID.Version &&
-				key.DatasetName == datasetID.Name &&
-				key.TagName == tagName
+		mock.MatchedBy(func(reservation models.Reservation) bool {
+			return reservation.DatasetProject == datasetID.Project &&
+				reservation.DatasetDomain == datasetID.Domain &&
+				reservation.DatasetName == datasetID.Name &&
+				reservation.DatasetVersion == datasetID.Version &&
+				reservation.TagName == tagName &&
+				reservation.OwnerID == currentOwner &&
+				reservation.ExpireAt == now.Add(timeout)
 		}),
-		mock.MatchedBy(func(expireAt time.Time) bool {
-			return expireAt.Equal(prevExpireAt)
-		}),
-		mock.MatchedBy(func(expireAt time.Time) bool {
-			return expireAt.Equal(now.Add(timeout))
-		}),
-		mock.MatchedBy(func(ownerID string) bool {
-			return ownerID == currentOwner
-		})).Return(int64(1), nil)
+		mock.MatchedBy(func(now time.Time) bool { return true }),
+	).Return(nil)
 
 	reservationManager := NewReservationManager(&dcRepo, timeout, func() time.Time { return now },
 		mockScope.NewTestScope())
