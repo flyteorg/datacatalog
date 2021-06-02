@@ -50,7 +50,7 @@ func NewReservationManager(
 			"Number of times a reservation was acquired",
 			reservationScope),
 		reservationAlreadyInProgress: labeled.NewCounter(
-			"reservation_already_in_progress",
+			"reservation_alrea dy_in_progress",
 			"Number of times we try of acquire a reservation but the reservation is in progress",
 			reservationScope,
 		),
@@ -139,21 +139,29 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, request 
 			now,
 		)
 
+		failedToAcquireReservation := false
 		if err != nil {
 			if err.Error() == repo_errors.ReservationAlreadyInProgress {
-				// Looks like someone else tried to obtain the reservation
-				// at the same time and they won. Let's find out who won.
-				rsv1, err1 := repo.Get(ctx, reservationKey)
-				if err1 != nil {
-					return datacatalog.ReservationStatus{}, err1
-				}
 
-				r.systemMetrics.reservationAlreadyInProgress.Inc(ctx)
-				return datacatalog.ReservationStatus{
-					State:   datacatalog.ReservationStatus_ALREADY_IN_PROGRESS,
-					OwnerId: rsv1.OwnerID,
-				}, err
+				failedToAcquireReservation = true
+			} else {
+				return datacatalog.ReservationStatus{}, err
 			}
+		}
+
+		if failedToAcquireReservation {
+			// Looks like someone else tried to obtain the reservation
+			// at the same time and they won. Let's find out who won.
+			rsv1, err := repo.Get(ctx, reservationKey)
+			if err != nil {
+				return datacatalog.ReservationStatus{}, err
+			}
+
+			r.systemMetrics.reservationAlreadyInProgress.Inc(ctx)
+			return datacatalog.ReservationStatus{
+				State:   datacatalog.ReservationStatus_ALREADY_IN_PROGRESS,
+				OwnerId: rsv1.OwnerID,
+			}, err
 		}
 
 		r.systemMetrics.reservationAcquired.Inc(ctx)
