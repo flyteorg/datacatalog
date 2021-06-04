@@ -2,9 +2,9 @@ package errors
 
 import (
 	"fmt"
+	"github.com/jackc/pgconn"
 
 	"github.com/flyteorg/datacatalog/pkg/errors"
-	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 	"gorm.io/gorm"
 )
@@ -20,7 +20,7 @@ type postgresErrorTransformer struct {
 
 const (
 	unexpectedType            = "unexpected error type for: %v"
-	uniqueConstraintViolation = "value with matching %s already exists (%s)"
+	uniqueConstraintViolation = "value with matching already exists (%s)"
 	defaultPgError            = "failed database operation with %s"
 	unsupportedTableOperation = "cannot query with specified table attributes: %s"
 )
@@ -35,13 +35,14 @@ func (p *postgresErrorTransformer) fromGormError(err error) error {
 }
 
 func (p *postgresErrorTransformer) ToDataCatalogError(err error) error {
-	pqError, ok := err.(*pq.Error)
+	cErr, ok := err.(ConnectError)
+	pqError := cErr.Unwrap().(*pgconn.PgError)
 	if !ok {
 		return p.fromGormError(err)
 	}
 	switch pqError.Code {
 	case uniqueConstraintViolationCode:
-		return errors.NewDataCatalogErrorf(codes.AlreadyExists, uniqueConstraintViolation, pqError.Constraint, pqError.Message)
+		return errors.NewDataCatalogErrorf(codes.AlreadyExists, uniqueConstraintViolation, pqError.Message)
 	case undefinedTable:
 		return errors.NewDataCatalogErrorf(codes.InvalidArgument, unsupportedTableOperation, pqError.Message)
 	default:
