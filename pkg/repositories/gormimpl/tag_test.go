@@ -1,8 +1,9 @@
 package gormimpl
 
 import (
-	"github.com/jackc/pgconn"
 	"testing"
+
+	"github.com/jackc/pgconn"
 
 	"gorm.io/gorm"
 
@@ -28,9 +29,8 @@ func init() {
 	labeled.SetMetricKeys(contextutils.AppNameKey)
 }
 
-
 type pgError struct {
-	e error
+	e   error
 	msg string
 }
 

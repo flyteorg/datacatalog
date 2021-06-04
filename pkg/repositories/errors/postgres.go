@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+
 	"github.com/jackc/pgconn"
 
 	"github.com/flyteorg/datacatalog/pkg/errors"

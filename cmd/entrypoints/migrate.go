@@ -40,9 +40,9 @@ var migrateCmd = &cobra.Command{
 
 		if err != nil {
 			// if db does not exist, try creating it
- 			cErr, ok := err.(errors2.ConnectError)
+			cErr, ok := err.(errors2.ConnectError)
 			pqError := cErr.Unwrap().(*pgconn.PgError)
- 			if ok && pqError.Code == pqInvalidDBCode {
+			if ok && pqError.Code == pqInvalidDBCode {
 				logger.Warningf(ctx, "Database [%v] does not exist, trying to create it now", dbName)
 
 				dbConfigValues.DbName = defaultDB
