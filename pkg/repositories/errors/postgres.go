@@ -52,3 +52,8 @@ func (p *postgresErrorTransformer) ToDataCatalogError(err error) error {
 func NewPostgresErrorTransformer() ErrorTransformer {
 	return &postgresErrorTransformer{}
 }
+
+type ConnectError interface {
+	Unwrap() error
+	Error() string
+}

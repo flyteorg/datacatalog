@@ -2,6 +2,7 @@ package entrypoints
 
 import (
 	"github.com/flyteorg/datacatalog/pkg/repositories"
+	errors2 "github.com/flyteorg/datacatalog/pkg/repositories/errors"
 	"github.com/flyteorg/datacatalog/pkg/runtime"
 	"github.com/flyteorg/flytestdlib/errors"
 	"github.com/flyteorg/flytestdlib/logger"
@@ -41,13 +42,11 @@ var migrateCmd = &cobra.Command{
 
 		if err != nil {
 			// if db does not exist, try creating it
- 			pqError, ok := err.(*pgconn.PgError)
-			logger.Errorf(ctx, "pqError code: %s", pqError)
+ 			cErr, ok := err.(errors2.ConnectError)
 			logger.Errorf(ctx, "ok: %v", ok)
- 			logger.Errorf(ctx, "error type: %v", reflect.TypeOf(err))
 
-			code, ok := errors.GetErrorCode(err)
-			logger.Errorf(ctx, "Error code: %s", code)
+			pqError := cErr.Unwrap().(*pgconn.PgError)
+			logger.Errorf(ctx, "Error code: %s", pqError.Code)
 			logger.Errorf(ctx, "ok: %v", ok)
 
  			if ok && pqError.Code == pqInvalidDBCode {
