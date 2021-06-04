@@ -6,6 +6,7 @@ import (
 	"github.com/flyteorg/flytestdlib/logger"
 	"github.com/flyteorg/flytestdlib/promutils"
 	"github.com/lib/pq"
+	"github.com/jackc/pgconn"
 	"reflect"
 
 	"context"
@@ -39,7 +40,7 @@ var migrateCmd = &cobra.Command{
 
 		if err != nil {
 			// if db does not exist, try creating it
- 			pqError, ok := err.(*pq.Error)
+ 			pqError, ok := err.(*pgconn.PgError)
 			logger.Errorf(ctx, "pqError code: %s", pqError)
 			logger.Errorf(ctx, "ok: %v", ok)
  			logger.Errorf(ctx, "error type: %v", reflect.TypeOf(err))
