@@ -6,6 +6,7 @@ import (
 	"github.com/flyteorg/flytestdlib/logger"
 	"github.com/flyteorg/flytestdlib/promutils"
 	"github.com/lib/pq"
+	"reflect"
 
 	"context"
 
@@ -38,9 +39,10 @@ var migrateCmd = &cobra.Command{
 
 		if err != nil {
 			// if db does not exist, try creating it
-			pqError, ok := err.(*pq.Error)
+ 			pqError, ok := err.(*pq.Error)
 			logger.Errorf(ctx, "pqError code: %s", pqError)
 			logger.Errorf(ctx, "ok: %v", ok)
+ 			logger.Errorf(ctx, "error type: %v", reflect.TypeOf(err))
 			if ok && pqError.Code == pqInvalidDBCode {
 				logger.Warningf(ctx, "Database [%v] does not exist, trying to create it now", dbName)
 
