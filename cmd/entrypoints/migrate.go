@@ -4,12 +4,10 @@ import (
 	"github.com/flyteorg/datacatalog/pkg/repositories"
 	errors2 "github.com/flyteorg/datacatalog/pkg/repositories/errors"
 	"github.com/flyteorg/datacatalog/pkg/runtime"
-	"github.com/flyteorg/flytestdlib/errors"
 	"github.com/flyteorg/flytestdlib/logger"
 	"github.com/flyteorg/flytestdlib/promutils"
 
 	"github.com/jackc/pgconn"
-	"reflect"
 
 	"context"
 
