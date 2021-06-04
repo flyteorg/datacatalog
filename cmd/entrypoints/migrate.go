@@ -39,7 +39,8 @@ var migrateCmd = &cobra.Command{
 		if err != nil {
 			// if db does not exist, try creating it
 			pqError, ok := err.(*pq.Error)
-			logger.Warnf(ctx, "%s", pqError)
+			logger.Errorf(ctx, "pqError code: %s", pqError)
+			logger.Errorf(ctx, "ok: %v", ok)
 			if ok && pqError.Code == pqInvalidDBCode {
 				logger.Warningf(ctx, "Database [%v] does not exist, trying to create it now", dbName)
 
