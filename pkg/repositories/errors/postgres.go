@@ -37,10 +37,10 @@ func (p *postgresErrorTransformer) fromGormError(err error) error {
 
 func (p *postgresErrorTransformer) ToDataCatalogError(err error) error {
 	cErr, ok := err.(ConnectError)
-	pqError := cErr.Unwrap().(*pgconn.PgError)
 	if !ok {
 		return p.fromGormError(err)
 	}
+	pqError := cErr.Unwrap().(*pgconn.PgError)
 	switch pqError.Code {
 	case uniqueConstraintViolationCode:
 		return errors.NewDataCatalogErrorf(codes.AlreadyExists, uniqueConstraintViolation, pqError.Message)

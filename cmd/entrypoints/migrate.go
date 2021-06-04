@@ -1,6 +1,8 @@
 package entrypoints
 
 import (
+	"reflect"
+
 	"github.com/flyteorg/datacatalog/pkg/repositories"
 	errors2 "github.com/flyteorg/datacatalog/pkg/repositories/errors"
 	"github.com/flyteorg/datacatalog/pkg/runtime"
@@ -41,8 +43,13 @@ var migrateCmd = &cobra.Command{
 		if err != nil {
 			// if db does not exist, try creating it
 			cErr, ok := err.(errors2.ConnectError)
+			if !ok {
+				logger.Errorf(ctx, "Failed to cast error of type: %v, err: %v", reflect.TypeOf(err),
+					err)
+				panic(err)
+			}
 			pqError := cErr.Unwrap().(*pgconn.PgError)
-			if ok && pqError.Code == pqInvalidDBCode {
+			if pqError.Code == pqInvalidDBCode {
 				logger.Warningf(ctx, "Database [%v] does not exist, trying to create it now", dbName)
 
 				dbConfigValues.DbName = defaultDB
