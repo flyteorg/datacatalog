@@ -18,7 +18,7 @@ type Reservation struct {
 	ReservationKey
 
 	// Identifies who owns the reservation
-	OwnerID            string
+	OwnerID string
 
 	// When the reservation will expire
 	ExpireAt           time.Time

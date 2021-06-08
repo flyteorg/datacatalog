@@ -1,18 +1,18 @@
 package transformers
 
 import (
+	"testing"
+
 	"github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/datacatalog"
 	"github.com/magiconair/properties/assert"
-	"testing"
 )
-
 
 func TestToReservationKey(t *testing.T) {
 	datasetID := datacatalog.DatasetID{
-		Project:              "p",
-		Name:                 "n",
-		Domain:               "d",
-		Version:              "v",
+		Project: "p",
+		Name:    "n",
+		Domain:  "d",
+		Version: "v",
 	}
 
 	reservationKey := ToReservationKey(datasetID, "t")
