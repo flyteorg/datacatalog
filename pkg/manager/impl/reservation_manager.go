@@ -110,6 +110,12 @@ func (r *reservationManager) GetOrReserveArtifact(ctx context.Context, request *
 	}, nil
 }
 
+// tryAcquireReservation will fetch the reservation first and only create/update
+// the reservation if it does not exist or has expired.
+// This is an optimization to reduce the number of writes to db. We always need
+// to do a GET here because we want to know who owns the reservation
+// and show it to users on the UI. However, the reservation is held by a single
+// task most of the times and there is no need to do a write.
 func (r *reservationManager) tryAcquireReservation(ctx context.Context, request *datacatalog.GetOrReserveArtifactRequest) (datacatalog.ReservationStatus, error) {
 	repo := r.repo.ReservationRepo()
 	reservationKey := transformers.ToReservationKey(*request.DatasetId, request.TagName)

@@ -22,6 +22,7 @@ type reservationRepo struct {
 	errorTransformer errors2.ErrorTransformer
 }
 
+// NewReservationRepo creates a reservationRepo
 func NewReservationRepo(db *gorm.DB, errorTransformer errors2.ErrorTransformer, scope promutils.Scope) interfaces.ReservationRepo {
 	return &reservationRepo{
 		db:               db,
