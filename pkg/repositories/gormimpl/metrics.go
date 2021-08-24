@@ -9,11 +9,11 @@ import (
 
 // Common metrics for DB CRUD operations
 type gormMetrics struct {
-	Scope                  promutils.Scope
-	CreateDuration         labeled.StopWatch
-	GetDuration            labeled.StopWatch
-	ListDuration           labeled.StopWatch
-	UpdateDuration         labeled.StopWatch
+	Scope          promutils.Scope
+	CreateDuration labeled.StopWatch
+	GetDuration    labeled.StopWatch
+	ListDuration   labeled.StopWatch
+	UpdateDuration labeled.StopWatch
 }
 
 func newGormMetrics(scope promutils.Scope) gormMetrics {

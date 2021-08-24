@@ -29,7 +29,8 @@ var datasetID = datacatalog.DatasetID{
 	Domain:  domain,
 	Version: version,
 }
-var timeout = time.Second * 300
+var heartbeatInterval = time.Second * 5
+var heartbeatGracePeriodMultiplier = time.Second * 3
 var prevOwner = "prevOwner"
 var currentOwner = "currentOwner"
 
@@ -58,7 +59,8 @@ func TestGetOrReserveArtifact_ArtifactExists(t *testing.T) {
 		Artifact: expectedArtifact,
 	}, nil)
 
-	reservationManager := NewReservationManager(&dcRepo, timeout, time.Now, mockScope.NewTestScope())
+	reservationManager := NewReservationManager(&dcRepo, heartbeatGracePeriodMultiplier,
+		heartbeatInterval, time.Now, mockScope.NewTestScope())
 
 	req := datacatalog.GetOrReserveArtifactRequest{
 		DatasetId: &datasetID,
@@ -106,13 +108,14 @@ func TestGetOrReserveArtifact_CreateReservation(t *testing.T) {
 				reservation.DatasetVersion == datasetID.Version &&
 				reservation.TagName == tagName &&
 				reservation.OwnerID == currentOwner &&
-				reservation.ExpiresAt == now.Add(timeout)
+				reservation.ExpiresAt == now.Add(heartbeatInterval*heartbeatGracePeriodMultiplier)
 		}),
 		mock.MatchedBy(func(now time.Time) bool { return true }),
 	).Return(nil)
 
-	reservationManager := NewReservationManager(&dcRepo, timeout, func() time.Time { return now },
-		mockScope.NewTestScope())
+	reservationManager := NewReservationManager(&dcRepo,
+		heartbeatGracePeriodMultiplier, heartbeatInterval,
+		func() time.Time { return now }, mockScope.NewTestScope())
 
 	req := datacatalog.GetOrReserveArtifactRequest{
 		DatasetId: &datasetID,
@@ -133,34 +136,27 @@ func TestGetOrReserveArtifact_TakeOverReservation(t *testing.T) {
 	setUpTagRepoGetNotFound(&dcRepo)
 
 	now := time.Now()
-	prevExpiresAt := now.Truncate(timeout + time.Second*10)
+	prevExpiresAt := now.Add(time.Second * 10 * time.Duration(-1))
 
 	setUpReservationRepoGet(&dcRepo, prevExpiresAt)
 
-	reservationMatchFunc := func(reservation models.Reservation) bool {
+	dcRepo.MockReservationRepo.On("Update",
+		mock.MatchedBy(func(ctx context.Context) bool { return true }),
+		mock.MatchedBy(func(reservation models.Reservation) bool {
 			return reservation.DatasetProject == datasetID.Project &&
 				reservation.DatasetDomain == datasetID.Domain &&
 				reservation.DatasetName == datasetID.Name &&
 				reservation.DatasetVersion == datasetID.Version &&
 				reservation.TagName == tagName &&
 				reservation.OwnerID == currentOwner &&
-				reservation.ExpiresAt == now.Add(timeout)
-		}
-
-	dcRepo.MockReservationRepo.On("Create",
-		mock.MatchedBy(func(ctx context.Context) bool { return true }),
-		mock.MatchedBy(reservationMatchFunc),
+				reservation.ExpiresAt == now.Add(heartbeatInterval*heartbeatGracePeriodMultiplier)
+		}),
 		mock.MatchedBy(func(now time.Time) bool { return true }),
 	).Return(nil)
 
-	dcRepo.MockReservationRepo.On("Update",
-		mock.MatchedBy(func(ctx context.Context) bool { return true }),
-		mock.MatchedBy(reservationMatchFunc),
-		mock.MatchedBy(func(now time.Time) bool { return true }),
-	).Return(nil)
-
-	reservationManager := NewReservationManager(&dcRepo, timeout, func() time.Time { return now },
-		mockScope.NewTestScope())
+	reservationManager := NewReservationManager(&dcRepo,
+		heartbeatGracePeriodMultiplier, heartbeatInterval,
+		func() time.Time { return now }, mockScope.NewTestScope())
 
 	req := datacatalog.GetOrReserveArtifactRequest{
 		DatasetId: &datasetID,
@@ -220,8 +216,9 @@ func TestGetOrReserveArtifact_AlreadyInProgress(t *testing.T) {
 
 	setUpReservationRepoGet(&dcRepo, prevExpiresAt)
 
-	reservationManager := NewReservationManager(&dcRepo, timeout, func() time.Time { return now },
-		mockScope.NewTestScope())
+	reservationManager := NewReservationManager(&dcRepo,
+		heartbeatGracePeriodMultiplier, heartbeatInterval,
+		func() time.Time { return now }, mockScope.NewTestScope())
 
 	req := datacatalog.GetOrReserveArtifactRequest{
 		DatasetId: &datasetID,

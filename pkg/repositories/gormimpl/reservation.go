@@ -73,7 +73,7 @@ func (r *reservationRepo) Update(ctx context.Context, reservation models.Reserva
 
 	result := r.db.Model(&models.Reservation{
 		ReservationKey: reservation.ReservationKey,
-	}).Where("expires_at<=? OR owner_id=?", now, reservation.OwnerID,).Updates(reservation)
+	}).Where("expires_at<=? OR owner_id=?", now, reservation.OwnerID).Updates(reservation)
 	if result.Error != nil {
 		return r.errorTransformer.ToDataCatalogError(result.Error)
 	}

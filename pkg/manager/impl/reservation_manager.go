@@ -135,28 +135,19 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, request 
 	}
 
 	now := r.now()
-	// TODO - clean the reservation copy
+	newReservation := models.Reservation{
+		ReservationKey: reservationKey,
+		OwnerID:        request.OwnerId,
+		ExpiresAt:      now.Add(r.heartbeatInterval * r.heartbeatGracePeriodMultiplier),
+	}
+
+	// Conditional upsert on reservation. Race conditions are handled
+	// within the reservation repository Create and Update function calls.
 	var repoErr error
 	if !reservationExists {
-		repoErr = repo.Create(
-			ctx,
-			models.Reservation{
-				ReservationKey: reservationKey,
-				OwnerID:        request.OwnerId,
-				ExpiresAt:      now.Add(r.heartbeatInterval * r.heartbeatGracePeriodMultiplier),
-			},
-			now,
-		)
+		repoErr = repo.Create(ctx, newReservation, now)
 	} else if reservation.ExpiresAt.Before(now) || reservation.OwnerID == request.OwnerId {
-		repoErr = repo.Update(
-			ctx,
-			models.Reservation{
-				ReservationKey: reservationKey,
-				OwnerID:        request.OwnerId,
-				ExpiresAt:      now.Add(r.heartbeatInterval * r.heartbeatGracePeriodMultiplier),
-			},
-			now,
-		)
+		repoErr = repo.Update(ctx, newReservation, now)
 	} else {
 		logger.Debugf(ctx, "Reservation: %+v is held by %s", reservationKey, reservation.OwnerID)
 
@@ -181,9 +172,9 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, request 
 				State:   datacatalog.ReservationStatus_ALREADY_IN_PROGRESS,
 				OwnerId: rsv1.OwnerID,
 			}, err
-		} else {
-			return datacatalog.ReservationStatus{}, repoErr
 		}
+
+		return datacatalog.ReservationStatus{}, repoErr
 	}
 
 	r.systemMetrics.reservationAcquired.Inc(ctx)
