@@ -13,6 +13,7 @@ import (
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
 	"github.com/flyteorg/flytestdlib/promutils"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type reservationRepo struct {
@@ -51,10 +52,16 @@ func (r *reservationRepo) Create(ctx context.Context, reservation models.Reserva
 	timer := r.repoMetrics.CreateDuration.Start(ctx)
 	defer timer.Stop()
 
-	// TODO - test if we need FirstCreate and check RowsAffected
-	result := r.db.Create(&reservation)
+	result := r.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&reservation)
 	if result.Error != nil {
 		return r.errorTransformer.ToDataCatalogError(result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		return datacatalog_error.NewDataCatalogError(
+			codes.FailedPrecondition,
+			errors2.ReservationAlreadyInProgress,
+		)
 	}
 
 	return nil
