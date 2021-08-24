@@ -13,7 +13,6 @@ import (
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
 	"github.com/flyteorg/flytestdlib/promutils"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type reservationRepo struct {
@@ -48,19 +47,26 @@ func (r *reservationRepo) Get(ctx context.Context, reservationKey models.Reserva
 	return reservation, nil
 }
 
-func (r *reservationRepo) CreateOrUpdate(ctx context.Context, reservation models.Reservation, now time.Time) error {
-	timer := r.repoMetrics.CreateOrUpdateDuration.Start(ctx)
+func (r *reservationRepo) Create(ctx context.Context, reservation models.Reservation, now time.Time) error {
+	timer := r.repoMetrics.CreateDuration.Start(ctx)
 	defer timer.Stop()
 
-	expressions := make([]clause.Expression, 0)
-	expressions = append(expressions, clause.Lte{Column: "expire_at", Value: now})
+	// TODO - test if we need FirstCreate and check RowsAffected
+	result := r.db.Create(&reservation)
+	if result.Error != nil {
+		return r.errorTransformer.ToDataCatalogError(result.Error)
+	}
 
-	result := r.db.Clauses(
-		clause.OnConflict{
-			Where:     clause.Where{Exprs: expressions},
-			UpdateAll: true,
-		},
-	).Create(&reservation)
+	return nil
+}
+
+func (r *reservationRepo) Update(ctx context.Context, reservation models.Reservation, now time.Time) error {
+	timer := r.repoMetrics.UpdateDuration.Start(ctx)
+	defer timer.Stop()
+
+	result := r.db.Model(&models.Reservation{
+		ReservationKey: reservation.ReservationKey,
+	}).Where("expires_at<=? OR owner_id=?", now, reservation.OwnerID,).Updates(reservation)
 	if result.Error != nil {
 		return r.errorTransformer.ToDataCatalogError(result.Error)
 	}

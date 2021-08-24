@@ -21,6 +21,6 @@ type Reservation struct {
 	OwnerID string
 
 	// When the reservation will expire
-	ExpireAt           time.Time
+	ExpiresAt          time.Time
 	SerializedMetadata []byte
 }

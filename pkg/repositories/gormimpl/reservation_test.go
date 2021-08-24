@@ -41,7 +41,7 @@ func TestGet(t *testing.T) {
 	assert.Equal(t, expectedReservation.DatasetName, reservation.DatasetName)
 	assert.Equal(t, expectedReservation.DatasetVersion, reservation.DatasetVersion)
 	assert.Equal(t, expectedReservation.TagName, reservation.TagName)
-	assert.Equal(t, expectedReservation.ExpireAt, reservation.ExpireAt)
+	assert.Equal(t, expectedReservation.ExpiresAt, reservation.ExpiresAt)
 }
 
 func TestGetNotFound(t *testing.T) {
@@ -61,18 +61,34 @@ func TestGetNotFound(t *testing.T) {
 
 }
 
-func TestCreateOrUpdate(t *testing.T) {
+func TestCreate(t *testing.T) {
+	GlobalMock := mocket.Catcher.Reset()
+	GlobalMock.Logging = true
+	expectedReservation := GetReservation()
+
+	// TODO - necessary for test of RowsAffected == 1
+	/*GlobalMock.NewMock().WithQuery(
+		`INSERT INTO "reservations" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","owner_id","expire_at","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT ("dataset_project","dataset_name","dataset_domain","dataset_version","tag_name") DO UPDATE SET "updated_at"="excluded"."updated_at","deleted_at"="excluded"."deleted_at","owner_id"="excluded"."owner_id","expire_at"="excluded"."expire_at","serialized_metadata"="excluded"."serialized_metadata"WHERE "expire_at" <= $12`,
+	).WithRowsNum(1)*/
+
+	reservationRepo := getReservationRepo(t)
+
+	err := reservationRepo.Create(context.Background(), expectedReservation, time.Now())
+	assert.NoError(t, err)
+}
+
+func TestUpdate(t *testing.T) {
 	GlobalMock := mocket.Catcher.Reset()
 	GlobalMock.Logging = true
 	expectedReservation := GetReservation()
 
 	GlobalMock.NewMock().WithQuery(
-		`INSERT INTO "reservations" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","owner_id","expire_at","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT ("dataset_project","dataset_name","dataset_domain","dataset_version","tag_name") DO UPDATE SET "updated_at"="excluded"."updated_at","deleted_at"="excluded"."deleted_at","owner_id"="excluded"."owner_id","expire_at"="excluded"."expire_at","serialized_metadata"="excluded"."serialized_metadata"WHERE "expire_at" <= $12`,
+		`UPDATE "reservations" SET "updated_at"=$1,"dataset_project"=$2,"dataset_name"=$3,"dataset_domain"=$4,"dataset_version"=$5,"tag_name"=$6,"owner_id"=$7,"expires_at"=$8 WHERE (expires_at<=$9 OR owner_id=$10) AND "dataset_project" = $11 AND "dataset_name" = $12 AND "dataset_domain" = $13 AND "dataset_version" = $14 AND "tag_name" = $15`,
 	).WithRowsNum(1)
 
 	reservationRepo := getReservationRepo(t)
 
-	err := reservationRepo.CreateOrUpdate(context.Background(), expectedReservation, time.Now())
+	err := reservationRepo.Update(context.Background(), expectedReservation, time.Now())
 	assert.NoError(t, err)
 }
 
@@ -98,7 +114,7 @@ func getDBResponse(reservation models.Reservation) []map[string]interface{} {
 			"dataset_version": reservation.DatasetVersion,
 			"tag_name":        reservation.TagName,
 			"owner_id":        reservation.OwnerID,
-			"expire_at":       reservation.ExpireAt,
+			"expires_at":      reservation.ExpiresAt,
 		},
 	}
 }
@@ -117,7 +133,7 @@ func GetReservation() models.Reservation {
 	reservation := models.Reservation{
 		ReservationKey: GetReservationKey(),
 		OwnerID:        "batman",
-		ExpireAt:       time.Unix(1, 1),
+		ExpiresAt:      time.Unix(1, 1),
 	}
 	return reservation
 }

@@ -119,20 +119,76 @@ func (r *reservationManager) GetOrReserveArtifact(ctx context.Context, request *
 func (r *reservationManager) tryAcquireReservation(ctx context.Context, request *datacatalog.GetOrReserveArtifactRequest) (datacatalog.ReservationStatus, error) {
 	repo := r.repo.ReservationRepo()
 	reservationKey := transformers.ToReservationKey(*request.DatasetId, request.TagName)
-	rsv, err := repo.Get(ctx, reservationKey)
+	reservation, err := repo.Get(ctx, reservationKey)
 
-	resvExists := true
+	reservationExists := true
 	if err != nil {
 		if errors2.IsDoesNotExistError(err) {
 			// Reservation does not exist yet so let's create one
-			resvExists = false
+			reservationExists = false
 		} else {
 			return datacatalog.ReservationStatus{}, err
 		}
 	}
 
 	now := r.now()
-	if !resvExists || rsv.ExpireAt.Before(now) {
+	if !reservationExists {
+		err = repo.Create(
+			ctx,
+			models.Reservation{
+				ReservationKey: reservationKey,
+				OwnerID:        request.OwnerId,
+				ExpiresAt:      now.Add(r.reservationTimeout), // TODO - change
+			},
+			now,
+		)
+	} else if reservation.ExpiresAt.Before(now) || reservation.OwnerID == request.OwnerId {
+		err = repo.Update(
+			ctx,
+			models.Reservation{
+				ReservationKey: reservationKey,
+				OwnerID:        request.OwnerId,
+				ExpiresAt:      now.Add(r.reservationTimeout), // TODO - change
+			},
+			now,
+		)
+	} else {
+		logger.Debugf(ctx, "Reservation: %+v is held by %s", reservationKey, reservation.OwnerID)
+
+		r.systemMetrics.reservationAlreadyInProgress.Inc(ctx)
+		return datacatalog.ReservationStatus{
+			State:   datacatalog.ReservationStatus_ALREADY_IN_PROGRESS,
+			OwnerId: reservation.OwnerID,
+		}, nil
+	}
+
+	if err != nil {
+		if err.Error() == repo_errors.ReservationAlreadyInProgress {
+			// Looks like someone else tried to obtain the reservation
+			// at the same time and they won. Let's find out who won.
+			rsv1, err := repo.Get(ctx, reservationKey)
+			if err != nil {
+				return datacatalog.ReservationStatus{}, err
+			}
+
+			r.systemMetrics.reservationAlreadyInProgress.Inc(ctx)
+			return datacatalog.ReservationStatus{
+				State:   datacatalog.ReservationStatus_ALREADY_IN_PROGRESS,
+				OwnerId: rsv1.OwnerID,
+			}, err
+		} else {
+			return datacatalog.ReservationStatus{}, err
+		}
+	}
+
+	r.systemMetrics.reservationAcquired.Inc(ctx)
+	return datacatalog.ReservationStatus{
+		State:   datacatalog.ReservationStatus_ACQUIRED,
+		OwnerId: request.OwnerId,
+	}, nil
+
+	// TODO - remove
+	/*if !resvExists || rsv.ExpireAt.Before(now) {
 		// If the reservation does not exist or it is expired,
 		// we try to acquire the reservation
 		err := repo.CreateOrUpdate(
@@ -183,7 +239,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, request 
 	return datacatalog.ReservationStatus{
 		State:   datacatalog.ReservationStatus_ALREADY_IN_PROGRESS,
 		OwnerId: rsv.OwnerID,
-	}, nil
+	}, nil*/
 }
 
 func (r *reservationManager) ExtendReservation(context.Context, *datacatalog.ExtendReservationRequest) (*datacatalog.ExtendReservationResponse, error) {

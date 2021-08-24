@@ -97,7 +97,7 @@ func TestGetOrReserveArtifact_CreateReservation(t *testing.T) {
 
 	now := time.Now()
 
-	dcRepo.MockReservationRepo.On("CreateOrUpdate",
+	dcRepo.MockReservationRepo.On("Create",
 		mock.MatchedBy(func(ctx context.Context) bool { return true }),
 		mock.MatchedBy(func(reservation models.Reservation) bool {
 			return reservation.DatasetProject == datasetID.Project &&
@@ -106,7 +106,7 @@ func TestGetOrReserveArtifact_CreateReservation(t *testing.T) {
 				reservation.DatasetVersion == datasetID.Version &&
 				reservation.TagName == tagName &&
 				reservation.OwnerID == currentOwner &&
-				reservation.ExpireAt == now.Add(timeout)
+				reservation.ExpiresAt == now.Add(timeout)
 		}),
 		mock.MatchedBy(func(now time.Time) bool { return true }),
 	).Return(nil)
@@ -133,21 +133,29 @@ func TestGetOrReserveArtifact_TakeOverReservation(t *testing.T) {
 	setUpTagRepoGetNotFound(&dcRepo)
 
 	now := time.Now()
-	prevExpireAt := now.Truncate(timeout + time.Second*10)
+	prevExpiresAt := now.Truncate(timeout + time.Second*10)
 
-	setUpReservationRepoGet(&dcRepo, prevExpireAt)
+	setUpReservationRepoGet(&dcRepo, prevExpiresAt)
 
-	dcRepo.MockReservationRepo.On("CreateOrUpdate",
-		mock.MatchedBy(func(ctx context.Context) bool { return true }),
-		mock.MatchedBy(func(reservation models.Reservation) bool {
+	reservationMatchFunc := func(reservation models.Reservation) bool {
 			return reservation.DatasetProject == datasetID.Project &&
 				reservation.DatasetDomain == datasetID.Domain &&
 				reservation.DatasetName == datasetID.Name &&
 				reservation.DatasetVersion == datasetID.Version &&
 				reservation.TagName == tagName &&
 				reservation.OwnerID == currentOwner &&
-				reservation.ExpireAt == now.Add(timeout)
-		}),
+				reservation.ExpiresAt == now.Add(timeout)
+		}
+
+	dcRepo.MockReservationRepo.On("Create",
+		mock.MatchedBy(func(ctx context.Context) bool { return true }),
+		mock.MatchedBy(reservationMatchFunc),
+		mock.MatchedBy(func(now time.Time) bool { return true }),
+	).Return(nil)
+
+	dcRepo.MockReservationRepo.On("Update",
+		mock.MatchedBy(func(ctx context.Context) bool { return true }),
+		mock.MatchedBy(reservationMatchFunc),
 		mock.MatchedBy(func(now time.Time) bool { return true }),
 	).Return(nil)
 
@@ -167,7 +175,7 @@ func TestGetOrReserveArtifact_TakeOverReservation(t *testing.T) {
 	assert.Equal(t, datacatalog.ReservationStatus_ACQUIRED, resp.GetReservationStatus().State)
 }
 
-func setUpReservationRepoGet(dcRepo *mocks.DataCatalogRepo, prevExpireAt time.Time) {
+func setUpReservationRepoGet(dcRepo *mocks.DataCatalogRepo, prevExpiresAt time.Time) {
 	dcRepo.MockReservationRepo.On("Get",
 		mock.MatchedBy(func(ctx context.Context) bool { return true }),
 		mock.MatchedBy(func(key models.ReservationKey) bool {
@@ -180,7 +188,7 @@ func setUpReservationRepoGet(dcRepo *mocks.DataCatalogRepo, prevExpireAt time.Ti
 		models.Reservation{
 			ReservationKey: getReservationKey(),
 			OwnerID:        prevOwner,
-			ExpireAt:       prevExpireAt,
+			ExpiresAt:      prevExpiresAt,
 		}, nil,
 	)
 }
@@ -208,9 +216,9 @@ func TestGetOrReserveArtifact_AlreadyInProgress(t *testing.T) {
 	setUpTagRepoGetNotFound(&dcRepo)
 
 	now := time.Now()
-	prevExpireAt := now.Add(time.Second * 10)
+	prevExpiresAt := now.Add(time.Second * 10)
 
-	setUpReservationRepoGet(&dcRepo, prevExpireAt)
+	setUpReservationRepoGet(&dcRepo, prevExpiresAt)
 
 	reservationManager := NewReservationManager(&dcRepo, timeout, func() time.Time { return now },
 		mockScope.NewTestScope())

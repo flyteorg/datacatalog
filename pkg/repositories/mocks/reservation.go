@@ -17,26 +17,26 @@ type ReservationRepo struct {
 	mock.Mock
 }
 
-type ReservationRepo_CreateOrUpdate struct {
+type ReservationRepo_Create struct {
 	*mock.Call
 }
 
-func (_m ReservationRepo_CreateOrUpdate) Return(_a0 error) *ReservationRepo_CreateOrUpdate {
-	return &ReservationRepo_CreateOrUpdate{Call: _m.Call.Return(_a0)}
+func (_m ReservationRepo_Create) Return(_a0 error) *ReservationRepo_Create {
+	return &ReservationRepo_Create{Call: _m.Call.Return(_a0)}
 }
 
-func (_m *ReservationRepo) OnCreateOrUpdate(ctx context.Context, reservation models.Reservation, now time.Time) *ReservationRepo_CreateOrUpdate {
-	c := _m.On("CreateOrUpdate", ctx, reservation, now)
-	return &ReservationRepo_CreateOrUpdate{Call: c}
+func (_m *ReservationRepo) OnCreate(ctx context.Context, reservation models.Reservation, now time.Time) *ReservationRepo_Create {
+	c := _m.On("Create", ctx, reservation, now)
+	return &ReservationRepo_Create{Call: c}
 }
 
-func (_m *ReservationRepo) OnCreateOrUpdateMatch(matchers ...interface{}) *ReservationRepo_CreateOrUpdate {
-	c := _m.On("CreateOrUpdate", matchers...)
-	return &ReservationRepo_CreateOrUpdate{Call: c}
+func (_m *ReservationRepo) OnCreateMatch(matchers ...interface{}) *ReservationRepo_Create {
+	c := _m.On("Create", matchers...)
+	return &ReservationRepo_Create{Call: c}
 }
 
-// CreateOrUpdate provides a mock function with given fields: ctx, reservation, now
-func (_m *ReservationRepo) CreateOrUpdate(ctx context.Context, reservation models.Reservation, now time.Time) error {
+// Create provides a mock function with given fields: ctx, reservation, now
+func (_m *ReservationRepo) Create(ctx context.Context, reservation models.Reservation, now time.Time) error {
 	ret := _m.Called(ctx, reservation, now)
 
 	var r0 error
@@ -86,4 +86,36 @@ func (_m *ReservationRepo) Get(ctx context.Context, reservationKey models.Reserv
 	}
 
 	return r0, r1
+}
+
+type ReservationRepo_Update struct {
+	*mock.Call
+}
+
+func (_m ReservationRepo_Update) Return(_a0 error) *ReservationRepo_Update {
+	return &ReservationRepo_Update{Call: _m.Call.Return(_a0)}
+}
+
+func (_m *ReservationRepo) OnUpdate(ctx context.Context, reservation models.Reservation, now time.Time) *ReservationRepo_Update {
+	c := _m.On("Update", ctx, reservation, now)
+	return &ReservationRepo_Update{Call: c}
+}
+
+func (_m *ReservationRepo) OnUpdateMatch(matchers ...interface{}) *ReservationRepo_Update {
+	c := _m.On("Update", matchers...)
+	return &ReservationRepo_Update{Call: c}
+}
+
+// Update provides a mock function with given fields: ctx, reservation, now
+func (_m *ReservationRepo) Update(ctx context.Context, reservation models.Reservation, now time.Time) error {
+	ret := _m.Called(ctx, reservation, now)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, models.Reservation, time.Time) error); ok {
+		r0 = rf(ctx, reservation, now)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
