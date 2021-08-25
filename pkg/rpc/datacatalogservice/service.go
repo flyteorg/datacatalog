@@ -59,10 +59,6 @@ func (s *DataCatalogService) GetOrReserveArtifact(ctx context.Context, request *
 	return s.ReservationManager.GetOrReserveArtifact(ctx, request)
 }
 
-func (s *DataCatalogService) ExtendReservation(ctx context.Context, request *catalog.ExtendReservationRequest) (*catalog.ExtendReservationResponse, error) {
-	return s.ReservationManager.ExtendReservation(ctx, request)
-}
-
 func (s *DataCatalogService) ReleaseReservation(ctx context.Context, request *catalog.ReleaseReservationRequest) (*catalog.ReleaseReservationResponse, error) {
 	return s.ReservationManager.ReleaseReservation(ctx, request)
 }

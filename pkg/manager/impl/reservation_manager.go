@@ -184,10 +184,6 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, request 
 	}, nil
 }
 
-func (r *reservationManager) ExtendReservation(context.Context, *datacatalog.ExtendReservationRequest) (*datacatalog.ExtendReservationResponse, error) {
-	return nil, errors.New("not implemented")
-}
-
 func (r *reservationManager) ReleaseReservation(context.Context, *datacatalog.ReleaseReservationRequest) (*datacatalog.ReleaseReservationResponse, error) {
 	return nil, errors.New("not implemented")
 }
