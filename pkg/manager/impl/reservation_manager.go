@@ -151,11 +151,15 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, request 
 	} else {
 		logger.Debugf(ctx, "Reservation: %+v is held by %s", reservationKey, reservation.OwnerID)
 
+		reservationStatus, err := transformers.CreateReservationStatus(
+			reservation, r.heartbeatInterval,
+			datacatalog.ReservationStatus_ALREADY_IN_PROGRESS)
+		if err != nil {
+			return reservationStatus, err
+		}
+
 		r.systemMetrics.reservationAlreadyInProgress.Inc(ctx)
-		return datacatalog.ReservationStatus{
-			State:   datacatalog.ReservationStatus_ALREADY_IN_PROGRESS,
-			OwnerId: reservation.OwnerID,
-		}, nil
+		return reservationStatus, nil
 	}
 
 	if repoErr != nil {
@@ -167,21 +171,28 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, request 
 				return datacatalog.ReservationStatus{}, err
 			}
 
+			reservationStatus, err := transformers.CreateReservationStatus(
+				rsv1, r.heartbeatInterval,
+				datacatalog.ReservationStatus_ALREADY_IN_PROGRESS)
+			if err != nil {
+				return reservationStatus, err
+			}
+
 			r.systemMetrics.reservationAlreadyInProgress.Inc(ctx)
-			return datacatalog.ReservationStatus{
-				State:   datacatalog.ReservationStatus_ALREADY_IN_PROGRESS,
-				OwnerId: rsv1.OwnerID,
-			}, err
+			return reservationStatus, nil
 		}
 
 		return datacatalog.ReservationStatus{}, repoErr
 	}
 
-	r.systemMetrics.reservationAcquired.Inc(ctx)
-	return datacatalog.ReservationStatus{
-		State:   datacatalog.ReservationStatus_ACQUIRED,
-		OwnerId: request.OwnerId,
-	}, nil
+	reservationStatus, err := transformers.CreateReservationStatus(newReservation,
+		r.heartbeatInterval, datacatalog.ReservationStatus_ACQUIRED)
+	if err != nil {
+		return reservationStatus, err
+	}
+
+	r.systemMetrics.reservationAlreadyInProgress.Inc(ctx)
+	return reservationStatus, nil
 }
 
 func (r *reservationManager) ReleaseReservation(context.Context, *datacatalog.ReleaseReservationRequest) (*datacatalog.ReleaseReservationResponse, error) {
