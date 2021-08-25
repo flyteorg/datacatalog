@@ -32,8 +32,8 @@ func CreateReservationStatus(reservation *models.Reservation, heartbeatInterval 
 
 	heartbeatIntervalPb := ptypes.DurationProto(heartbeatInterval)
 	return datacatalog.ReservationStatus{
-		ReservationId:     &datacatalog.ReservationID {
-			DatasetId: &datacatalog.DatasetID {
+		ReservationId: &datacatalog.ReservationID{
+			DatasetId: &datacatalog.DatasetID{
 				Project: reservation.DatasetProject,
 				Domain:  reservation.DatasetDomain,
 				Name:    reservation.DatasetName,

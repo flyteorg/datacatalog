@@ -30,24 +30,25 @@ func TestFromReservationID(t *testing.T) {
 
 func TestCreateReservationStatus(t *testing.T) {
 	now := time.Now()
-	heartbeatInterval := time.Duration(time.Second * 5)
-	reservation := models.Reservation {
-		ReservationKey: models.ReservationKey {
+	heartbeatInterval := time.Second * 5
+	reservation := models.Reservation{
+		ReservationKey: models.ReservationKey{
 			DatasetProject: "p",
 			DatasetName:    "n",
 			DatasetDomain:  "d",
 			DatasetVersion: "v",
 			TagName:        "t",
 		},
-		OwnerID: "o",
+		OwnerID:   "o",
 		ExpiresAt: now,
 	}
 
 	reservationStatus, err := CreateReservationStatus(&reservation, heartbeatInterval, datacatalog.ReservationStatus_ACQUIRED)
 
 	assert.Equal(t, err, nil)
-	assert.Equal(t, reservationStatus.OwnerId, reservation.OwnerID)
 	assert.Equal(t, reservationStatus.ExpiresAt.AsTime(), reservation.ExpiresAt.UTC())
+	assert.Equal(t, reservationStatus.HeartbeatInterval.AsDuration(), heartbeatInterval)
+	assert.Equal(t, reservationStatus.OwnerId, reservation.OwnerID)
 
 	reservationID := reservationStatus.ReservationId
 	assert.Equal(t, reservationID.TagName, reservation.TagName)

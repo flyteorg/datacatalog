@@ -68,7 +68,7 @@ func TestGetOrReserveArtifact_ArtifactExists(t *testing.T) {
 
 	req := datacatalog.GetOrReserveArtifactRequest{
 		ReservationId: &reservationID,
-		OwnerId:   currentOwner,
+		OwnerId:       currentOwner,
 	}
 
 	resp, err := reservationManager.GetOrReserveArtifact(context.Background(), &req)
@@ -237,7 +237,7 @@ func TestGetOrReserveArtifact_ExtendReservation(t *testing.T) {
 
 	req := datacatalog.GetOrReserveArtifactRequest{
 		ReservationId: &reservationID,
-		OwnerId:   prevOwner,
+		OwnerId:       prevOwner,
 	}
 
 	resp, err := reservationManager.GetOrReserveArtifact(context.Background(), &req)

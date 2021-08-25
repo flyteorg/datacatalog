@@ -88,14 +88,14 @@ func NewReservationManager(
 }
 
 func (r *reservationManager) GetOrReserveArtifact(ctx context.Context, request *datacatalog.GetOrReserveArtifactRequest) (*datacatalog.GetOrReserveArtifactResponse, error) {
-	reservationId := request.ReservationId
-	tagKey := transformers.ToTagKey(reservationId.DatasetId, reservationId.TagName)
+	reservationID := request.ReservationId
+	tagKey := transformers.ToTagKey(reservationID.DatasetId, reservationID.TagName)
 	tag, err := r.repo.TagRepo().Get(ctx, tagKey)
 	if err != nil {
 		if errors.IsDoesNotExistError(err) {
 			// Tag does not exist yet, let's acquire the reservation to work on
 			// generating the artifact.
-			status, err := r.tryAcquireReservation(ctx, reservationId, request.OwnerId)
+			status, err := r.tryAcquireReservation(ctx, reservationID, request.OwnerId)
 			if err != nil {
 				r.systemMetrics.acquireReservationFailure.Inc(ctx)
 				return nil, err
@@ -130,9 +130,9 @@ func (r *reservationManager) GetOrReserveArtifact(ctx context.Context, request *
 // to do a GET here because we want to know who owns the reservation
 // and show it to users on the UI. However, the reservation is held by a single
 // task most of the times and there is no need to do a write.
-func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservationId *datacatalog.ReservationID, ownerId string) (datacatalog.ReservationStatus, error) {
+func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservationID *datacatalog.ReservationID, ownerID string) (datacatalog.ReservationStatus, error) {
 	repo := r.repo.ReservationRepo()
-	reservationKey := transformers.FromReservationID(reservationId)
+	reservationKey := transformers.FromReservationID(reservationID)
 	reservation, err := repo.Get(ctx, reservationKey)
 
 	reservationExists := true
@@ -148,7 +148,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservat
 	now := r.now()
 	newReservation := models.Reservation{
 		ReservationKey: reservationKey,
-		OwnerID:        ownerId,
+		OwnerID:        ownerID,
 		ExpiresAt:      now.Add(r.heartbeatInterval * r.heartbeatGracePeriodMultiplier),
 	}
 
@@ -157,7 +157,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservat
 	var repoErr error
 	if !reservationExists {
 		repoErr = repo.Create(ctx, newReservation, now)
-	} else if reservation.ExpiresAt.Before(now) || reservation.OwnerID == ownerId {
+	} else if reservation.ExpiresAt.Before(now) || reservation.OwnerID == ownerID {
 		repoErr = repo.Update(ctx, newReservation, now)
 	} else {
 		logger.Debugf(ctx, "Reservation: %+v is held by %s", reservationKey, reservation.OwnerID)

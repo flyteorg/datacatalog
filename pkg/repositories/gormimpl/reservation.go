@@ -67,14 +67,14 @@ func (r *reservationRepo) Delete(ctx context.Context, reservationKey models.Rese
 
 	if result.RowsAffected == 0 {
 		return errors2.GetMissingEntityError("Reservation",
-			&datacatalog.ReservationID {
+			&datacatalog.ReservationID{
 				DatasetId: &datacatalog.DatasetID{
 					Project: reservationKey.DatasetProject,
 					Domain:  reservationKey.DatasetDomain,
 					Name:    reservationKey.DatasetName,
 					Version: reservationKey.DatasetVersion,
 				},
-				TagName:   reservationKey.TagName,
+				TagName: reservationKey.TagName,
 			})
 	}
 
