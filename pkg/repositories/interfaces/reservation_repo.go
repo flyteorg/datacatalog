@@ -10,18 +10,17 @@ import (
 // Interface to interact with Reservation Table
 type ReservationRepo interface {
 
+	// Create a new reservation if the reservation does not already exist
+	Create(ctx context.Context, reservation models.Reservation, now time.Time) error
+
+	// Delete a reservation if it exists
+	Delete(ctx context.Context, reservation models.ReservationKey) error
+
 	// Get reservation
 	Get(ctx context.Context, reservationKey models.ReservationKey) (models.Reservation, error)
 
-	// TODO - comment
-	Create(ctx context.Context, reservation models.Reservation, now time.Time) error
-
-	// TODO - comment
+	// Update an existing reservation. If called by the current owner, we update the
+	// expiresAt timestamp. If called by a new owner and the current reservation has
+	// expired, we attempt to take over the reservation.
 	Update(ctx context.Context, reservation models.Reservation, now time.Time) error
-
-	// Create the reservation. If the reservation already exists, we try to take over the
-	// reservation via update when the reservation has expired. Note: Each reservation has its own
-	// expire date which is tracked in expire_at column in the reservation table. And the
-	// reservation expires when the date stored in expire_at column is in the past.
-	//CreateOrUpdate(ctx context.Context, reservation models.Reservation, now time.Time) error
 }

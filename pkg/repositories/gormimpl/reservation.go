@@ -8,6 +8,8 @@ import (
 
 	"time"
 
+	"github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/datacatalog"
+
 	errors2 "github.com/flyteorg/datacatalog/pkg/repositories/errors"
 	"github.com/flyteorg/datacatalog/pkg/repositories/interfaces"
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
@@ -31,23 +33,6 @@ func NewReservationRepo(db *gorm.DB, errorTransformer errors2.ErrorTransformer, 
 	}
 }
 
-func (r *reservationRepo) Get(ctx context.Context, reservationKey models.ReservationKey) (models.Reservation, error) {
-	timer := r.repoMetrics.GetDuration.Start(ctx)
-	defer timer.Stop()
-
-	var reservation models.Reservation
-
-	result := r.db.Where(&models.Reservation{
-		ReservationKey: reservationKey,
-	}).Take(&reservation)
-
-	if result.Error != nil {
-		return reservation, r.errorTransformer.ToDataCatalogError(result.Error)
-	}
-
-	return reservation, nil
-}
-
 func (r *reservationRepo) Create(ctx context.Context, reservation models.Reservation, now time.Time) error {
 	timer := r.repoMetrics.CreateDuration.Start(ctx)
 	defer timer.Stop()
@@ -65,6 +50,52 @@ func (r *reservationRepo) Create(ctx context.Context, reservation models.Reserva
 	}
 
 	return nil
+}
+
+func (r *reservationRepo) Delete(ctx context.Context, reservationKey models.ReservationKey) error {
+	timer := r.repoMetrics.DeleteDuration.Start(ctx)
+	defer timer.Stop()
+
+	var reservation models.Reservation
+
+	result := r.db.Where(&models.Reservation{
+		ReservationKey: reservationKey,
+	}).Delete(&reservation)
+	if result.Error != nil {
+		return r.errorTransformer.ToDataCatalogError(result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		return errors2.GetMissingEntityError("Reservation",
+			&datacatalog.ReservationID {
+				DatasetId: &datacatalog.DatasetID{
+					Project: reservationKey.DatasetProject,
+					Domain:  reservationKey.DatasetDomain,
+					Name:    reservationKey.DatasetName,
+					Version: reservationKey.DatasetVersion,
+				},
+				TagName:   reservationKey.TagName,
+			})
+	}
+
+	return nil
+}
+
+func (r *reservationRepo) Get(ctx context.Context, reservationKey models.ReservationKey) (models.Reservation, error) {
+	timer := r.repoMetrics.GetDuration.Start(ctx)
+	defer timer.Stop()
+
+	var reservation models.Reservation
+
+	result := r.db.Where(&models.Reservation{
+		ReservationKey: reservationKey,
+	}).Take(&reservation)
+
+	if result.Error != nil {
+		return reservation, r.errorTransformer.ToDataCatalogError(result.Error)
+	}
+
+	return reservation, nil
 }
 
 func (r *reservationRepo) Update(ctx context.Context, reservation models.Reservation, now time.Time) error {

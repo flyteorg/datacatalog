@@ -12,13 +12,26 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-func ToReservationKey(datasetID datacatalog.DatasetID, tagName string) models.ReservationKey {
+// TODO - remove
+/*func ToReservationKey(datasetID datacatalog.DatasetID, tagName string) models.ReservationKey {
 	return models.ReservationKey{
 		DatasetProject: datasetID.Project,
 		DatasetName:    datasetID.Name,
 		DatasetDomain:  datasetID.Domain,
 		DatasetVersion: datasetID.Version,
 		TagName:        tagName,
+	}
+}*/
+
+func FromReservationID(reservationID *datacatalog.ReservationID) models.ReservationKey {
+	datasetID := reservationID.DatasetId
+
+	return models.ReservationKey{
+		DatasetProject: datasetID.Project,
+		DatasetDomain:  datasetID.Domain,
+		DatasetName:    datasetID.Name,
+		DatasetVersion: datasetID.Version,
+		TagName:        reservationID.TagName,
 	}
 }
 

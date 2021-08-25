@@ -23,6 +23,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCreate(t *testing.T) {
+	GlobalMock := mocket.Catcher.Reset()
+	GlobalMock.Logging = true
+	expectedReservation := GetReservation()
+
+	GlobalMock.NewMock().WithQuery(
+		`INSERT INTO "reservations" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","owner_id","expires_at","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT DO NOTHING`,
+	).WithRowsNum(1)
+
+	reservationRepo := getReservationRepo(t)
+
+	err := reservationRepo.Create(context.Background(), expectedReservation, time.Now())
+	assert.NoError(t, err)
+}
+
 func TestGet(t *testing.T) {
 	expectedReservation := GetReservation()
 
@@ -59,21 +74,6 @@ func TestGetNotFound(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, dcErr.Code(), codes.NotFound)
 
-}
-
-func TestCreate(t *testing.T) {
-	GlobalMock := mocket.Catcher.Reset()
-	GlobalMock.Logging = true
-	expectedReservation := GetReservation()
-
-	GlobalMock.NewMock().WithQuery(
-		`INSERT INTO "reservations" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","owner_id","expires_at","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT DO NOTHING`,
-	).WithRowsNum(1)
-
-	reservationRepo := getReservationRepo(t)
-
-	err := reservationRepo.Create(context.Background(), expectedReservation, time.Now())
-	assert.NoError(t, err)
 }
 
 func TestUpdate(t *testing.T) {

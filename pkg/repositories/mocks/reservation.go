@@ -49,6 +49,38 @@ func (_m *ReservationRepo) Create(ctx context.Context, reservation models.Reserv
 	return r0
 }
 
+type ReservationRepo_Delete struct {
+	*mock.Call
+}
+
+func (_m ReservationRepo_Delete) Return(_a0 error) *ReservationRepo_Delete {
+	return &ReservationRepo_Delete{Call: _m.Call.Return(_a0)}
+}
+
+func (_m *ReservationRepo) OnDelete(ctx context.Context, reservation models.ReservationKey) *ReservationRepo_Delete {
+	c := _m.On("Delete", ctx, reservation)
+	return &ReservationRepo_Delete{Call: c}
+}
+
+func (_m *ReservationRepo) OnDeleteMatch(matchers ...interface{}) *ReservationRepo_Delete {
+	c := _m.On("Delete", matchers...)
+	return &ReservationRepo_Delete{Call: c}
+}
+
+// Delete provides a mock function with given fields: ctx, reservation
+func (_m *ReservationRepo) Delete(ctx context.Context, reservation models.ReservationKey) error {
+	ret := _m.Called(ctx, reservation)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, models.ReservationKey) error); ok {
+		r0 = rf(ctx, reservation)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 type ReservationRepo_Get struct {
 	*mock.Call
 }

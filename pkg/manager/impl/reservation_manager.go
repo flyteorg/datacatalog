@@ -2,14 +2,13 @@ package impl
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/flyteorg/flytestdlib/logger"
 	"github.com/flyteorg/flytestdlib/promutils"
 	"github.com/flyteorg/flytestdlib/promutils/labeled"
 
-	errors2 "github.com/flyteorg/datacatalog/pkg/errors"
+	"github.com/flyteorg/datacatalog/pkg/errors"
 	"github.com/flyteorg/datacatalog/pkg/repositories"
 	repo_errors "github.com/flyteorg/datacatalog/pkg/repositories/errors"
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
@@ -23,9 +22,11 @@ import (
 type reservationMetrics struct {
 	scope                        promutils.Scope
 	reservationAcquired          labeled.Counter
+	reservationReleased          labeled.Counter
 	reservationAlreadyInProgress labeled.Counter
 	acquireReservationFailure    labeled.Counter
 	getTagFailure                labeled.Counter
+	releaseReservationFailure    labeled.Counter
 }
 
 type NowFunc func() time.Time
@@ -51,6 +52,10 @@ func NewReservationManager(
 			"reservation_acquired",
 			"Number of times a reservation was acquired",
 			reservationScope),
+		reservationReleased: labeled.NewCounter(
+			"reservation_released",
+			"Number of times a reservation was released",
+			reservationScope),
 		reservationAlreadyInProgress: labeled.NewCounter(
 			"reservation_already_in_progress",
 			"Number of times we try of acquire a reservation but the reservation is in progress",
@@ -66,6 +71,11 @@ func NewReservationManager(
 			"Number of times we failed to get tag",
 			reservationScope,
 		),
+		releaseReservationFailure: labeled.NewCounter(
+			"release_reservation_failure",
+			"Number of times we failed to release a reservation",
+			reservationScope,
+		),
 	}
 
 	return &reservationManager{
@@ -78,13 +88,14 @@ func NewReservationManager(
 }
 
 func (r *reservationManager) GetOrReserveArtifact(ctx context.Context, request *datacatalog.GetOrReserveArtifactRequest) (*datacatalog.GetOrReserveArtifactResponse, error) {
-	tagKey := transformers.ToTagKey(request.DatasetId, request.TagName)
+	reservationId := request.ReservationId
+	tagKey := transformers.ToTagKey(reservationId.DatasetId, reservationId.TagName)
 	tag, err := r.repo.TagRepo().Get(ctx, tagKey)
 	if err != nil {
-		if errors2.IsDoesNotExistError(err) {
+		if errors.IsDoesNotExistError(err) {
 			// Tag does not exist yet, let's acquire the reservation to work on
 			// generating the artifact.
-			status, err := r.tryAcquireReservation(ctx, request)
+			status, err := r.tryAcquireReservation(ctx, reservationId, request.OwnerId)
 			if err != nil {
 				r.systemMetrics.acquireReservationFailure.Inc(ctx)
 				return nil, err
@@ -119,14 +130,14 @@ func (r *reservationManager) GetOrReserveArtifact(ctx context.Context, request *
 // to do a GET here because we want to know who owns the reservation
 // and show it to users on the UI. However, the reservation is held by a single
 // task most of the times and there is no need to do a write.
-func (r *reservationManager) tryAcquireReservation(ctx context.Context, request *datacatalog.GetOrReserveArtifactRequest) (datacatalog.ReservationStatus, error) {
+func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservationId *datacatalog.ReservationID, ownerId string) (datacatalog.ReservationStatus, error) {
 	repo := r.repo.ReservationRepo()
-	reservationKey := transformers.ToReservationKey(*request.DatasetId, request.TagName)
+	reservationKey := transformers.FromReservationID(reservationId)
 	reservation, err := repo.Get(ctx, reservationKey)
 
 	reservationExists := true
 	if err != nil {
-		if errors2.IsDoesNotExistError(err) {
+		if errors.IsDoesNotExistError(err) {
 			// Reservation does not exist yet so let's create one
 			reservationExists = false
 		} else {
@@ -137,7 +148,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, request 
 	now := r.now()
 	newReservation := models.Reservation{
 		ReservationKey: reservationKey,
-		OwnerID:        request.OwnerId,
+		OwnerID:        ownerId,
 		ExpiresAt:      now.Add(r.heartbeatInterval * r.heartbeatGracePeriodMultiplier),
 	}
 
@@ -146,7 +157,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, request 
 	var repoErr error
 	if !reservationExists {
 		repoErr = repo.Create(ctx, newReservation, now)
-	} else if reservation.ExpiresAt.Before(now) || reservation.OwnerID == request.OwnerId {
+	} else if reservation.ExpiresAt.Before(now) || reservation.OwnerID == ownerId {
 		repoErr = repo.Update(ctx, newReservation, now)
 	} else {
 		logger.Debugf(ctx, "Reservation: %+v is held by %s", reservationKey, reservation.OwnerID)
@@ -185,6 +196,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, request 
 		return datacatalog.ReservationStatus{}, repoErr
 	}
 
+	// Reservation has been acquired or extended without error
 	reservationStatus, err := transformers.CreateReservationStatus(newReservation,
 		r.heartbeatInterval, datacatalog.ReservationStatus_ACQUIRED)
 	if err != nil {
@@ -195,6 +207,18 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, request 
 	return reservationStatus, nil
 }
 
-func (r *reservationManager) ReleaseReservation(context.Context, *datacatalog.ReleaseReservationRequest) (*datacatalog.ReleaseReservationResponse, error) {
-	return nil, errors.New("not implemented")
+func (r *reservationManager) ReleaseReservation(ctx context.Context, request *datacatalog.ReleaseReservationRequest) (*datacatalog.ReleaseReservationResponse, error) {
+	repo := r.repo.ReservationRepo()
+	reservationKey := transformers.FromReservationID(request.ReservationId)
+
+	err := repo.Delete(ctx, reservationKey)
+	if err != nil {
+		logger.Errorf(ctx, "Failed to release reservation: %+v, err: %v", reservationKey, err)
+
+		r.systemMetrics.releaseReservationFailure.Inc(ctx)
+		return nil, err
+	}
+
+	r.systemMetrics.reservationReleased.Inc(ctx)
+	return &datacatalog.ReleaseReservationResponse{}, nil
 }
