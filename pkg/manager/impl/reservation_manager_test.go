@@ -29,6 +29,10 @@ var datasetID = datacatalog.DatasetID{
 	Domain:  domain,
 	Version: version,
 }
+var reservationID = datacatalog.ReservationID{
+	DatasetId: &datasetID,
+	TagName:   tagName,
+}
 var heartbeatInterval = time.Second * 5
 var heartbeatGracePeriodMultiplier = time.Second * 3
 var prevOwner = "prevOwner"
@@ -63,8 +67,7 @@ func TestGetOrReserveArtifact_ArtifactExists(t *testing.T) {
 		heartbeatInterval, time.Now, mockScope.NewTestScope())
 
 	req := datacatalog.GetOrReserveArtifactRequest{
-		DatasetId: &datasetID,
-		TagName:   tagName,
+		ReservationId: &reservationID,
 		OwnerId:   currentOwner,
 	}
 
@@ -118,9 +121,8 @@ func TestGetOrReserveArtifact_CreateReservation(t *testing.T) {
 		func() time.Time { return now }, mockScope.NewTestScope())
 
 	req := datacatalog.GetOrReserveArtifactRequest{
-		DatasetId: &datasetID,
-		TagName:   tagName,
-		OwnerId:   currentOwner,
+		ReservationId: &reservationID,
+		OwnerId:       currentOwner,
 	}
 
 	resp, err := reservationManager.GetOrReserveArtifact(context.Background(), &req)
@@ -159,9 +161,8 @@ func TestGetOrReserveArtifact_TakeOverReservation(t *testing.T) {
 		func() time.Time { return now }, mockScope.NewTestScope())
 
 	req := datacatalog.GetOrReserveArtifactRequest{
-		DatasetId: &datasetID,
-		TagName:   tagName,
-		OwnerId:   currentOwner,
+		ReservationId: &reservationID,
+		OwnerId:       currentOwner,
 	}
 
 	resp, err := reservationManager.GetOrReserveArtifact(context.Background(), &req)
@@ -235,8 +236,7 @@ func TestGetOrReserveArtifact_ExtendReservation(t *testing.T) {
 		func() time.Time { return now }, mockScope.NewTestScope())
 
 	req := datacatalog.GetOrReserveArtifactRequest{
-		DatasetId: &datasetID,
-		TagName:   tagName,
+		ReservationId: &reservationID,
 		OwnerId:   prevOwner,
 	}
 
@@ -262,9 +262,8 @@ func TestGetOrReserveArtifact_AlreadyInProgress(t *testing.T) {
 		func() time.Time { return now }, mockScope.NewTestScope())
 
 	req := datacatalog.GetOrReserveArtifactRequest{
-		DatasetId: &datasetID,
-		TagName:   tagName,
-		OwnerId:   currentOwner,
+		ReservationId: &reservationID,
+		OwnerId:       currentOwner,
 	}
 
 	resp, err := reservationManager.GetOrReserveArtifact(context.Background(), &req)

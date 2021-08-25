@@ -12,17 +12,6 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-// TODO - remove
-/*func ToReservationKey(datasetID datacatalog.DatasetID, tagName string) models.ReservationKey {
-	return models.ReservationKey{
-		DatasetProject: datasetID.Project,
-		DatasetName:    datasetID.Name,
-		DatasetDomain:  datasetID.Domain,
-		DatasetVersion: datasetID.Version,
-		TagName:        tagName,
-	}
-}*/
-
 func FromReservationID(reservationID *datacatalog.ReservationID) models.ReservationKey {
 	datasetID := reservationID.DatasetId
 
@@ -35,17 +24,26 @@ func FromReservationID(reservationID *datacatalog.ReservationID) models.Reservat
 	}
 }
 
-func CreateReservationStatus(reservation models.Reservation, heartbeatInterval time.Duration, state datacatalog.ReservationStatus_State) (datacatalog.ReservationStatus, error) {
-	expiresAtPb, err := ptypes.TimestampProto(reservation.CreatedAt)
+func CreateReservationStatus(reservation *models.Reservation, heartbeatInterval time.Duration, state datacatalog.ReservationStatus_State) (datacatalog.ReservationStatus, error) {
+	expiresAtPb, err := ptypes.TimestampProto(reservation.ExpiresAt)
 	if err != nil {
 		return datacatalog.ReservationStatus{}, errors.NewDataCatalogErrorf(codes.Internal, "failed to serialize expires at time")
 	}
 
 	heartbeatIntervalPb := ptypes.DurationProto(heartbeatInterval)
 	return datacatalog.ReservationStatus{
+		ReservationId:     &datacatalog.ReservationID {
+			DatasetId: &datacatalog.DatasetID {
+				Project: reservation.DatasetProject,
+				Domain:  reservation.DatasetDomain,
+				Name:    reservation.DatasetName,
+				Version: reservation.DatasetVersion,
+			},
+			TagName: reservation.TagName,
+		},
+		OwnerId:           reservation.OwnerID,
 		State:             state,
 		ExpiresAt:         expiresAtPb,
 		HeartbeatInterval: heartbeatIntervalPb,
-		OwnerId:           reservation.OwnerID,
 	}, nil
 }

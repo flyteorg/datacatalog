@@ -163,7 +163,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservat
 		logger.Debugf(ctx, "Reservation: %+v is held by %s", reservationKey, reservation.OwnerID)
 
 		reservationStatus, err := transformers.CreateReservationStatus(
-			reservation, r.heartbeatInterval,
+			&reservation, r.heartbeatInterval,
 			datacatalog.ReservationStatus_ALREADY_IN_PROGRESS)
 		if err != nil {
 			return reservationStatus, err
@@ -183,7 +183,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservat
 			}
 
 			reservationStatus, err := transformers.CreateReservationStatus(
-				rsv1, r.heartbeatInterval,
+				&rsv1, r.heartbeatInterval,
 				datacatalog.ReservationStatus_ALREADY_IN_PROGRESS)
 			if err != nil {
 				return reservationStatus, err
@@ -197,7 +197,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservat
 	}
 
 	// Reservation has been acquired or extended without error
-	reservationStatus, err := transformers.CreateReservationStatus(newReservation,
+	reservationStatus, err := transformers.CreateReservationStatus(&newReservation,
 		r.heartbeatInterval, datacatalog.ReservationStatus_ACQUIRED)
 	if err != nil {
 		return reservationStatus, err
