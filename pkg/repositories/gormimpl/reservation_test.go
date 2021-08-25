@@ -66,10 +66,9 @@ func TestCreate(t *testing.T) {
 	GlobalMock.Logging = true
 	expectedReservation := GetReservation()
 
-	// TODO - necessary for test of RowsAffected == 1
-	/*GlobalMock.NewMock().WithQuery(
-		`INSERT INTO "reservations" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","owner_id","expire_at","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT ("dataset_project","dataset_name","dataset_domain","dataset_version","tag_name") DO UPDATE SET "updated_at"="excluded"."updated_at","deleted_at"="excluded"."deleted_at","owner_id"="excluded"."owner_id","expire_at"="excluded"."expire_at","serialized_metadata"="excluded"."serialized_metadata"WHERE "expire_at" <= $12`,
-	).WithRowsNum(1)*/
+	GlobalMock.NewMock().WithQuery(
+		`INSERT INTO "reservations" ("created_at","updated_at","deleted_at","dataset_project","dataset_name","dataset_domain","dataset_version","tag_name","owner_id","expires_at","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT DO NOTHING`,
+	).WithRowsNum(1)
 
 	reservationRepo := getReservationRepo(t)
 
@@ -90,6 +89,22 @@ func TestUpdate(t *testing.T) {
 
 	err := reservationRepo.Update(context.Background(), expectedReservation, time.Now())
 	assert.NoError(t, err)
+}
+
+func TestUpdateFailure(t *testing.T) {
+	GlobalMock := mocket.Catcher.Reset()
+	GlobalMock.Logging = true
+	expectedReservation := GetReservation()
+
+	GlobalMock.NewMock().WithQuery(
+		`UPDATE "reservations" SET "updated_at"=$1,"dataset_project"=$2,"dataset_name"=$3,"dataset_domain"=$4,"dataset_version"=$5,"tag_name"=$6,"owner_id"=$7,"expires_at"=$8 WHERE (expires_at<=$9 OR owner_id=$10) AND "dataset_project" = $11 AND "dataset_name" = $12 AND "dataset_domain" = $13 AND "dataset_version" = $14 AND "tag_name" = $15`,
+	).WithRowsNum(0)
+
+	reservationRepo := getReservationRepo(t)
+
+	err := reservationRepo.Update(context.Background(), expectedReservation, time.Now())
+	assert.Error(t, err)
+	assert.Equal(t, "reservation already in progress", err.Error())
 }
 
 func getReservationRepo(t *testing.T) interfaces.ReservationRepo {

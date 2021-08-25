@@ -206,6 +206,47 @@ func getReservationKey() models.ReservationKey {
 	}
 }
 
+func TestGetOrReserveArtifact_ExtendReservation(t *testing.T) {
+	dcRepo := getDatacatalogRepo()
+
+	setUpTagRepoGetNotFound(&dcRepo)
+
+	now := time.Now()
+	prevExpiresAt := now.Add(time.Second * 10)
+
+	setUpReservationRepoGet(&dcRepo, prevExpiresAt)
+
+	dcRepo.MockReservationRepo.On("Update",
+		mock.MatchedBy(func(ctx context.Context) bool { return true }),
+		mock.MatchedBy(func(reservation models.Reservation) bool {
+			return reservation.DatasetProject == datasetID.Project &&
+				reservation.DatasetDomain == datasetID.Domain &&
+				reservation.DatasetName == datasetID.Name &&
+				reservation.DatasetVersion == datasetID.Version &&
+				reservation.TagName == tagName &&
+				reservation.OwnerID == prevOwner &&
+				reservation.ExpiresAt == now.Add(heartbeatInterval*heartbeatGracePeriodMultiplier)
+		}),
+		mock.MatchedBy(func(now time.Time) bool { return true }),
+	).Return(nil)
+
+	reservationManager := NewReservationManager(&dcRepo,
+		heartbeatGracePeriodMultiplier, heartbeatInterval,
+		func() time.Time { return now }, mockScope.NewTestScope())
+
+	req := datacatalog.GetOrReserveArtifactRequest{
+		DatasetId: &datasetID,
+		TagName:   tagName,
+		OwnerId:   prevOwner,
+	}
+
+	resp, err := reservationManager.GetOrReserveArtifact(context.Background(), &req)
+
+	assert.Nil(t, err)
+	assert.Equal(t, prevOwner, resp.GetReservationStatus().OwnerId)
+	assert.Equal(t, datacatalog.ReservationStatus_ACQUIRED, resp.GetReservationStatus().State)
+}
+
 func TestGetOrReserveArtifact_AlreadyInProgress(t *testing.T) {
 	dcRepo := getDatacatalogRepo()
 
