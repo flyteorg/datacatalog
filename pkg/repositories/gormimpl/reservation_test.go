@@ -38,6 +38,37 @@ func TestCreate(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestDelete(t *testing.T) {
+	GlobalMock := mocket.Catcher.Reset()
+	GlobalMock.Logging = true
+	expectedReservation := GetReservation()
+
+	GlobalMock.NewMock().WithQuery(
+		`DELETE FROM "reservations" WHERE "reservations"."dataset_project" = $1 AND "reservations"."dataset_name" = $2 AND "reservations"."dataset_domain" = $3 AND "reservations"."dataset_version" = $4 AND "reservations"."tag_name" = $5`,
+	).WithRowsNum(1)
+
+	reservationRepo := getReservationRepo(t)
+
+	err := reservationRepo.Delete(context.Background(), expectedReservation.ReservationKey)
+	assert.NoError(t, err)
+}
+
+func TestDeleteFailure(t *testing.T) {
+	GlobalMock := mocket.Catcher.Reset()
+	GlobalMock.Logging = true
+	expectedReservation := GetReservation()
+
+	GlobalMock.NewMock().WithQuery(
+		`DELETE FROM "reservations" WHERE "reservations"."dataset_project" = $1 AND "reservations"."dataset_name" = $2 AND "reservations"."dataset_domain" = $3 AND "reservations"."dataset_version" = $4 AND "reservations"."tag_name" = $5`,
+	).WithRowsNum(0)
+
+	reservationRepo := getReservationRepo(t)
+
+	err := reservationRepo.Delete(context.Background(), expectedReservation.ReservationKey)
+	assert.Error(t, err)
+	assert.Equal(t, "missing entity of type Reservation with identifier dataset_id:<project:\"testProject\" name:\"testDataset\" domain:\"testDomain\" version:\"testVersion\" > tag_name:\"testTag\" ", err.Error())
+}
+
 func TestGet(t *testing.T) {
 	expectedReservation := GetReservation()
 
