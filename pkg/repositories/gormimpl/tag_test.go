@@ -43,7 +43,10 @@ func (p *pgError) Unwrap() error {
 }
 
 func getAlreadyExistsErr() error {
-	return &pgconn.PgError{Code: "23505"}
+	return &pgError{
+		e:   &pgconn.PgError{Code: "23505"},
+		msg: "some error",
+	}
 }
 
 func getTestTag() models.Tag {

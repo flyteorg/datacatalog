@@ -1,6 +1,7 @@
 package errors
 
 import (
+	errors2 "errors"
 	"fmt"
 	"reflect"
 
@@ -39,6 +40,10 @@ func (p *postgresErrorTransformer) fromGormError(err error) error {
 }
 
 func (p *postgresErrorTransformer) ToDataCatalogError(err error) error {
+	if unwrappedErr := errors2.Unwrap(err); unwrappedErr != nil {
+		err = unwrappedErr
+	}
+
 	pqError, ok := err.(*pgconn.PgError)
 	if !ok {
 		logger.InfofNoCtx("Unable to cast to pgconn.PgError. Error type: [%v]",
