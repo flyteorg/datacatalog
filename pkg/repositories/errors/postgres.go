@@ -1,7 +1,7 @@
 package errors
 
 import (
-	errors2 "errors"
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -9,7 +9,7 @@ import (
 
 	"github.com/jackc/pgconn"
 
-	"github.com/flyteorg/datacatalog/pkg/errors"
+	catalogErrors "github.com/flyteorg/datacatalog/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"gorm.io/gorm"
 )
@@ -33,14 +33,14 @@ const (
 func (p *postgresErrorTransformer) fromGormError(err error) error {
 	switch err.Error() {
 	case gorm.ErrRecordNotFound.Error():
-		return errors.NewDataCatalogErrorf(codes.NotFound, "entry not found")
+		return catalogErrors.NewDataCatalogErrorf(codes.NotFound, "entry not found")
 	default:
-		return errors.NewDataCatalogErrorf(codes.Internal, unexpectedType, err)
+		return catalogErrors.NewDataCatalogErrorf(codes.Internal, unexpectedType, err)
 	}
 }
 
 func (p *postgresErrorTransformer) ToDataCatalogError(err error) error {
-	if unwrappedErr := errors2.Unwrap(err); unwrappedErr != nil {
+	if unwrappedErr := errors.Unwrap(err); unwrappedErr != nil {
 		err = unwrappedErr
 	}
 
@@ -53,11 +53,11 @@ func (p *postgresErrorTransformer) ToDataCatalogError(err error) error {
 
 	switch pqError.Code {
 	case uniqueConstraintViolationCode:
-		return errors.NewDataCatalogErrorf(codes.AlreadyExists, uniqueConstraintViolation, pqError.Message)
+		return catalogErrors.NewDataCatalogErrorf(codes.AlreadyExists, uniqueConstraintViolation, pqError.Message)
 	case undefinedTable:
-		return errors.NewDataCatalogErrorf(codes.InvalidArgument, unsupportedTableOperation, pqError.Message)
+		return catalogErrors.NewDataCatalogErrorf(codes.InvalidArgument, unsupportedTableOperation, pqError.Message)
 	default:
-		return errors.NewDataCatalogErrorf(codes.Unknown, fmt.Sprintf(defaultPgError, pqError.Code, pqError.Message))
+		return catalogErrors.NewDataCatalogErrorf(codes.Unknown, fmt.Sprintf(defaultPgError, pqError.Code, pqError.Message))
 	}
 }
 
