@@ -43,10 +43,7 @@ func (r *reservationRepo) Create(ctx context.Context, reservation models.Reserva
 	}
 
 	if result.RowsAffected == 0 {
-		return datacatalog_error.NewDataCatalogError(
-			codes.FailedPrecondition,
-			errors2.ReservationAlreadyInProgress,
-		)
+		return datacatalog_error.NewDataCatalogError(codes.FailedPrecondition, errors2.AlreadyExists)
 	}
 
 	return nil
@@ -110,10 +107,7 @@ func (r *reservationRepo) Update(ctx context.Context, reservation models.Reserva
 	}
 
 	if result.RowsAffected == 0 {
-		return datacatalog_error.NewDataCatalogError(
-			codes.FailedPrecondition,
-			errors2.ReservationAlreadyInProgress,
-		)
+		return datacatalog_error.NewDataCatalogError(codes.FailedPrecondition, errors2.AlreadyExists)
 	}
 
 	return nil

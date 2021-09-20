@@ -55,8 +55,8 @@ func (s *DataCatalogService) ListDatasets(ctx context.Context, request *catalog.
 	return s.DatasetManager.ListDatasets(ctx, request)
 }
 
-func (s *DataCatalogService) GetOrReserveArtifact(ctx context.Context, request *catalog.GetOrReserveArtifactRequest) (*catalog.GetOrReserveArtifactResponse, error) {
-	return s.ReservationManager.GetOrReserveArtifact(ctx, request)
+func (s *DataCatalogService) GetOrExtendReservation(ctx context.Context, request *catalog.GetOrExtendReservationRequest) (*catalog.GetOrExtendReservationResponse, error) {
+	return s.ReservationManager.GetOrExtendReservation(ctx, request)
 }
 
 func (s *DataCatalogService) ReleaseReservation(ctx context.Context, request *catalog.ReleaseReservationRequest) (*catalog.ReleaseReservationResponse, error) {

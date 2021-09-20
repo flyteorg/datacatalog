@@ -10,6 +10,6 @@ import (
 // You can find more details about the APIs in datacatalog service proto
 // in flyteidl
 type ReservationManager interface {
-	GetOrReserveArtifact(context.Context, *datacatalog.GetOrReserveArtifactRequest) (*datacatalog.GetOrReserveArtifactResponse, error)
+	GetOrExtendReservation(context.Context, *datacatalog.GetOrExtendReservationRequest) (*datacatalog.GetOrExtendReservationResponse, error)
 	ReleaseReservation(context.Context, *datacatalog.ReleaseReservationRequest) (*datacatalog.ReleaseReservationResponse, error)
 }

@@ -24,14 +24,14 @@ func FromReservationID(reservationID *datacatalog.ReservationID) models.Reservat
 	}
 }
 
-func CreateReservationStatus(reservation *models.Reservation, heartbeatInterval time.Duration, state datacatalog.ReservationStatus_State) (datacatalog.ReservationStatus, error) {
+func CreateReservation(reservation *models.Reservation, heartbeatInterval time.Duration) (datacatalog.Reservation, error) {
 	expiresAtPb, err := ptypes.TimestampProto(reservation.ExpiresAt)
 	if err != nil {
-		return datacatalog.ReservationStatus{}, errors.NewDataCatalogErrorf(codes.Internal, "failed to serialize expires at time")
+		return datacatalog.Reservation{}, errors.NewDataCatalogErrorf(codes.Internal, "failed to serialize expires at time")
 	}
 
 	heartbeatIntervalPb := ptypes.DurationProto(heartbeatInterval)
-	return datacatalog.ReservationStatus{
+	return datacatalog.Reservation{
 		ReservationId: &datacatalog.ReservationID{
 			DatasetId: &datacatalog.DatasetID{
 				Project: reservation.DatasetProject,
@@ -42,8 +42,7 @@ func CreateReservationStatus(reservation *models.Reservation, heartbeatInterval 
 			TagName: reservation.TagName,
 		},
 		OwnerId:           reservation.OwnerID,
-		State:             state,
-		ExpiresAt:         expiresAtPb,
 		HeartbeatInterval: heartbeatIntervalPb,
+		ExpiresAt:         expiresAtPb,
 	}, nil
 }
