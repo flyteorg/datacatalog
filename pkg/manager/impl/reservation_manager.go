@@ -75,7 +75,7 @@ func NewReservationManager(
 	return &reservationManager{
 		repo:                           repo,
 		heartbeatGracePeriodMultiplier: heartbeatGracePeriodMultiplier,
-		maxHeartbeatInterval:			maxHeartbeatInterval,
+		maxHeartbeatInterval:           maxHeartbeatInterval,
 		now:                            nowFunc,
 		systemMetrics:                  systemMetrics,
 	}

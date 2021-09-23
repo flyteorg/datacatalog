@@ -135,7 +135,7 @@ func TestUpdateFailure(t *testing.T) {
 
 	err := reservationRepo.Update(context.Background(), expectedReservation, time.Now())
 	assert.Error(t, err)
-	assert.Equal(t, "reservation already in progress", err.Error())
+	assert.Equal(t, "entity already exists", err.Error())
 }
 
 func getReservationRepo(t *testing.T) interfaces.ReservationRepo {

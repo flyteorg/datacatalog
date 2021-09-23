@@ -28,10 +28,10 @@ func TestFromReservationID(t *testing.T) {
 	assert.Equal(t, reservationKey.TagName, reservationID.TagName)
 }
 
-func TestCreateReservationStatus(t *testing.T) {
+func TestCreateReservation(t *testing.T) {
 	now := time.Now()
 	heartbeatInterval := time.Second * 5
-	reservation := models.Reservation{
+	modelReservation := models.Reservation{
 		ReservationKey: models.ReservationKey{
 			DatasetProject: "p",
 			DatasetName:    "n",
@@ -43,19 +43,19 @@ func TestCreateReservationStatus(t *testing.T) {
 		ExpiresAt: now,
 	}
 
-	reservationStatus, err := CreateReservationStatus(&reservation, heartbeatInterval, datacatalog.ReservationStatus_ACQUIRED)
+	reservation, err := CreateReservation(&modelReservation, heartbeatInterval)
 
 	assert.Equal(t, err, nil)
-	assert.Equal(t, reservationStatus.ExpiresAt.AsTime(), reservation.ExpiresAt.UTC())
-	assert.Equal(t, reservationStatus.HeartbeatInterval.AsDuration(), heartbeatInterval)
-	assert.Equal(t, reservationStatus.OwnerId, reservation.OwnerID)
+	assert.Equal(t, reservation.ExpiresAt.AsTime(), modelReservation.ExpiresAt.UTC())
+	assert.Equal(t, reservation.HeartbeatInterval.AsDuration(), heartbeatInterval)
+	assert.Equal(t, reservation.OwnerId, modelReservation.OwnerID)
 
-	reservationID := reservationStatus.ReservationId
-	assert.Equal(t, reservationID.TagName, reservation.TagName)
+	reservationID := reservation.ReservationId
+	assert.Equal(t, reservationID.TagName, modelReservation.TagName)
 
 	datasetID := reservationID.DatasetId
-	assert.Equal(t, datasetID.Project, reservation.DatasetProject)
-	assert.Equal(t, datasetID.Name, reservation.DatasetName)
-	assert.Equal(t, datasetID.Domain, reservation.DatasetDomain)
-	assert.Equal(t, datasetID.Version, reservation.DatasetVersion)
+	assert.Equal(t, datasetID.Project, modelReservation.DatasetProject)
+	assert.Equal(t, datasetID.Name, modelReservation.DatasetName)
+	assert.Equal(t, datasetID.Domain, modelReservation.DatasetDomain)
+	assert.Equal(t, datasetID.Version, modelReservation.DatasetVersion)
 }
