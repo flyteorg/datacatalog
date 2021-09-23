@@ -33,7 +33,7 @@ type NowFunc func() time.Time
 type reservationManager struct {
 	repo                           repositories.RepositoryInterface
 	heartbeatGracePeriodMultiplier time.Duration
-	heartbeatInterval              time.Duration
+	maxHeartbeatInterval           time.Duration
 	now                            NowFunc
 	systemMetrics                  reservationMetrics
 }
@@ -41,7 +41,7 @@ type reservationManager struct {
 func NewReservationManager(
 	repo repositories.RepositoryInterface,
 	heartbeatGracePeriodMultiplier time.Duration,
-	heartbeatInterval time.Duration,
+	maxHeartbeatInterval time.Duration,
 	nowFunc NowFunc, // Easier to mock time.Time for testing
 	reservationScope promutils.Scope,
 ) interfaces.ReservationManager {
@@ -75,7 +75,7 @@ func NewReservationManager(
 	return &reservationManager{
 		repo:                           repo,
 		heartbeatGracePeriodMultiplier: heartbeatGracePeriodMultiplier,
-		heartbeatInterval:              heartbeatInterval,
+		maxHeartbeatInterval:			maxHeartbeatInterval,
 		now:                            nowFunc,
 		systemMetrics:                  systemMetrics,
 	}
@@ -83,7 +83,15 @@ func NewReservationManager(
 
 func (r *reservationManager) GetOrExtendReservation(ctx context.Context, request *datacatalog.GetOrExtendReservationRequest) (*datacatalog.GetOrExtendReservationResponse, error) {
 	reservationID := request.ReservationId
-	reservation, err := r.tryAcquireReservation(ctx, reservationID, request.OwnerId)
+
+	// Use minimum of maxHeartbeatInterval and requested heartbeat interval
+	heartbeatInterval := r.maxHeartbeatInterval
+	requestHeartbeatInterval := request.GetHeartbeatInterval()
+	if requestHeartbeatInterval != nil && requestHeartbeatInterval.AsDuration() < heartbeatInterval {
+		heartbeatInterval = requestHeartbeatInterval.AsDuration()
+	}
+
+	reservation, err := r.tryAcquireReservation(ctx, reservationID, request.OwnerId, heartbeatInterval)
 	if err != nil {
 		r.systemMetrics.acquireReservationFailure.Inc(ctx)
 		return nil, err
@@ -100,7 +108,7 @@ func (r *reservationManager) GetOrExtendReservation(ctx context.Context, request
 // to do a GET here because we want to know who owns the reservation
 // and show it to users on the UI. However, the reservation is held by a single
 // task most of the times and there is no need to do a write.
-func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservationID *datacatalog.ReservationID, ownerID string) (datacatalog.Reservation, error) {
+func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservationID *datacatalog.ReservationID, ownerID string, heartbeatInterval time.Duration) (datacatalog.Reservation, error) {
 	repo := r.repo.ReservationRepo()
 	reservationKey := transformers.FromReservationID(reservationID)
 	repoReservation, err := repo.Get(ctx, reservationKey)
@@ -119,7 +127,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservat
 	newRepoReservation := models.Reservation{
 		ReservationKey: reservationKey,
 		OwnerID:        ownerID,
-		ExpiresAt:      now.Add(r.heartbeatInterval * r.heartbeatGracePeriodMultiplier),
+		ExpiresAt:      now.Add(heartbeatInterval * r.heartbeatGracePeriodMultiplier),
 	}
 
 	// Conditional upsert on reservation. Race conditions are handled
@@ -132,7 +140,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservat
 	} else {
 		logger.Debugf(ctx, "Reservation: %+v is held by %s", reservationKey, repoReservation.OwnerID)
 
-		reservation, err := transformers.CreateReservation(&repoReservation, r.heartbeatInterval)
+		reservation, err := transformers.CreateReservation(&repoReservation, heartbeatInterval)
 		if err != nil {
 			return reservation, err
 		}
@@ -150,7 +158,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservat
 				return datacatalog.Reservation{}, err
 			}
 
-			reservation, err := transformers.CreateReservation(&rsv1, r.heartbeatInterval)
+			reservation, err := transformers.CreateReservation(&rsv1, heartbeatInterval)
 			if err != nil {
 				return reservation, err
 			}
@@ -163,7 +171,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservat
 	}
 
 	// Reservation has been acquired or extended without error
-	reservation, err := transformers.CreateReservation(&newRepoReservation, r.heartbeatInterval)
+	reservation, err := transformers.CreateReservation(&newRepoReservation, heartbeatInterval)
 	if err != nil {
 		return reservation, err
 	}

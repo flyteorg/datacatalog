@@ -8,5 +8,5 @@ type DataCatalogConfig struct {
 	MetricsScope                   string `json:"metrics-scope" pflag:",Scope that the metrics will record under."`
 	ProfilerPort                   int    `json:"profiler-port" pflag:",Port that the profiling service is listening on."`
 	HeartbeatGracePeriodMultiplier int    `json:"heartbeat-grace-period-multiplier" pflag:",Number of heartbeats before a reservation expires without an extension."`
-	HeartbeatIntervalSec           int    `json:"heartbeat-interval-sec" pflag:",Recommended reservation extension heartbeat interval."`
+	MaxReservationHeartbeatSec     int    `json:"max-reservation-heartbeat-sec" pflag:",The maximum available reservation extension heartbeat interval."`
 }
