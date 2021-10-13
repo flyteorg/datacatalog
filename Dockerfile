@@ -31,7 +31,7 @@ COPY --from=builder /artifacts /bin
 
 RUN apk --update add ca-certificates
 
-RUN groupadd -g 1000 flyte && useradd -r -u 1000 -g flyte flyte
+RUN addgroup -S flyte && adduser -S flyte -G flyte
 USER flyte
 
 CMD ["datacatalog"]
