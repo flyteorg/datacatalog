@@ -4,6 +4,7 @@ import (
 	"context"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	dbconfig "github.com/flyteorg/datacatalog/pkg/repositories/config"
 	"github.com/flyteorg/datacatalog/pkg/runtime/configs"
@@ -38,7 +39,7 @@ func (p *ApplicationConfigurationProvider) GetDbConfig() dbconfig.DbConfig {
 			logger.Fatalf(context.Background(), "failed to read database password from path [%s] with err: %v",
 				dbConfigSection.PasswordPath, err)
 		}
-		password = string(passwordVal)
+		password = strings.TrimSpace(string(passwordVal))
 	}
 
 	return dbconfig.DbConfig{
