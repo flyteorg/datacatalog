@@ -234,6 +234,24 @@ func TestGetDatasetNotFound(t *testing.T) {
 	assert.Equal(t, codes.NotFound, notFoundErr.Code())
 }
 
+func TestCreateDatasetAlreadyExists(t *testing.T) {
+	GlobalMock := mocket.Catcher.Reset()
+	GlobalMock.Logging = true
+
+	// Only match on queries that append expected filters
+	GlobalMock.NewMock().WithQuery(
+		`INSERT INTO "datasets" ("created_at","updated_at","deleted_at","project","name","domain","version","uuid","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`).WithError(
+		getAlreadyExistsErr(),
+	)
+
+	datasetRepo := NewDatasetRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
+	err := datasetRepo.Create(context.Background(), getTestDataset())
+	assert.Error(t, err)
+	dcErr, ok := err.(datacatalog_error.DataCatalogError)
+	assert.True(t, ok)
+	assert.Equal(t, dcErr.Code().String(), codes.AlreadyExists.String())
+}
+
 func TestListDatasets(t *testing.T) {
 	GlobalMock := mocket.Catcher.Reset()
 	GlobalMock.Logging = true
