@@ -34,6 +34,7 @@ func getTestDataset() models.Dataset {
 			Domain:  "testDomain",
 			Name:    "testName",
 			Version: "testVersion",
+			UUID:    "test-uuid",
 		},
 		SerializedMetadata: []byte{1, 2, 3},
 		PartitionKeys: []models.PartitionKey{
@@ -87,13 +88,14 @@ func TestCreateDatasetNoPartitions(t *testing.T) {
 
 	// Only match on queries that append expected filters
 	GlobalMock.NewMock().WithQuery(
-		`INSERT INTO "datasets" ("created_at","updated_at","deleted_at","project","name","domain","version","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`).WithCallback(
+		`INSERT INTO "datasets" ("created_at","updated_at","deleted_at","project","name","domain","version","uuid","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`).WithCallback(
 		func(s string, values []driver.NamedValue) {
 			assert.EqualValues(t, dataset.Project, values[3].Value)
 			assert.EqualValues(t, dataset.Name, values[4].Value)
 			assert.EqualValues(t, dataset.Domain, values[5].Value)
 			assert.EqualValues(t, dataset.Version, values[6].Value)
-			assert.EqualValues(t, dataset.SerializedMetadata, values[7].Value)
+			assert.EqualValues(t, dataset.UUID, values[7].Value)
+			assert.EqualValues(t, dataset.SerializedMetadata, values[8].Value)
 			datasetCreated = true
 		},
 	)
@@ -115,13 +117,14 @@ func TestCreateDataset(t *testing.T) {
 
 	// Only match on queries that append expected filters
 	GlobalMock.NewMock().WithQuery(
-		`INSERT INTO "datasets" ("created_at","updated_at","deleted_at","project","name","domain","version","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`).WithCallback(
+		`INSERT INTO "datasets" ("created_at","updated_at","deleted_at","project","name","domain","version","uuid","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`).WithCallback(
 		func(s string, values []driver.NamedValue) {
 			assert.EqualValues(t, dataset.Project, values[3].Value)
 			assert.EqualValues(t, dataset.Name, values[4].Value)
 			assert.EqualValues(t, dataset.Domain, values[5].Value)
 			assert.EqualValues(t, dataset.Version, values[6].Value)
-			assert.EqualValues(t, dataset.SerializedMetadata, values[7].Value)
+			assert.EqualValues(t, dataset.UUID, values[7].Value)
+			assert.EqualValues(t, dataset.SerializedMetadata, values[8].Value)
 			datasetCreated = true
 		},
 	).WithReply([]map[string]interface{}{{"dataset_uuid": getDatasetUUID()}})
@@ -159,7 +162,7 @@ func TestGetDataset(t *testing.T) {
 	GlobalMock.Logging = true
 
 	// Only match on queries that append expected filters
-	GlobalMock.NewMock().WithQuery(`SELECT * FROM "datasets" WHERE "datasets"."project" = $1 AND "datasets"."name" = $2 AND "datasets"."domain" = $3 AND "datasets"."version" = $4 ORDER BY "datasets"."created_at" LIMIT 1`).WithReply(expectedDatasetResponse)
+	GlobalMock.NewMock().WithQuery(`SELECT * FROM "datasets" WHERE "datasets"."project" = $1 AND "datasets"."name" = $2 AND "datasets"."domain" = $3 AND "datasets"."version" = $4 AND "datasets"."uuid" = $5 ORDER BY "datasets"."created_at" LIMIT 1`).WithReply(expectedDatasetResponse)
 
 	expectedPartitionKeyResponse := make([]map[string]interface{}, 0)
 	samplePartitionKey := make(map[string]interface{})
@@ -229,24 +232,6 @@ func TestGetDatasetNotFound(t *testing.T) {
 	notFoundErr, ok := err.(datacatalog_error.DataCatalogError)
 	assert.True(t, ok)
 	assert.Equal(t, codes.NotFound, notFoundErr.Code())
-}
-
-func TestCreateDatasetAlreadyExists(t *testing.T) {
-	GlobalMock := mocket.Catcher.Reset()
-	GlobalMock.Logging = true
-
-	// Only match on queries that append expected filters
-	GlobalMock.NewMock().WithQuery(
-		`INSERT INTO "datasets" ("created_at","updated_at","deleted_at","project","name","domain","version","serialized_metadata") VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`).WithError(
-		getAlreadyExistsErr(),
-	)
-
-	datasetRepo := NewDatasetRepo(utils.GetDbForTest(t), errors.NewPostgresErrorTransformer(), promutils.NewTestScope())
-	err := datasetRepo.Create(context.Background(), getTestDataset())
-	assert.Error(t, err)
-	dcErr, ok := err.(datacatalog_error.DataCatalogError)
-	assert.True(t, ok)
-	assert.Equal(t, dcErr.Code().String(), codes.AlreadyExists.String())
 }
 
 func TestListDatasets(t *testing.T) {
