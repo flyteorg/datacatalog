@@ -27,10 +27,10 @@ type PartitionKey struct {
 }
 
 // BeforeCreate so that we set the UUID in golang rather than from a DB function call
-func (datasetKey *DatasetKey) BeforeCreate(tx *gorm.DB) error {
-	if datasetKey.UUID == "" {
+func (dataset *Dataset) BeforeCreate(tx *gorm.DB) error {
+	if dataset.UUID == "" {
 		generated := uuid.NewV4()
-		tx.Model(datasetKey).Update("UUID", generated)
+		tx.Model(dataset).Update("UUID", generated)
 	}
 	return nil
 }
