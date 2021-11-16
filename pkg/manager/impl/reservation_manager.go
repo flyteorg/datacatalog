@@ -26,6 +26,7 @@ type reservationMetrics struct {
 	reservationAlreadyInProgress labeled.Counter
 	acquireReservationFailure    labeled.Counter
 	releaseReservationFailure    labeled.Counter
+	reservationDoesNotExist      labeled.Counter
 }
 
 type NowFunc func() time.Time
@@ -69,6 +70,11 @@ func NewReservationManager(
 		releaseReservationFailure: labeled.NewCounter(
 			"release_reservation_failure",
 			"Number of times we failed to release a reservation",
+			reservationScope,
+		),
+		reservationDoesNotExist: labeled.NewCounter(
+			"reservation_does_not_exist",
+			"Number of times we attempt to modify a reservation that does not exist",
 			reservationScope,
 		),
 	}
@@ -190,8 +196,13 @@ func (r *reservationManager) ReleaseReservation(ctx context.Context, request *da
 
 	err := repo.Delete(ctx, reservationKey, request.OwnerId)
 	if err != nil {
-		logger.Errorf(ctx, "Failed to release reservation: %+v, err: %v", reservationKey, err)
+		if errors.IsDoesNotExistError(err) {
+			logger.Warnf(ctx, "Reservation does not exist id: %+v, err %v", request.ReservationId, err)
+			r.systemMetrics.reservationDoesNotExist.Inc(ctx)
+			return &datacatalog.ReleaseReservationResponse{}, nil
+		}
 
+		logger.Errorf(ctx, "Failed to release reservation: %+v, err: %v", reservationKey, err)
 		r.systemMetrics.releaseReservationFailure.Inc(ctx)
 		return nil, err
 	}

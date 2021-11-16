@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"fmt"
 
 	mockScope "github.com/flyteorg/flytestdlib/promutils"
 
@@ -281,6 +282,40 @@ func TestReleaseReservation_Failure(t *testing.T) {
 	dcRepo := getDatacatalogRepo()
 
 	now := time.Now()
+	reservationErr := fmt.Errorf("unknown error")
+
+	dcRepo.MockReservationRepo.On("Delete",
+		mock.MatchedBy(func(ctx context.Context) bool { return true }),
+		mock.MatchedBy(func(reservationKey models.ReservationKey) bool {
+			return reservationKey.DatasetProject == datasetID.Project &&
+				reservationKey.DatasetDomain == datasetID.Domain &&
+				reservationKey.DatasetName == datasetID.Name &&
+				reservationKey.DatasetVersion == datasetID.Version &&
+				reservationKey.TagName == tagName
+		}),
+		mock.MatchedBy(func(ownerID string) bool {
+			return ownerID == currentOwner
+		}),
+	).Return(reservationErr)
+
+	reservationManager := NewReservationManager(&dcRepo,
+		heartbeatGracePeriodMultiplier, maxHeartbeatInterval,
+		func() time.Time { return now }, mockScope.NewTestScope())
+
+	req := datacatalog.ReleaseReservationRequest{
+		ReservationId: &reservationID,
+		OwnerId:       currentOwner,
+	}
+
+	_, err := reservationManager.ReleaseReservation(context.Background(), &req)
+
+	assert.Equal(t, reservationErr, err)
+}
+
+func TestReleaseReservation_GracefulFailure(t *testing.T) {
+	dcRepo := getDatacatalogRepo()
+
+	now := time.Now()
 	reservationErr := errors3.GetMissingEntityError("Reservation",
 		&datacatalog.ReservationID{
 			DatasetId: &datasetID,
@@ -312,7 +347,7 @@ func TestReleaseReservation_Failure(t *testing.T) {
 
 	_, err := reservationManager.ReleaseReservation(context.Background(), &req)
 
-	assert.Equal(t, err, reservationErr)
+	assert.Nil(t, err)
 }
 
 func getDatacatalogRepo() mocks.DataCatalogRepo {
