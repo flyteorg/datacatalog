@@ -258,6 +258,9 @@ func TestReleaseReservation(t *testing.T) {
 				reservationKey.DatasetVersion == datasetID.Version &&
 				reservationKey.TagName == tagName
 		}),
+		mock.MatchedBy(func(ownerID string) bool {
+			return ownerID == currentOwner
+		}),
 	).Return(nil)
 
 	reservationManager := NewReservationManager(&dcRepo,
@@ -292,6 +295,9 @@ func TestReleaseReservation_Failure(t *testing.T) {
 				reservationKey.DatasetName == datasetID.Name &&
 				reservationKey.DatasetVersion == datasetID.Version &&
 				reservationKey.TagName == tagName
+		}),
+		mock.MatchedBy(func(ownerID string) bool {
+			return ownerID == currentOwner
 		}),
 	).Return(reservationErr)
 

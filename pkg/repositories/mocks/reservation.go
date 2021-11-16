@@ -57,8 +57,8 @@ func (_m ReservationRepo_Delete) Return(_a0 error) *ReservationRepo_Delete {
 	return &ReservationRepo_Delete{Call: _m.Call.Return(_a0)}
 }
 
-func (_m *ReservationRepo) OnDelete(ctx context.Context, reservation models.ReservationKey) *ReservationRepo_Delete {
-	c := _m.On("Delete", ctx, reservation)
+func (_m *ReservationRepo) OnDelete(ctx context.Context, reservation models.ReservationKey, ownerID string) *ReservationRepo_Delete {
+	c := _m.On("Delete", ctx, reservation, ownerID)
 	return &ReservationRepo_Delete{Call: c}
 }
 
@@ -67,13 +67,13 @@ func (_m *ReservationRepo) OnDeleteMatch(matchers ...interface{}) *ReservationRe
 	return &ReservationRepo_Delete{Call: c}
 }
 
-// Delete provides a mock function with given fields: ctx, reservation
-func (_m *ReservationRepo) Delete(ctx context.Context, reservation models.ReservationKey) error {
-	ret := _m.Called(ctx, reservation)
+// Delete provides a mock function with given fields: ctx, reservation, ownerID
+func (_m *ReservationRepo) Delete(ctx context.Context, reservation models.ReservationKey, ownerID string) error {
+	ret := _m.Called(ctx, reservation, ownerID)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, models.ReservationKey) error); ok {
-		r0 = rf(ctx, reservation)
+	if rf, ok := ret.Get(0).(func(context.Context, models.ReservationKey, string) error); ok {
+		r0 = rf(ctx, reservation, ownerID)
 	} else {
 		r0 = ret.Error(0)
 	}

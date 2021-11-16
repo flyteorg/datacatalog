@@ -49,7 +49,7 @@ func (r *reservationRepo) Create(ctx context.Context, reservation models.Reserva
 	return nil
 }
 
-func (r *reservationRepo) Delete(ctx context.Context, reservationKey models.ReservationKey) error {
+func (r *reservationRepo) Delete(ctx context.Context, reservationKey models.ReservationKey, ownerID string) error {
 	timer := r.repoMetrics.DeleteDuration.Start(ctx)
 	defer timer.Stop()
 
@@ -57,6 +57,7 @@ func (r *reservationRepo) Delete(ctx context.Context, reservationKey models.Rese
 
 	result := r.db.Where(&models.Reservation{
 		ReservationKey: reservationKey,
+		OwnerID:        ownerID,
 	}).Delete(&reservation)
 	if result.Error != nil {
 		return r.errorTransformer.ToDataCatalogError(result.Error)

@@ -14,7 +14,7 @@ type ReservationRepo interface {
 	Create(ctx context.Context, reservation models.Reservation, now time.Time) error
 
 	// Delete a reservation if it exists
-	Delete(ctx context.Context, reservation models.ReservationKey) error
+	Delete(ctx context.Context, reservation models.ReservationKey, ownerID string) error
 
 	// Get reservation
 	Get(ctx context.Context, reservationKey models.ReservationKey) (models.Reservation, error)

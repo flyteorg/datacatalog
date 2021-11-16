@@ -188,7 +188,7 @@ func (r *reservationManager) ReleaseReservation(ctx context.Context, request *da
 	repo := r.repo.ReservationRepo()
 	reservationKey := transformers.FromReservationID(request.ReservationId)
 
-	err := repo.Delete(ctx, reservationKey)
+	err := repo.Delete(ctx, reservationKey, request.OwnerId)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to release reservation: %+v, err: %v", reservationKey, err)
 
