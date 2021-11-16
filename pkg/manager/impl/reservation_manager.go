@@ -38,6 +38,7 @@ type reservationManager struct {
 	systemMetrics                  reservationMetrics
 }
 
+// Creates a new reservation manager with the specified properties
 func NewReservationManager(
 	repo repositories.RepositoryInterface,
 	heartbeatGracePeriodMultiplier time.Duration,
@@ -81,6 +82,8 @@ func NewReservationManager(
 	}
 }
 
+// Attempt to acquire a reservation for the specified artifact. If ther e is not active reservation, successfully
+// acquire it. If you are the owner of the active reservation, extend it. If another owner, return the existing reservation.
 func (r *reservationManager) GetOrExtendReservation(ctx context.Context, request *datacatalog.GetOrExtendReservationRequest) (*datacatalog.GetOrExtendReservationResponse, error) {
 	reservationID := request.ReservationId
 
@@ -180,6 +183,7 @@ func (r *reservationManager) tryAcquireReservation(ctx context.Context, reservat
 	return reservation, nil
 }
 
+// Release an active reservation with the specified owner. If one does not exist, gracefully return.
 func (r *reservationManager) ReleaseReservation(ctx context.Context, request *datacatalog.ReleaseReservationRequest) (*datacatalog.ReleaseReservationResponse, error) {
 	repo := r.repo.ReservationRepo()
 	reservationKey := transformers.FromReservationID(request.ReservationId)
