@@ -12,7 +12,7 @@ datacatalog:
   metrics-scope: "datacatalog"
   profiler-port: 10254
   heartbeat-grace-period-multiplier: 3
-  max-reservation-heartbeat-sec: 10 
+  max-reservation-heartbeat: 10s
 storage:
   connection:
     access-key: minio

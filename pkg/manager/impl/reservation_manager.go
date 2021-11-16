@@ -82,7 +82,7 @@ func NewReservationManager(
 	}
 }
 
-// Attempt to acquire a reservation for the specified artifact. If ther e is not active reservation, successfully
+// Attempt to acquire a reservation for the specified artifact. If there is not active reservation, successfully
 // acquire it. If you are the owner of the active reservation, extend it. If another owner, return the existing reservation.
 func (r *reservationManager) GetOrExtendReservation(ctx context.Context, request *datacatalog.GetOrExtendReservationRequest) (*datacatalog.GetOrExtendReservationResponse, error) {
 	reservationID := request.ReservationId
