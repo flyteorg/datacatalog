@@ -19,4 +19,4 @@ require (
 	gorm.io/gorm v1.21.9
 )
 
-replace github.com/flyteorg/flyteidl => github.com/hamersaw/flyteidl v0.19.26-0.20211103115633-100abab11c51
+replace github.com/flyteorg/flyteidl => github.com/hamersaw/flyteidl v0.19.26-0.20211118002926-987e338423ab

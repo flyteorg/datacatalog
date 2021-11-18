@@ -311,6 +311,8 @@ github.com/grpc-ecosystem/grpc-gateway v1.12.2/go.mod h1:8XEsbTttt/W+VvjtQhLACqC
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
 github.com/hamersaw/flyteidl v0.19.26-0.20211103115633-100abab11c51 h1:e9zvtfNKr+K84a7du4wJgC+MXYcEsA13yYGMsEGsjQs=
 github.com/hamersaw/flyteidl v0.19.26-0.20211103115633-100abab11c51/go.mod h1:576W2ViEyjTpT+kEVHAGbrTP3HARNUZ/eCwrNPmdx9U=
+github.com/hamersaw/flyteidl v0.19.26-0.20211118002926-987e338423ab h1:1FC+p4ilWvLJZDm6DJeKWPzu+L+DRN0Y27osXgD5dzE=
+github.com/hamersaw/flyteidl v0.19.26-0.20211118002926-987e338423ab/go.mod h1:576W2ViEyjTpT+kEVHAGbrTP3HARNUZ/eCwrNPmdx9U=
 github.com/hashicorp/consul/api v1.1.0/go.mod h1:VmuI/Lkw1nC05EYQWNKwWGbkg+FbDBtguAZLlVdkD9Q=
 github.com/hashicorp/consul/api v1.3.0/go.mod h1:MmDNSzIMUjNpY/mQ398R4bk2FnqQLoPndWW5VkKPlCE=
 github.com/hashicorp/consul/sdk v0.1.1/go.mod h1:VKf9jXwCTEY1QZP2MOLRhb5i/I/ssyNV1vwHyQBF0x8=
