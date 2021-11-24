@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/Selvatico/go-mocket v1.0.7
-	github.com/flyteorg/flyteidl v0.18.38
+	github.com/flyteorg/flyteidl v0.21.11
 	github.com/flyteorg/flytestdlib v0.3.13
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.4.3
@@ -18,5 +18,3 @@ require (
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/gorm v1.21.9
 )
-
-replace github.com/flyteorg/flyteidl => github.com/hamersaw/flyteidl v0.19.26-0.20211118002926-987e338423ab
