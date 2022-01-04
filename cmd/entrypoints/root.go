@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/flyteorg/flytestdlib/logger"
 	"os"
 
 	"github.com/flyteorg/flytestdlib/config"
@@ -68,7 +69,7 @@ func initConfig(flags *pflag.FlagSet) error {
 		StrictMode:  false,
 	})
 
-	fmt.Println("Using config file: ", configAccessor.ConfigFilesUsed())
+	logger.Infof(context.TODO(), "Using config file: ", configAccessor.ConfigFilesUsed())
 
 	configAccessor.InitializePflags(flags)
 
