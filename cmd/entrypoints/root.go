@@ -69,7 +69,7 @@ func initConfig(flags *pflag.FlagSet) error {
 		StrictMode:  false,
 	})
 
-	logger.Infof(context.TODO(), "Using config file: ", configAccessor.ConfigFilesUsed())
+	logger.Infof(context.TODO(), "Using config file: %v", configAccessor.ConfigFilesUsed())
 
 	configAccessor.InitializePflags(flags)
 
