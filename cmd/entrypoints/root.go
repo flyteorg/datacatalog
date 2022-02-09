@@ -4,8 +4,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/flyteorg/flytestdlib/logger"
 	"os"
+
+	"github.com/flyteorg/flytestdlib/logger"
 
 	"github.com/flyteorg/flytestdlib/config"
 	"github.com/flyteorg/flytestdlib/config/viper"
