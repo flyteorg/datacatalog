@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/flyteorg/datacatalog/pkg/config"
-	"github.com/flyteorg/datacatalog/pkg/repositories"
+	"github.com/flyteorg/datacatalog/pkg/rpc/datacatalogservice"
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +14,7 @@ var serveDummyCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 		cfg := config.GetConfig()
-		return repositories.ServeDummy(ctx, cfg)
+		return datacatalogservice.ServeDummy(ctx, cfg)
 	},
 }
 
