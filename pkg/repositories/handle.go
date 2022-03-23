@@ -3,6 +3,8 @@ package repositories
 import (
 	"context"
 
+	"gorm.io/driver/sqlite"
+
 	"fmt"
 
 	"github.com/flyteorg/datacatalog/pkg/repositories/config"
@@ -17,26 +19,51 @@ type DBHandle struct {
 }
 
 func NewDBHandle(dbConfigValues config.DbConfig, catalogScope promutils.Scope) (*DBHandle, error) {
-	dbConfig := config.DbConfig{
-		Host:         dbConfigValues.Host,
-		Port:         dbConfigValues.Port,
-		DbName:       dbConfigValues.DbName,
-		User:         dbConfigValues.User,
-		Password:     dbConfigValues.Password,
-		ExtraOptions: dbConfigValues.ExtraOptions,
-		BaseConfig: config.BaseConfig{
-			DisableForeignKeyConstraintWhenMigrating: true,
-		},
+	var gormDb *gorm.DB
+	var err error
+
+	switch {
+	case dbConfigValues.SQLiteConfig != nil:
+		if dbConfigValues.SQLiteConfig.File == "" {
+			return nil, fmt.Errorf("illegal sqlite database configuration. `file` is a required parameter and should be a path")
+		}
+		gormDb, err = gorm.Open(sqlite.Open(dbConfigValues.SQLiteConfig.File))
+	case dbConfigValues.PostgresConfig != nil && (len(dbConfigValues.PostgresConfig.Host) > 0 || len(dbConfigValues.PostgresConfig.User) > 0 || len(dbConfigValues.PostgresConfig.DbName) > 0):
+		dbConfig := config.DbConfig{
+			Host:         dbConfigValues.PostgresConfig.Host,
+			Port:         dbConfigValues.PostgresConfig.Port,
+			DbName:       dbConfigValues.PostgresConfig.DbName,
+			User:         dbConfigValues.PostgresConfig.User,
+			Password:     dbConfigValues.PostgresConfig.Password,
+			ExtraOptions: dbConfigValues.PostgresConfig.ExtraOptions,
+			BaseConfig: config.BaseConfig{
+				DisableForeignKeyConstraintWhenMigrating: true,
+			},
+		}
+		gormDb, err = config.OpenDbConnection(config.NewPostgresConfigProvider(dbConfig, catalogScope.NewSubScope(config.Postgres)))
+	case len(dbConfigValues.Host) > 0 || len(dbConfigValues.User) > 0 || len(dbConfigValues.DbName) > 0:
+		dbConfig := config.DbConfig{
+			Host:         dbConfigValues.Host,
+			Port:         dbConfigValues.Port,
+			DbName:       dbConfigValues.DbName,
+			User:         dbConfigValues.User,
+			Password:     dbConfigValues.Password,
+			ExtraOptions: dbConfigValues.ExtraOptions,
+			BaseConfig: config.BaseConfig{
+				DisableForeignKeyConstraintWhenMigrating: true,
+			},
+		}
+		gormDb, err = config.OpenDbConnection(config.NewPostgresConfigProvider(dbConfig, catalogScope.NewSubScope(config.Postgres)))
+	default:
+		return nil, fmt.Errorf("unrecognized database config, %v. Supported only postgres and sqlite", dbConfigValues)
 	}
 
-	//TODO: abstract away the type of db we are connecting to
-	db, err := config.OpenDbConnection(config.NewPostgresConfigProvider(dbConfig, catalogScope.NewSubScope("postgres")))
 	if err != nil {
 		return nil, err
 	}
 
 	out := &DBHandle{
-		db: db,
+		db: gormDb,
 	}
 
 	return out, nil

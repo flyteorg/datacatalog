@@ -11,7 +11,10 @@ import (
 	"gorm.io/gorm"
 )
 
-const Postgres = "postgres"
+const (
+	Postgres = "postgres"
+	Sqlite   = "sqlite"
+)
 
 // Generic interface for providing a config necessary to open a database connection.
 type DbConnectionConfigProvider interface {
