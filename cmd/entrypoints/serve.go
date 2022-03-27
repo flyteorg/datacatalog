@@ -2,6 +2,8 @@ package entrypoints
 
 import (
 	"context"
+	"github.com/flyteorg/flytestdlib/contextutils"
+	"github.com/flyteorg/flytestdlib/promutils/labeled"
 
 	"github.com/flyteorg/datacatalog/pkg/config"
 	"github.com/flyteorg/datacatalog/pkg/rpc/datacatalogservice"
@@ -23,6 +25,9 @@ var serveCmd = &cobra.Command{
 				logger.Errorf(ctx, "Unable to serve http", config.GetConfig().GetHTTPHostAddress(), err)
 			}
 		}()
+
+		// Set Keys
+		labeled.SetMetricKeys(contextutils.AppNameKey, contextutils.ProjectKey, contextutils.DomainKey)
 
 		return datacatalogservice.ServeInsecure(ctx, cfg)
 	},

@@ -24,7 +24,6 @@ import (
 	"github.com/flyteorg/flytestdlib/logger"
 	"github.com/flyteorg/flytestdlib/profutils"
 	"github.com/flyteorg/flytestdlib/promutils"
-	"github.com/flyteorg/flytestdlib/promutils/labeled"
 	"github.com/flyteorg/flytestdlib/storage"
 )
 
@@ -76,9 +75,6 @@ func NewDataCatalogService() *DataCatalogService {
 	dataCatalogConfig := configProvider.ApplicationConfiguration().GetDataCatalogConfig()
 	catalogScope := promutils.NewScope(dataCatalogConfig.MetricsScope).NewSubScope("datacatalog")
 	ctx := contextutils.WithAppName(context.Background(), "datacatalog")
-
-	// Set Keys
-	labeled.SetMetricKeys(contextutils.AppNameKey, contextutils.ProjectKey, contextutils.DomainKey)
 
 	defer func() {
 		if err := recover(); err != nil {
