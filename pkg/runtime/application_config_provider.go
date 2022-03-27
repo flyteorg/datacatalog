@@ -45,13 +45,15 @@ func (p *ApplicationConfigurationProvider) GetDbConfig() dbconfig.DbConfig {
 	}
 
 	return dbconfig.DbConfig{
-		Host:         dbConfigSection.Host,
-		Port:         dbConfigSection.Port,
-		DbName:       dbConfigSection.DbName,
-		User:         dbConfigSection.User,
-		Password:     password,
-		ExtraOptions: dbConfigSection.ExtraOptions,
-		BaseConfig:   dbconfig.BaseConfig{LogLevel: dbConfigSection.LogLevel},
+		Host:           dbConfigSection.Host,
+		Port:           dbConfigSection.Port,
+		DbName:         dbConfigSection.DbName,
+		User:           dbConfigSection.User,
+		Password:       password,
+		ExtraOptions:   dbConfigSection.ExtraOptions,
+		BaseConfig:     dbconfig.BaseConfig{LogLevel: dbConfigSection.LogLevel},
+		PostgresConfig: dbConfigSection.PostgresConfig,
+		SQLiteConfig:   dbConfigSection.SQLiteConfig,
 	}
 }
 

@@ -14,8 +14,10 @@ type DbConfigSection struct {
 	Password     string `json:"password"`
 	PasswordPath string `json:"passwordPath"`
 	// See http://gorm.io/docs/connecting_to_the_database.html for available options passed, in addition to the above.
-	ExtraOptions string          `json:"options"`
-	LogLevel     logger.LogLevel `json:"log_level" pflag:"-,"`
+	ExtraOptions   string          `json:"options"`
+	LogLevel       logger.LogLevel `json:"log_level" pflag:"-,"`
+	PostgresConfig *PostgresConfig `json:"postgres,omitempty"`
+	SQLiteConfig   *SQLiteConfig   `json:"sqlite,omitempty"`
 }
 
 // DbConfig is database config. Contains values necessary to open a database connection.
