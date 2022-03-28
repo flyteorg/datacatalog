@@ -17,7 +17,7 @@ require (
 	google.golang.org/grpc v1.36.0
 	gorm.io/driver/postgres v1.2.3
 	gorm.io/driver/sqlite v1.1.1
-	gorm.io/gorm v1.23.3
+	gorm.io/gorm v1.22.4
 )
 
 require (
@@ -48,7 +48,6 @@ require (
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
-	github.com/graymeta/stow v0.2.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
@@ -105,4 +104,4 @@ require (
 	k8s.io/klog/v2 v2.5.0 // indirect
 )
 
-replace github.com/flyteorg/flytestdlib => github.com/pingsutw/flytestdlib v0.3.37-0.20220328160451-d8daf12e7e10
+replace github.com/flyteorg/flytestdlib => github.com/pingsutw/flytestdlib v0.3.37-0.20220328162831-503583de2e1b
