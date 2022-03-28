@@ -1,8 +1,6 @@
 package configs
 
 import (
-	"time"
-
 	"github.com/flyteorg/flytestdlib/config"
 )
 
@@ -13,7 +11,7 @@ var DefaultConfig = &DataCatalogConfig{
 	MetricsScope:                   "datacatalog",
 	ProfilerPort:                   10254,
 	HeartbeatGracePeriodMultiplier: 3,
-	MaxReservationHeartbeat:        config.Duration{Duration: time.Duration(10)},
+	MaxReservationHeartbeat:        config.Duration{Duration: 10000000000}, // 10 seconds
 }
 
 // DataCatalogConfig is the base configuration to start datacatalog

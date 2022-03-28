@@ -13,7 +13,6 @@ import (
 	"github.com/flyteorg/flytestdlib/logger"
 )
 
-const database = "database"
 const datacatalog = "datacatalog"
 
 var datacatalogConfig = config.MustRegisterSection(datacatalog, &configs.DataCatalogConfig{})
