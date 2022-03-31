@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/Selvatico/go-mocket v1.0.7
 	github.com/flyteorg/flyteidl v0.22.1
-	github.com/flyteorg/flytestdlib v0.4.7
+	github.com/flyteorg/flytestdlib v0.4.17
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.4.3
 	github.com/jackc/pgconn v1.10.1
@@ -103,5 +103,3 @@ require (
 	k8s.io/client-go v0.0.0-20210217172142-7279fc64d847 // indirect
 	k8s.io/klog/v2 v2.5.0 // indirect
 )
-
-replace github.com/flyteorg/flytestdlib => github.com/pingsutw/flytestdlib v0.3.37-0.20220328162831-503583de2e1b

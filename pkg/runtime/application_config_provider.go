@@ -6,10 +6,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/flyteorg/flytestdlib/config"
+
 	dbconfig "github.com/flyteorg/datacatalog/pkg/repositories/config"
 	"github.com/flyteorg/datacatalog/pkg/runtime/configs"
-	"github.com/flyteorg/flytestdlib/config"
-	stdlibDb "github.com/flyteorg/flytestdlib/config/database"
+	"github.com/flyteorg/flytestdlib/database"
 	"github.com/flyteorg/flytestdlib/logger"
 )
 
@@ -26,44 +27,33 @@ type ApplicationConfiguration interface {
 type ApplicationConfigurationProvider struct{}
 
 func (p *ApplicationConfigurationProvider) GetDbConfig() dbconfig.DbConfig {
-	dbConfigSection := stdlibDb.GetConfig()
-	password := dbConfigSection.DeprecatedPassword
-	if len(dbConfigSection.DeprecatedPasswordPath) > 0 {
-		if _, err := os.Stat(dbConfigSection.DeprecatedPasswordPath); os.IsNotExist(err) {
+	dbConfigSection := database.GetConfig()
+	password := dbConfigSection.Postgres.Password
+	if len(dbConfigSection.Postgres.PasswordPath) > 0 {
+		if _, err := os.Stat(dbConfigSection.Postgres.PasswordPath); os.IsNotExist(err) {
 			logger.Fatalf(context.Background(),
-				"missing database password at specified path [%s]", dbConfigSection.DeprecatedPasswordPath)
+				"missing database password at specified path [%s]", dbConfigSection.Postgres.PasswordPath)
 		}
-		passwordVal, err := ioutil.ReadFile(dbConfigSection.DeprecatedPasswordPath)
+		passwordVal, err := ioutil.ReadFile(dbConfigSection.Postgres.PasswordPath)
 		if err != nil {
 			logger.Fatalf(context.Background(), "failed to read database password from path [%s] with err: %v",
-				dbConfigSection.DeprecatedPasswordPath, err)
+				dbConfigSection.Postgres.PasswordPath, err)
 		}
 		// Passwords can contain special characters as long as they are percent encoded
 		// https://www.postgresql.org/docs/current/libpq-connect.html
 		password = strings.TrimSpace(string(passwordVal))
 	}
 
-	var postgresConfig dbconfig.PostgresConfig
-	var sqliteConfig dbconfig.SQLiteConfig
-
-	if dbConfigSection.PostgresConfig != nil {
-		postgresConfig = dbconfig.PostgresConfig(*dbConfigSection.PostgresConfig)
-	}
-
-	if dbConfigSection.SQLiteConfig != nil {
-		sqliteConfig = dbconfig.SQLiteConfig(*dbConfigSection.SQLiteConfig)
-	}
-
 	return dbconfig.DbConfig{
-		Host:           dbConfigSection.DeprecatedHost,
-		Port:           dbConfigSection.DeprecatedPort,
-		DbName:         dbConfigSection.DeprecatedDbName,
-		User:           dbConfigSection.DeprecatedUser,
-		Password:       password,
-		ExtraOptions:   dbConfigSection.DeprecatedExtraOptions,
-		BaseConfig:     dbconfig.BaseConfig{LogLevel: dbConfigSection.LogLevel},
-		PostgresConfig: &postgresConfig,
-		SQLiteConfig:   &sqliteConfig,
+		Host:         dbConfigSection.Postgres.Host,
+		Port:         dbConfigSection.Postgres.Port,
+		DbName:       dbConfigSection.Postgres.DbName,
+		User:         dbConfigSection.Postgres.User,
+		Password:     password,
+		ExtraOptions: dbConfigSection.Postgres.ExtraOptions,
+		BaseConfig:   dbconfig.BaseConfig{LogLevel: dbConfigSection.LogLevel},
+		Postgres:     dbConfigSection.Postgres,
+		SQLite:       dbConfigSection.SQLite,
 	}
 }
 

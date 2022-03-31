@@ -23,19 +23,16 @@ func NewDBHandle(dbConfigValues config.DbConfig, catalogScope promutils.Scope) (
 	var err error
 
 	switch {
-	case dbConfigValues.SQLiteConfig != nil:
-		if dbConfigValues.SQLiteConfig.File == "" {
-			return nil, fmt.Errorf("illegal sqlite database configuration. `file` is a required parameter and should be a path")
-		}
-		gormDb, err = gorm.Open(sqlite.Open(dbConfigValues.SQLiteConfig.File))
-	case dbConfigValues.PostgresConfig != nil && (len(dbConfigValues.PostgresConfig.Host) > 0 || len(dbConfigValues.PostgresConfig.User) > 0 || len(dbConfigValues.PostgresConfig.DbName) > 0):
+	case dbConfigValues.SQLite.File != "":
+		gormDb, err = gorm.Open(sqlite.Open(dbConfigValues.SQLite.File))
+	case len(dbConfigValues.Postgres.Host) > 0 || len(dbConfigValues.Postgres.User) > 0 || len(dbConfigValues.Postgres.DbName) > 0:
 		dbConfig := config.DbConfig{
-			Host:         dbConfigValues.PostgresConfig.Host,
-			Port:         dbConfigValues.PostgresConfig.Port,
-			DbName:       dbConfigValues.PostgresConfig.DbName,
-			User:         dbConfigValues.PostgresConfig.User,
-			Password:     dbConfigValues.PostgresConfig.Password,
-			ExtraOptions: dbConfigValues.PostgresConfig.ExtraOptions,
+			Host:         dbConfigValues.Postgres.Host,
+			Port:         dbConfigValues.Postgres.Port,
+			DbName:       dbConfigValues.Postgres.DbName,
+			User:         dbConfigValues.Postgres.User,
+			Password:     dbConfigValues.Postgres.Password,
+			ExtraOptions: dbConfigValues.Postgres.ExtraOptions,
 			BaseConfig: config.BaseConfig{
 				DisableForeignKeyConstraintWhenMigrating: true,
 			},
