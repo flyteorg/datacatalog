@@ -158,7 +158,7 @@ func TestDataCatalogConfig_SetFlags(t *testing.T) {
 	t.Run("Test_max-reservation-heartbeat", func(t *testing.T) {
 
 		t.Run("Override", func(t *testing.T) {
-			testValue := DefaultConfig.MaxReservationHeartbeat.String()
+			testValue := defaultConfig.MaxReservationHeartbeat.String()
 
 			cmdFlags.Set("max-reservation-heartbeat", testValue)
 			if vString, err := cmdFlags.GetString("max-reservation-heartbeat"); err == nil {

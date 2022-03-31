@@ -6,7 +6,7 @@ import (
 
 //go:generate pflags DataCatalogConfig --default-var=defaultConfig
 
-var DefaultConfig = &DataCatalogConfig{
+var defaultConfig = &DataCatalogConfig{
 	StoragePrefix:                  "metadata",
 	MetricsScope:                   "datacatalog",
 	ProfilerPort:                   10254,
