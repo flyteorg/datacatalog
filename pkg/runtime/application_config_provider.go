@@ -28,7 +28,6 @@ type ApplicationConfigurationProvider struct{}
 
 func (p *ApplicationConfigurationProvider) GetDbConfig() dbconfig.DbConfig {
 	dbConfigSection := database.GetConfig()
-	password := dbConfigSection.Postgres.Password
 	if len(dbConfigSection.Postgres.PasswordPath) > 0 {
 		if _, err := os.Stat(dbConfigSection.Postgres.PasswordPath); os.IsNotExist(err) {
 			logger.Fatalf(context.Background(),
@@ -41,19 +40,13 @@ func (p *ApplicationConfigurationProvider) GetDbConfig() dbconfig.DbConfig {
 		}
 		// Passwords can contain special characters as long as they are percent encoded
 		// https://www.postgresql.org/docs/current/libpq-connect.html
-		password = strings.TrimSpace(string(passwordVal))
+		dbConfigSection.Postgres.Password = strings.TrimSpace(string(passwordVal))
 	}
 
 	return dbconfig.DbConfig{
-		Host:         dbConfigSection.Postgres.Host,
-		Port:         dbConfigSection.Postgres.Port,
-		DbName:       dbConfigSection.Postgres.DbName,
-		User:         dbConfigSection.Postgres.User,
-		Password:     password,
-		ExtraOptions: dbConfigSection.Postgres.ExtraOptions,
-		BaseConfig:   dbconfig.BaseConfig{LogLevel: dbConfigSection.LogLevel},
-		Postgres:     dbConfigSection.Postgres,
-		SQLite:       dbConfigSection.SQLite,
+		BaseConfig: dbconfig.BaseConfig{LogLevel: dbConfigSection.LogLevel},
+		Postgres:   dbConfigSection.Postgres,
+		SQLite:     dbConfigSection.SQLite,
 	}
 }
 

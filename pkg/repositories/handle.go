@@ -38,19 +38,6 @@ func NewDBHandle(dbConfigValues config.DbConfig, catalogScope promutils.Scope) (
 			},
 		}
 		gormDb, err = config.OpenDbConnection(config.NewPostgresConfigProvider(dbConfig, catalogScope.NewSubScope(config.Postgres)))
-	case len(dbConfigValues.Host) > 0 || len(dbConfigValues.User) > 0 || len(dbConfigValues.DbName) > 0:
-		dbConfig := config.DbConfig{
-			Host:         dbConfigValues.Host,
-			Port:         dbConfigValues.Port,
-			DbName:       dbConfigValues.DbName,
-			User:         dbConfigValues.User,
-			Password:     dbConfigValues.Password,
-			ExtraOptions: dbConfigValues.ExtraOptions,
-			BaseConfig: config.BaseConfig{
-				DisableForeignKeyConstraintWhenMigrating: true,
-			},
-		}
-		gormDb, err = config.OpenDbConnection(config.NewPostgresConfigProvider(dbConfig, catalogScope.NewSubScope(config.Postgres)))
 	default:
 		return nil, fmt.Errorf("unrecognized database config, %v. Supported only postgres and sqlite", dbConfigValues)
 	}
