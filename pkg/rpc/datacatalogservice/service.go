@@ -91,7 +91,7 @@ func NewDataCatalogService() *DataCatalogService {
 	baseStorageReference := dataStorageClient.GetBaseContainerFQN(ctx)
 	storagePrefix, err := dataStorageClient.ConstructReference(ctx, baseStorageReference, dataCatalogConfig.StoragePrefix)
 	if err != nil {
-		logger.Errorf(ctx, "Failed to create prefix %v, err %v", dataCatalogConfig.StoragePrefix, err)
+		logger.Errorf(ctx, "Failed  to create prefix %v, err %v", dataCatalogConfig.StoragePrefix, err)
 		panic(err)
 	}
 
