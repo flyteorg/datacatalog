@@ -101,12 +101,12 @@ func NewDataCatalogService() *DataCatalogService {
 
 	dbConfigValues := configProvider.ApplicationConfiguration().GetDbConfig()
 	dbConfig := repoconfig.DbConfig{
-		Host:         dbConfigValues.Host,
-		Port:         dbConfigValues.Port,
-		DbName:       dbConfigValues.DbName,
-		User:         dbConfigValues.User,
-		Password:     dbConfigValues.Password,
-		ExtraOptions: dbConfigValues.ExtraOptions,
+		Host:         dbConfigValues.Postgres.Host,
+		Port:         dbConfigValues.Postgres.Port,
+		DbName:       dbConfigValues.Postgres.DbName,
+		User:         dbConfigValues.Postgres.User,
+		Password:     dbConfigValues.Postgres.Password,
+		ExtraOptions: dbConfigValues.Postgres.ExtraOptions,
 	}
 	repos := repositories.GetRepository(repositories.POSTGRES, dbConfig, catalogScope)
 	logger.Infof(ctx, "Created DB connection.")
