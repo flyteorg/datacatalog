@@ -23,9 +23,9 @@ func NewDBHandle(dbConfigValues config.DbConfig, catalogScope promutils.Scope) (
 	var err error
 
 	switch {
-	case dbConfigValues.SQLite.File != "":
+	case !dbConfigValues.SQLite.IsEmpty():
 		gormDb, err = gorm.Open(sqlite.Open(dbConfigValues.SQLite.File))
-	case len(dbConfigValues.Postgres.Host) > 0 || len(dbConfigValues.Postgres.User) > 0 || len(dbConfigValues.Postgres.DbName) > 0:
+	case !dbConfigValues.Postgres.IsEmpty():
 		dbConfig := config.DbConfig{
 			Host:         dbConfigValues.Postgres.Host,
 			Port:         dbConfigValues.Postgres.Port,
