@@ -14,7 +14,7 @@ var serveDummyCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 		cfg := config.GetConfig()
-		return datacatalogservice.ServeDummy(ctx, cfg)
+		return datacatalogservice.Serve(ctx, cfg)
 	},
 }
 

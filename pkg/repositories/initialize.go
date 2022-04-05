@@ -21,9 +21,9 @@ const pqInvalidDBCode = "3D000"
 // Migrate This command will run all the migrations for the database
 func Migrate(ctx context.Context) error {
 	configProvider := runtime.NewConfigurationProvider()
-	dbConfigValues := configProvider.ApplicationConfiguration().GetDbConfig()
+	dbConfigValues := *configProvider.ApplicationConfiguration().GetDbConfig()
 
-	dbName := dbConfigValues.DbName
+	dbName := dbConfigValues.Postgres.DbName
 	dbHandle, err := NewDBHandle(dbConfigValues, migrateScope)
 
 	if err != nil {
@@ -38,7 +38,7 @@ func Migrate(ctx context.Context) error {
 		if pqError.Code == pqInvalidDBCode {
 			logger.Warningf(ctx, "Database [%v] does not exist, trying to create it now", dbName)
 
-			dbConfigValues.DbName = defaultDB
+			dbConfigValues.Postgres.DbName = defaultDB
 			setupDBHandler, err := NewDBHandle(dbConfigValues, migrateScope)
 			if err != nil {
 				logger.Errorf(ctx, "Failed to connect to default DB %v, err %v", defaultDB, err)
@@ -53,7 +53,7 @@ func Migrate(ctx context.Context) error {
 				panic(err)
 			}
 
-			dbConfigValues.DbName = dbName
+			dbConfigValues.Postgres.DbName = dbName
 			dbHandle, err = NewDBHandle(dbConfigValues, migrateScope)
 			if err != nil {
 				logger.Errorf(ctx, "Failed to connect DB err %v", err)

@@ -8,7 +8,6 @@ import (
 
 	"github.com/flyteorg/flytestdlib/config"
 
-	dbconfig "github.com/flyteorg/datacatalog/pkg/repositories/config"
 	"github.com/flyteorg/datacatalog/pkg/runtime/configs"
 	"github.com/flyteorg/flytestdlib/database"
 	"github.com/flyteorg/flytestdlib/logger"
@@ -20,13 +19,13 @@ var datacatalogConfig = config.MustRegisterSection(datacatalog, &configs.DataCat
 
 // Defines the interface to return top-level config structs necessary to start up a datacatalog application.
 type ApplicationConfiguration interface {
-	GetDbConfig() dbconfig.DbConfig
+	GetDbConfig() *database.DbConfig
 	GetDataCatalogConfig() configs.DataCatalogConfig
 }
 
 type ApplicationConfigurationProvider struct{}
 
-func (p *ApplicationConfigurationProvider) GetDbConfig() dbconfig.DbConfig {
+func (p *ApplicationConfigurationProvider) GetDbConfig() *database.DbConfig {
 	dbConfigSection := database.GetConfig()
 	if len(dbConfigSection.Postgres.PasswordPath) > 0 {
 		if _, err := os.Stat(dbConfigSection.Postgres.PasswordPath); os.IsNotExist(err) {
@@ -43,11 +42,7 @@ func (p *ApplicationConfigurationProvider) GetDbConfig() dbconfig.DbConfig {
 		dbConfigSection.Postgres.Password = strings.TrimSpace(string(passwordVal))
 	}
 
-	return dbconfig.DbConfig{
-		BaseConfig: dbconfig.BaseConfig{LogLevel: dbConfigSection.LogLevel},
-		Postgres:   dbConfigSection.Postgres,
-		SQLite:     dbConfigSection.SQLite,
-	}
+	return dbConfigSection
 }
 
 func (p *ApplicationConfigurationProvider) GetDataCatalogConfig() configs.DataCatalogConfig {

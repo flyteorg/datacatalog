@@ -17,7 +17,6 @@ import (
 	"github.com/flyteorg/datacatalog/pkg/manager/impl"
 	"github.com/flyteorg/datacatalog/pkg/manager/interfaces"
 	"github.com/flyteorg/datacatalog/pkg/repositories"
-	repoconfig "github.com/flyteorg/datacatalog/pkg/repositories/config"
 	"github.com/flyteorg/datacatalog/pkg/runtime"
 	catalog "github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/datacatalog"
 	"github.com/flyteorg/flytestdlib/contextutils"
@@ -100,15 +99,7 @@ func NewDataCatalogService() *DataCatalogService {
 	}
 
 	dbConfigValues := configProvider.ApplicationConfiguration().GetDbConfig()
-	dbConfig := repoconfig.DbConfig{
-		Host:         dbConfigValues.Postgres.Host,
-		Port:         dbConfigValues.Postgres.Port,
-		DbName:       dbConfigValues.Postgres.DbName,
-		User:         dbConfigValues.Postgres.User,
-		Password:     dbConfigValues.Postgres.Password,
-		ExtraOptions: dbConfigValues.Postgres.ExtraOptions,
-	}
-	repos := repositories.GetRepository(repositories.POSTGRES, dbConfig, catalogScope)
+	repos := repositories.GetRepository(repositories.POSTGRES, *dbConfigValues, catalogScope)
 	logger.Infof(ctx, "Created DB connection.")
 
 	// Serve profiling endpoint.
@@ -157,6 +148,7 @@ func newGRPCServer(_ context.Context, cfg *config.Config) *grpc.Server {
 	return grpcServer
 }
 
+// ServeHTTPHealthCheck create a http healthcheck endpoint
 func ServeHTTPHealthCheck(ctx context.Context, cfg *config.Config) error {
 	mux := http.NewServeMux()
 
@@ -170,7 +162,7 @@ func ServeHTTPHealthCheck(ctx context.Context, cfg *config.Config) error {
 }
 
 // Create and start the gRPC server and http healthcheck endpoint
-func ServeDummy(ctx context.Context, cfg *config.Config) error {
+func Serve(ctx context.Context, cfg *config.Config) error {
 	// serve a http healthcheck endpoint
 	go func() {
 		err := ServeHTTPHealthCheck(ctx, cfg)
