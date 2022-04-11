@@ -64,7 +64,7 @@ func (p *PostgresConfigProvider) GetDBConfig() DbConfig {
 // You must call CloseDbConnection at the end of your session!
 func OpenDbConnection(config DbConnectionConfigProvider) (*gorm.DB, error) {
 	db, err := gorm.Open(config.GetDialector(), &gorm.Config{
-		Logger:                                   logger.Default.LogMode(config.GetDBConfig().LogLevel),
+		Logger:                                   logger.Default.LogMode(config.GetDBConfig().BaseConfig.LogLevel),
 		DisableForeignKeyConstraintWhenMigrating: config.GetDBConfig().DisableForeignKeyConstraintWhenMigrating,
 	})
 	if err != nil {

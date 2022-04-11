@@ -24,7 +24,7 @@ func TestConstructGormArgs(t *testing.T) {
 	}, mockScope.NewTestScope())
 
 	assert.Equal(t, "host=localhost port=5432 dbname=postgres user=postgres sslmode=disable", postgresConfigProvider.GetDSN())
-	assert.Equal(t, logger.LogLevel(3), postgresConfigProvider.GetDBConfig().LogLevel)
+	assert.Equal(t, logger.LogLevel(3), postgresConfigProvider.GetDBConfig().BaseConfig.LogLevel)
 	assert.Equal(t, true, postgresConfigProvider.GetDBConfig().DisableForeignKeyConstraintWhenMigrating)
 }
 
