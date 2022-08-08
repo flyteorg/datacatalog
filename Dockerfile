@@ -30,7 +30,7 @@ RUN curl --silent --fail --show-error --location --output /artifacts/grpc_health
 ENV PATH="/artifacts:${PATH}"
 
 # This will eventually move to centurylink/ca-certs:latest for minimum possible image size
-FROM alpine:3.14
+FROM alpine:3.15
 COPY --from=builder /artifacts /bin
 
 RUN apk --update add ca-certificates
