@@ -126,3 +126,35 @@ func (_m *ArtifactRepo) List(ctx context.Context, datasetKey models.DatasetKey, 
 
 	return r0, r1
 }
+
+type ArtifactRepo_Update struct {
+	*mock.Call
+}
+
+func (_m ArtifactRepo_Update) Return(_a0 error) *ArtifactRepo_Update {
+	return &ArtifactRepo_Update{Call: _m.Call.Return(_a0)}
+}
+
+func (_m *ArtifactRepo) OnUpdate(ctx context.Context, artifact models.Artifact) *ArtifactRepo_Update {
+	c_call := _m.On("Update", ctx, artifact)
+	return &ArtifactRepo_Update{Call: c_call}
+}
+
+func (_m *ArtifactRepo) OnUpdateMatch(matchers ...interface{}) *ArtifactRepo_Update {
+	c_call := _m.On("Update", matchers...)
+	return &ArtifactRepo_Update{Call: c_call}
+}
+
+// Update provides a mock function with given fields: ctx, artifact
+func (_m *ArtifactRepo) Update(ctx context.Context, artifact models.Artifact) error {
+	ret := _m.Called(ctx, artifact)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, models.Artifact) error); ok {
+		r0 = rf(ctx, artifact)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
