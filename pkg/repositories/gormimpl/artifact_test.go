@@ -367,7 +367,7 @@ func TestUpdateArtifact(t *testing.T) {
 		})
 	artifactDataDeleted := false
 	GlobalMock.NewMock().
-		WithQuery(`DELETE FROM "artifact_data" WHERE name NOT IN ($1,$2) AND ("artifact_data"."dataset_project","artifact_data"."dataset_name","artifact_data"."dataset_domain","artifact_data"."dataset_version","artifact_data"."artifact_id","artifact_data"."name") IN (($3,$4,$5,$6,$7,$8))`).
+		WithQuery(`DELETE FROM "artifact_data" WHERE "artifact_data"."artifact_id" = $1 AND name NOT IN ($2,$3)`).
 		WithRowsNum(0).
 		WithCallback(func(s string, values []driver.NamedValue) {
 			artifactDataDeleted = true
@@ -483,7 +483,7 @@ func TestUpdateArtifactError(t *testing.T) {
 				artifactUpdated = true
 			})
 		GlobalMock.NewMock().
-			WithQuery(`DELETE FROM "artifact_data" WHERE name NOT IN ($1,$2) AND ("artifact_data"."dataset_project","artifact_data"."dataset_name","artifact_data"."dataset_domain","artifact_data"."dataset_version","artifact_data"."artifact_id","artifact_data"."name") IN (($3,$4,$5,$6,$7,$8))`).
+			WithQuery(`DELETE FROM "artifact_data" WHERE "artifact_data"."artifact_id" = $1 AND name NOT IN ($2,$3)`).
 			WithExecException()
 
 		updateInput := models.Artifact{
@@ -525,7 +525,7 @@ func TestUpdateArtifactError(t *testing.T) {
 			})
 		artifactDataDeleted := false
 		GlobalMock.NewMock().
-			WithQuery(`DELETE FROM "artifact_data" WHERE name NOT IN ($1,$2) AND ("artifact_data"."dataset_project","artifact_data"."dataset_name","artifact_data"."dataset_domain","artifact_data"."dataset_version","artifact_data"."artifact_id","artifact_data"."name") IN (($3,$4,$5,$6,$7,$8))`).
+			WithQuery(`DELETE FROM "artifact_data" WHERE "artifact_data"."artifact_id" = $1 AND name NOT IN ($2,$3)`).
 			WithRowsNum(0).
 			WithCallback(func(s string, values []driver.NamedValue) {
 				artifactDataDeleted = true

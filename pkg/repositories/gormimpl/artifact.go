@@ -158,10 +158,12 @@ func (h *artifactRepo) Update(ctx context.Context, artifact models.Artifact) err
 	artifactDataNames := make([]string, len(artifact.ArtifactData))
 	for i := range artifact.ArtifactData {
 		artifactDataNames[i] = artifact.ArtifactData[i].Name
+		// ensure artifact data is fully associated with correct artifact
+		artifact.ArtifactData[i].ArtifactKey = artifact.ArtifactKey
 	}
 
 	// delete all removed artifact data entries from the DB
-	if err := tx.Where("name NOT IN ?", artifactDataNames).Delete(&models.ArtifactData{ArtifactKey: artifact.ArtifactKey}).Error; err != nil {
+	if err := tx.Where(&models.ArtifactData{ArtifactKey: artifact.ArtifactKey}).Where("name NOT IN ?", artifactDataNames).Delete(&models.ArtifactData{}).Error; err != nil {
 		tx.Rollback()
 		return h.errorTransformer.ToDataCatalogError(err)
 	}
