@@ -670,6 +670,7 @@ func TestUpdateArtifact(t *testing.T) {
 		artifactResponse, err := artifactManager.UpdateArtifact(ctx, request)
 		assert.NoError(t, err)
 		assert.NotNil(t, artifactResponse)
+		assert.Equal(t, expectedArtifact.Id, artifactResponse.GetArtifactId())
 
 		// check that the datastore has the updated artifactData available
 		// data1 should contain updated value
@@ -752,6 +753,7 @@ func TestUpdateArtifact(t *testing.T) {
 		artifactResponse, err := artifactManager.UpdateArtifact(ctx, request)
 		assert.NoError(t, err)
 		assert.NotNil(t, artifactResponse)
+		assert.Equal(t, expectedArtifact.Id, artifactResponse.GetArtifactId())
 
 		// check that the datastore has the updated artifactData available
 		// data1 should contain updated value

@@ -394,7 +394,9 @@ func (m *artifactManager) UpdateArtifact(ctx context.Context, request *datacatal
 	logger.Debugf(ctx, "Successfully updated artifact id: %v", artifact.Id)
 
 	m.systemMetrics.updateSuccessCounter.Inc(ctx)
-	return &datacatalog.UpdateArtifactResponse{}, nil
+	return &datacatalog.UpdateArtifactResponse{
+		ArtifactId: artifact.Id,
+	}, nil
 }
 
 func NewArtifactManager(repo repositories.RepositoryInterface, store *storage.DataStore, storagePrefix storage.DataReference, artifactScope promutils.Scope) interfaces.ArtifactManager {
