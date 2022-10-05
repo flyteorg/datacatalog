@@ -2,7 +2,7 @@ module github.com/flyteorg/datacatalog
 
 go 1.18
 
-replace github.com/flyteorg/flyteidl => github.com/blackshark-ai/flyteidl v0.24.22-0.20220927111127-cf80598523f2
+replace github.com/flyteorg/flyteidl => github.com/blackshark-ai/flyteidl v0.24.22-0.20221005103053-1172311340ca
 
 require (
 	github.com/Selvatico/go-mocket v1.0.7
