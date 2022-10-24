@@ -62,8 +62,11 @@ func (h *DBHandle) CreateDB(dbName string) error {
 		createDBStatement := fmt.Sprintf("CREATE DATABASE %s", dbName)
 		result = h.db.Exec(createDBStatement)
 
-		if result.Error != nil && !isPgErrorWithCode(result.Error, pqDbAlreadyExistsCode) {
-			return result.Error
+		if result.Error != nil {
+			if !isPgErrorWithCode(result.Error, pqDbAlreadyExistsCode) {
+				return result.Error
+			}
+			logger.Infof(context.TODO(), "Not creating database %s, already exists", dbName)
 		}
 	}
 
