@@ -18,7 +18,15 @@ type Config struct {
 	ReadHeaderTimeoutSeconds int  `json:"readHeaderTimeoutSeconds" pflag:",The amount of time allowed to read request headers."`
 }
 
-var defaultConfig = &Config{GrpcPort: 8081, HTTPPort: 8080, GrpcServerReflection: true}
+var defaultConfig = &Config{
+	GrpcPort:             8081,
+	HTTPPort:             8080,
+	GrpcServerReflection: true,
+	// Set the HTTP timeout to avoid security vulnerabilities with expired, inactive connections:
+	// https://deepsource.io/directory/analyzers/go/issues/GO-S2114
+	// just shy of requestTimeoutUpperBound
+	ReadHeaderTimeoutSeconds: 32,
+}
 var applicationConfig = config.MustRegisterSection(SectionKey, defaultConfig)
 
 func GetConfig() *Config {
