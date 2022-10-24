@@ -2,6 +2,8 @@ package repositories
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgconn"
 
 	"gorm.io/driver/sqlite"
 
@@ -62,7 +64,7 @@ func (h *DBHandle) CreateDB(dbName string) error {
 		createDBStatement := fmt.Sprintf("CREATE DATABASE %s", dbName)
 		result = h.db.Exec(createDBStatement)
 
-		if result.Error != nil {
+		if result.Error != nil && !isPgErrorWithCode(result.Error, pqDbAlreadyExistsCode){
 			return result.Error
 		}
 	}
