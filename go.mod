@@ -2,11 +2,9 @@ module github.com/flyteorg/datacatalog
 
 go 1.18
 
-replace github.com/flyteorg/flyteidl => github.com/blackshark-ai/flyteidl v0.24.22-0.20221005103053-1172311340ca
-
 require (
 	github.com/Selvatico/go-mocket v1.0.7
-	github.com/flyteorg/flyteidl v1.0.0
+	github.com/flyteorg/flyteidl v1.2.3
 	github.com/flyteorg/flytestdlib v1.0.9
 	github.com/golang/glog v1.0.0
 	github.com/golang/protobuf v1.5.2
