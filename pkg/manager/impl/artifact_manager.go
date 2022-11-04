@@ -361,20 +361,11 @@ func (m *artifactManager) UpdateArtifact(ctx context.Context, request *datacatal
 		m.systemMetrics.updateDataSuccessCounter.Inc(ctx)
 	}
 
-	// delete all artifact data no longer present in the updated artifact from the blob storage
+	removedArtifactData := make([]models.ArtifactData, 0)
 	for _, artifactData := range artifactModel.ArtifactData {
-		if _, ok := artifactDataNames[artifactData.Name]; ok {
-			continue
+		if _, ok := artifactDataNames[artifactData.Name]; !ok {
+			removedArtifactData = append(removedArtifactData, artifactData)
 		}
-
-		if err := m.artifactStore.DeleteData(ctx, artifactData); err != nil {
-			logger.Errorf(ctx, "Failed to delete artifact data during update, err: %v", err)
-			m.systemMetrics.deleteDataFailureCounter.Inc(ctx)
-			m.systemMetrics.updateFailureCounter.Inc(ctx)
-			return nil, err
-		}
-
-		m.systemMetrics.deleteDataSuccessCounter.Inc(ctx)
 	}
 
 	// update artifact in DB, also replaces/upserts associated artifact data
@@ -389,6 +380,21 @@ func (m *artifactManager) UpdateArtifact(ctx context.Context, request *datacatal
 		}
 		m.systemMetrics.updateFailureCounter.Inc(ctx)
 		return nil, err
+	}
+
+	// delete all artifact data no longer present in the updated artifact from the blob storage.
+	// blob storage data is removed last in case the DB update fail, which would leave us with artifact data DB entries
+	// without underlying blob data. this might still leave orphaned data in blob storage, however we can more easily
+	// clean that up periodically and don't risk serving artifact data records that will fail when retrieved.
+	for _, artifactData := range removedArtifactData {
+		if err := m.artifactStore.DeleteData(ctx, artifactData); err != nil {
+			logger.Errorf(ctx, "Failed to delete artifact data during update, err: %v", err)
+			m.systemMetrics.deleteDataFailureCounter.Inc(ctx)
+			m.systemMetrics.updateFailureCounter.Inc(ctx)
+			return nil, err
+		}
+
+		m.systemMetrics.deleteDataSuccessCounter.Inc(ctx)
 	}
 
 	logger.Debugf(ctx, "Successfully updated artifact id: %v", artifact.Id)
