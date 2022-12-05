@@ -31,10 +31,10 @@ func NewDBHandle(ctx context.Context, dbConfigValues database.DbConfig, gormConf
 	switch {
 	case !dbConfigValues.SQLite.IsEmpty():
 		gormDb, err = gorm.Open(sqlite.Open(dbConfigValues.SQLite.File))
-	case !dbConfigValues.Postgres.IsEmpty():
-		gormDb, err = database.CreatePostgresDbIfNotExists(ctx, gormConfig, dbConfigValues.Postgres)
 	case !dbConfigValues.Mysql.IsEmpty():
 		gormDb, err = database.CreateMysqlDbIfNotExists(ctx, gormConfig, dbConfigValues.Mysql)
+	case !dbConfigValues.Postgres.IsEmpty():
+		gormDb, err = database.CreatePostgresDbIfNotExists(ctx, gormConfig, dbConfigValues.Postgres)
 	default:
 		return nil, fmt.Errorf("unrecognized database config, %v. Supported only postgres and sqlite", dbConfigValues)
 	}
