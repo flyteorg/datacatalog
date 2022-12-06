@@ -31,6 +31,8 @@ func (dc *PostgresRepo) ReservationRepo() interfaces.ReservationRepo {
 	return dc.reservationRepo
 }
 
+// NewPostgresRepo - The only thing postgres about this is the fact that it's usually called with an error transformer
+// that understands postgres error codes
 func NewPostgresRepo(db *gorm.DB, errorTransformer errors.ErrorTransformer, scope promutils.Scope) interfaces.DataCatalogRepo {
 	return &PostgresRepo{
 		datasetRepo:     gormimpl.NewDatasetRepo(db, errorTransformer, scope.NewSubScope("dataset")),

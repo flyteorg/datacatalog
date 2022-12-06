@@ -19,7 +19,7 @@ func CreateArtifactModel(request *datacatalog.CreateArtifactRequest, artifactDat
 	partitions := make([]models.Partition, len(request.Artifact.Partitions))
 	for i, partition := range request.Artifact.GetPartitions() {
 		partitions[i] = models.Partition{
-			DatasetUUID: dataset.UUID,
+			DatasetUUID: string(dataset.UUID),
 			Key:         partition.Key,
 			Value:       partition.Value,
 		}
@@ -46,7 +46,7 @@ func FromArtifactModel(artifact models.Artifact) (*datacatalog.Artifact, error) 
 		Domain:  artifact.DatasetDomain,
 		Name:    artifact.DatasetName,
 		Version: artifact.DatasetVersion,
-		UUID:    artifact.DatasetUUID,
+		UUID:    string(artifact.DatasetUUID),
 	}
 
 	metadata, err := unmarshalMetadata(artifact.SerializedMetadata)
