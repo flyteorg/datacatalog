@@ -22,6 +22,6 @@ type Artifact struct {
 type ArtifactData struct {
 	BaseModel
 	ArtifactKey
-	Name     string `gorm:"primary_key"`
+	Name     string `gorm:"size:256;primary_key"`
 	Location string
 }
