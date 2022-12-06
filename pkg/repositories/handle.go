@@ -24,7 +24,8 @@ func NewDBHandle(ctx context.Context, dbConfigValues database.DbConfig, gormConf
 	logConfig := logger.GetConfig()
 	if gormConfig == nil {
 		gormConfig = &gorm.Config{
-			Logger: database.GetGormLogger(ctx, logConfig),
+			Logger:                                   database.GetGormLogger(ctx, logConfig),
+			DisableForeignKeyConstraintWhenMigrating: true,
 		}
 	}
 
@@ -55,7 +56,7 @@ func (h *DBHandle) Migrate(ctx context.Context) error {
 		return err
 	}
 
-	if err := h.db.Debug().AutoMigrate(&models.Artifact{}); err != nil {
+	if err := h.db.AutoMigrate(&models.Artifact{}); err != nil {
 		return err
 	}
 
