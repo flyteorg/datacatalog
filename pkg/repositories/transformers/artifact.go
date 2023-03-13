@@ -19,7 +19,7 @@ func CreateArtifactModel(request *datacatalog.CreateArtifactRequest, artifactDat
 	partitions := make([]models.Partition, len(request.Artifact.Partitions))
 	for i, partition := range request.Artifact.GetPartitions() {
 		partitions[i] = models.Partition{
-			DatasetUUID: string(dataset.UUID),
+			DatasetUUID: dataset.UUID,
 			Key:         partition.Key,
 			Value:       partition.Value,
 		}

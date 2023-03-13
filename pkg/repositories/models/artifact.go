@@ -1,11 +1,11 @@
 package models
 
 type ArtifactKey struct {
-	DatasetProject string `gorm:"size:128;primary_key"`
-	DatasetName    string `gorm:"size:128;primary_key"`
-	DatasetDomain  string `gorm:"size:128;primary_key"`
-	DatasetVersion string `gorm:"size:128;primary_key"`
-	ArtifactID     string `gorm:"size:128;primary_key"`
+	DatasetProject string `gorm:"size:100;primary_key"`
+	DatasetName    string `gorm:"size:100;primary_key"`
+	DatasetDomain  string `gorm:"size:100;primary_key"`
+	DatasetVersion string `gorm:"size:100;primary_key"`
+	ArtifactID     string `gorm:"size:100;primary_key"`
 }
 
 type Artifact struct {
@@ -23,5 +23,5 @@ type ArtifactData struct {
 	BaseModel
 	ArtifactKey
 	Name     string `gorm:"size:256;primary_key"`
-	Location string
+	Location string `gorm:"size:128"`
 }

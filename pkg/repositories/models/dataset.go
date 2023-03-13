@@ -13,7 +13,7 @@ type DatasetKey struct {
 	Name    string     `gorm:"primary_key;index:dataset_name_idx"`    // part of pkey and has separate index for filtering
 	Domain  string     `gorm:"primary_key;index:dataset_domain_idx"`  // part of pkey and has separate index for filtering
 	Version string     `gorm:"primary_key;index:dataset_version_idx"` // part of pkey and has separate index for filtering
-	UUID    UUIDString `gorm:"unique;"`
+	UUID    UUIDString `gorm:"unique;type:uuid"`
 }
 
 type Dataset struct {
@@ -25,7 +25,7 @@ type Dataset struct {
 
 type PartitionKey struct {
 	BaseModel
-	DatasetUUID string `gorm:"type:uuid;primary_key"`
+	DatasetUUID UUIDString `gorm:"type:uuid;primary_key"`
 	Name        string `gorm:"primary_key"`
 }
 
