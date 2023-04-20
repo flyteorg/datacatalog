@@ -6,6 +6,7 @@ require (
 	github.com/Selvatico/go-mocket v1.0.7
 	github.com/flyteorg/flyteidl v1.2.3
 	github.com/flyteorg/flytestdlib v1.0.11
+	github.com/go-gormigrate/gormigrate/v2 v2.0.2
 	github.com/golang/glog v1.0.0
 	github.com/golang/protobuf v1.5.2
 	github.com/jackc/pgconn v1.13.0
@@ -16,8 +17,8 @@ require (
 	github.com/stretchr/testify v1.8.0
 	google.golang.org/grpc v1.46.0
 	gorm.io/driver/postgres v1.4.5
-	gorm.io/driver/sqlite v1.1.1
-	gorm.io/gorm v1.24.1-0.20221019064659-5dd2bb482755
+	gorm.io/driver/sqlite v1.5.0
+	gorm.io/gorm v1.25.0
 )
 
 require (
@@ -68,7 +69,7 @@ require (
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/mattn/go-sqlite3 v1.14.0 // indirect
+	github.com/mattn/go-sqlite3 v1.14.15 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/ncw/swift v1.0.53 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
@@ -101,7 +102,7 @@ require (
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/driver/mysql v1.4.4 // indirect
+	gorm.io/driver/mysql v1.4.7 // indirect
 	k8s.io/apimachinery v0.20.2 // indirect
 	k8s.io/client-go v0.0.0-20210217172142-7279fc64d847 // indirect
 	k8s.io/klog/v2 v2.5.0 // indirect
