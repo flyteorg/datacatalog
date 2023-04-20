@@ -1,6 +1,7 @@
 package fixupmigrations
 
 import (
+	"database/sql/driver"
 	"time"
 
 	"github.com/go-gormigrate/gormigrate/v2"
@@ -19,6 +20,15 @@ func (uuidString UUIDString) GormDBDataType(db *gorm.DB, field *schema.Field) st
 	return "uuid"
 }
 
+func (uuidString *UUIDString) Scan(value interface{}) error {
+	return nil
+}
+
+// Value return json value, implement driver.Valuer interface
+func (uuidString UUIDString) Value() (driver.Value, error) {
+	return uuidString, nil
+}
+
 type BaseModel struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -27,12 +37,12 @@ type BaseModel struct {
 
 type ArtifactKey struct {
 	DatasetProject string `gorm:"size:64;primary_key"`
-	// Can we use a smaller size fo dataset name? This is `flyte-task-<task name>` 
+	// Can we use a smaller size fo dataset name? This is `flyte-task-<task name>`
 	DatasetName    string `gorm:"size:100;primary_key"`
 	DatasetDomain  string `gorm:"size:64;primary_key"`
 	DatasetVersion string `gorm:"size:128;primary_key"`
 	// This is a UUID
-	ArtifactID     string `gorm:"size:36;primary_key"`
+	ArtifactID string `gorm:"size:36;primary_key"`
 }
 
 type Artifact struct {
@@ -53,12 +63,11 @@ type ArtifactData struct {
 	Location string `gorm:"size:2048"`
 }
 
-
 type DatasetKey struct {
-	Project string     `gorm:"size:64;primary_key"`                          // part of pkey, no index needed as it is first column in the pkey
+	Project string `gorm:"size:64;primary_key"` // part of pkey, no index needed as it is first column in the pkey
 	// TODO: figure out what size this should be
 	Name    string     `gorm:"size:100;primary_key;index:dataset_name_idx"`    // part of pkey and has separate index for filtering
-	Domain  string     `gorm:"size:64;primary_key;index:dataset_domain_idx"`  // part of pkey and has separate index for filtering
+	Domain  string     `gorm:"size:64;primary_key;index:dataset_domain_idx"`   // part of pkey and has separate index for filtering
 	Version string     `gorm:"size:128;primary_key;index:dataset_version_idx"` // part of pkey and has separate index for filtering
 	UUID    UUIDString `gorm:"unique;type:uuid"`
 }
@@ -74,7 +83,7 @@ type PartitionKey struct {
 	BaseModel
 	DatasetUUID UUIDString `gorm:"type:uuid;primary_key"`
 	// TODO: figure out if this is used.
-	Name        string `gorm:"size:100;primary_key"`
+	Name string `gorm:"size:100;primary_key"`
 }
 
 type TagKey struct {
@@ -98,9 +107,9 @@ type Tag struct {
 type Partition struct {
 	BaseModel
 	DatasetUUID UUIDString `gorm:"primary_key;type:uuid"`
-	Key         string `gorm:"primary_key"`
-	Value       string `gorm:"primary_key"`
-	ArtifactID  string `gorm:"primary_key;index"` // index for JOINs with the Tag/Labels table when querying artifacts
+	Key         string     `gorm:"primary_key"`
+	Value       string     `gorm:"primary_key"`
+	ArtifactID  string     `gorm:"primary_key;index"` // index for JOINs with the Tag/Labels table when querying artifacts
 }
 
 type ReservationKey struct {
@@ -110,7 +119,7 @@ type ReservationKey struct {
 	DatasetDomain  string `gorm:"size:64;primary_key"`
 	DatasetVersion string `gorm:"size:128;primary_key"`
 	// TODO: figure out what size this should be
-	TagName        string `gorm:"56;primary_key"`
+	TagName string `gorm:"56;primary_key"`
 }
 
 // Reservation tracks the metadata needed to allow

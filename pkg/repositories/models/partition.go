@@ -6,7 +6,7 @@ package models
 type Partition struct {
 	BaseModel
 	DatasetUUID UUIDString `gorm:"primary_key;type:uuid"`
-	Key         string `gorm:"primary_key"`
-	Value       string `gorm:"primary_key"`
-	ArtifactID  string `gorm:"primary_key;index"` // index for JOINs with the Tag/Labels table when querying artifacts
+	Key         string     `gorm:"primary_key"`
+	Value       string     `gorm:"primary_key"`
+	ArtifactID  string     `gorm:"primary_key;index"` // index for JOINs with the Tag/Labels table when querying artifacts
 }

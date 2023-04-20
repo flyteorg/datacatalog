@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
 func ListMigrations(db *gorm.DB) []*gormigrate.Migration {
 	var Migrations []*gormigrate.Migration
 	if db.Dialector.Name() == "postgres" {
@@ -16,4 +15,3 @@ func ListMigrations(db *gorm.DB) []*gormigrate.Migration {
 	Migrations = append(Migrations, fixupmigrations.Migrations...)
 	return Migrations
 }
-
