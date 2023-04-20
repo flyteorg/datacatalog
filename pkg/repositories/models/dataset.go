@@ -1,6 +1,8 @@
 package models
 
 import (
+	"database/sql/driver"
+
 	"github.com/gofrs/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -26,7 +28,7 @@ type Dataset struct {
 type PartitionKey struct {
 	BaseModel
 	DatasetUUID UUIDString `gorm:"type:uuid;primary_key"`
-	Name        string `gorm:"primary_key"`
+	Name        string     `gorm:"primary_key"`
 }
 
 // BeforeCreate so that we set the UUID in golang rather than from a DB function call
@@ -49,4 +51,13 @@ func (dataset UUIDString) GormDBDataType(db *gorm.DB, field *schema.Field) strin
 		return "varchar(36)"
 	}
 	return "uuid"
+}
+
+func (dataset *UUIDString) Scan(value interface{}) error {
+	return nil
+}
+
+// Value return json value, implement driver.Valuer interface
+func (dataset UUIDString) Value() (driver.Value, error) {
+	return dataset, nil
 }

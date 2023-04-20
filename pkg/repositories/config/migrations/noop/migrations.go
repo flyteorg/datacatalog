@@ -1,6 +1,7 @@
 package noopmigrations
 
 import (
+	"database/sql/driver"
 	"time"
 
 	"github.com/go-gormigrate/gormigrate/v2"
@@ -17,6 +18,15 @@ func (uuidString UUIDString) GormDBDataType(db *gorm.DB, field *schema.Field) st
 		return "varchar(36)"
 	}
 	return "uuid"
+}
+
+func (uuidString *UUIDString) Scan(value interface{}) error {
+	return nil
+}
+
+// Value return json value, implement driver.Valuer interface
+func (uuidString UUIDString) Value() (driver.Value, error) {
+	return uuidString, nil
 }
 
 type BaseModel struct {
@@ -51,7 +61,6 @@ type ArtifactData struct {
 	Location string
 }
 
-
 type DatasetKey struct {
 	Project string     `gorm:"primary_key;"`                          // part of pkey, no index needed as it is first column in the pkey
 	Name    string     `gorm:"primary_key;index:dataset_name_idx"`    // part of pkey and has separate index for filtering
@@ -70,7 +79,7 @@ type Dataset struct {
 type PartitionKey struct {
 	BaseModel
 	DatasetUUID UUIDString `gorm:"type:uuid;primary_key"`
-	Name        string `gorm:"primary_key"`
+	Name        string     `gorm:"primary_key"`
 }
 
 type TagKey struct {
@@ -92,9 +101,9 @@ type Tag struct {
 type Partition struct {
 	BaseModel
 	DatasetUUID UUIDString `gorm:"primary_key;type:uuid"`
-	Key         string `gorm:"primary_key"`
-	Value       string `gorm:"primary_key"`
-	ArtifactID  string `gorm:"primary_key;index"` // index for JOINs with the Tag/Labels table when querying artifacts
+	Key         string     `gorm:"primary_key"`
+	Value       string     `gorm:"primary_key"`
+	ArtifactID  string     `gorm:"primary_key;index"` // index for JOINs with the Tag/Labels table when querying artifacts
 }
 
 type ReservationKey struct {
