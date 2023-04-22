@@ -7,6 +7,7 @@ require (
 	github.com/flyteorg/flyteidl v1.3.6
 	github.com/flyteorg/flytestdlib v1.0.17-0.20230320195919-90331d171e2a
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2
+	github.com/go-sql-driver/mysql v1.7.0
 	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/golang/glog v1.0.0
 	github.com/golang/protobuf v1.5.2
@@ -47,7 +48,6 @@ require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-logr/logr v0.4.0 // indirect
-	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
@@ -101,7 +101,7 @@ require (
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/driver/mysql v1.4.7 // indirect
+	gorm.io/driver/mysql v1.5.0 // indirect
 	k8s.io/apimachinery v0.20.2 // indirect
 	k8s.io/client-go v0.0.0-20210217172142-7279fc64d847 // indirect
 	k8s.io/klog/v2 v2.5.0 // indirect

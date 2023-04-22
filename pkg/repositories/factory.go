@@ -26,10 +26,14 @@ func GetRepository(ctx context.Context, dbConfig database.DbConfig, scope promut
 	}
 
 	var errTransformer errors.ErrorTransformer
-	if !dbConfig.Postgres.IsEmpty() {
+	if !dbConfig.Mysql.IsEmpty() {
+		errTransformer = errors.NewMySqlErrorTransformer()
+		return NewMySqlRepo(db, errTransformer, scope.NewSubScope("repositories"))
+	} else if !dbConfig.Postgres.IsEmpty() {
 		errTransformer = errors.NewPostgresErrorTransformer()
+		return NewPostgresRepo(db, errTransformer, scope.NewSubScope("repositories"))
 	} else {
 		errTransformer = errors.NewGenericErrorTransformer()
 	}
-	return NewPostgresRepo(db, errTransformer, scope.NewSubScope("repositories"))
+	panic("Unsupported database type")
 }
