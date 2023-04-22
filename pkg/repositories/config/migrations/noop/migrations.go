@@ -36,7 +36,7 @@ type ArtifactKey struct {
 type Artifact struct {
 	BaseModel
 	ArtifactKey
-	DatasetUUID        UUIDString     `gorm:"index:artifacts_dataset_uuid_idx"`
+	DatasetUUID        UUIDString     `gorm:"type:uuid;index:artifacts_dataset_uuid_idx"`
 	Dataset            Dataset        `gorm:"association_autocreate:false"`
 	ArtifactData       []ArtifactData `gorm:"references:DatasetProject,DatasetName,DatasetDomain,DatasetVersion,ArtifactID;foreignkey:DatasetProject,DatasetName,DatasetDomain,DatasetVersion,ArtifactID"`
 	Partitions         []Partition    `gorm:"references:ArtifactID;foreignkey:ArtifactID"`
