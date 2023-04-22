@@ -1,12 +1,35 @@
 package models
 
 import (
+	"fmt"
+
 	"github.com/gofrs/uuid"
+
+	"database/sql/driver"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )
 
 type UUIDString string
+
+// As per https://gorm.io/docs/data_types.html, custom data types need to implement the following interfaces
+func (s *UUIDString) Scan(value interface{}) error {
+	switch src := value.(type) {
+		case string:
+			*s = UUIDString(src)
+			return nil
+		case []byte:
+			*s = UUIDString(src[:])
+			return nil
+		default:
+			return fmt.Errorf("failed to scan UUID. Type = %v", src)
+	}
+}
+
+func (s UUIDString) Value() (driver.Value, error) {
+	return string(s), nil
+}
 
 type DatasetKey struct {
 	Project string     `gorm:"primary_key;"`                          // part of pkey, no index needed as it is first column in the pkey
@@ -36,7 +59,6 @@ func (dataset *Dataset) BeforeCreate(tx *gorm.DB) error {
 		if err != nil {
 			return err
 		}
-
 		tx.Model(dataset).Update("UUID", generated)
 	}
 	return nil
