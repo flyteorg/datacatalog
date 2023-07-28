@@ -46,7 +46,7 @@ func FromArtifactModel(artifact models.Artifact) (*datacatalog.Artifact, error) 
 		Domain:  artifact.DatasetDomain,
 		Name:    artifact.DatasetName,
 		Version: artifact.DatasetVersion,
-		UUID:    artifact.DatasetUUID,
+		UUID:    string(artifact.DatasetUUID),
 	}
 
 	metadata, err := unmarshalMetadata(artifact.SerializedMetadata)

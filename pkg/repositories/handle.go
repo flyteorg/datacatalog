@@ -9,10 +9,8 @@ import (
 
 	"github.com/flyteorg/flytestdlib/database"
 
-	"github.com/flyteorg/datacatalog/pkg/repositories/config"
 	"github.com/flyteorg/datacatalog/pkg/repositories/models"
 	"github.com/flyteorg/flytestdlib/logger"
-	"github.com/flyteorg/flytestdlib/promutils"
 	"gorm.io/gorm"
 )
 
@@ -20,15 +18,24 @@ type DBHandle struct {
 	db *gorm.DB
 }
 
-func NewDBHandle(ctx context.Context, dbConfigValues database.DbConfig, catalogScope promutils.Scope) (*DBHandle, error) {
+func NewDBHandle(ctx context.Context, dbConfigValues database.DbConfig, gormConfig *gorm.Config) (*DBHandle, error) {
 	var gormDb *gorm.DB
 	var err error
+	logConfig := logger.GetConfig()
+	if gormConfig == nil {
+		gormConfig = &gorm.Config{
+			Logger:                                   database.GetGormLogger(ctx, logConfig),
+			DisableForeignKeyConstraintWhenMigrating: true,
+		}
+	}
 
 	switch {
 	case !dbConfigValues.SQLite.IsEmpty():
 		gormDb, err = gorm.Open(sqlite.Open(dbConfigValues.SQLite.File))
+	case !dbConfigValues.Mysql.IsEmpty():
+		gormDb, err = database.CreateMysqlDbIfNotExists(ctx, gormConfig, dbConfigValues.Mysql)
 	case !dbConfigValues.Postgres.IsEmpty():
-		gormDb, err = config.OpenDbConnection(ctx, config.NewPostgresConfigProvider(dbConfigValues, catalogScope.NewSubScope(config.Postgres)))
+		gormDb, err = database.CreatePostgresDbIfNotExists(ctx, gormConfig, dbConfigValues.Postgres)
 	default:
 		return nil, fmt.Errorf("unrecognized database config, %v. Supported only postgres and sqlite", dbConfigValues)
 	}
@@ -44,41 +51,12 @@ func NewDBHandle(ctx context.Context, dbConfigValues database.DbConfig, catalogS
 	return out, nil
 }
 
-func (h *DBHandle) CreateDB(dbName string) error {
-	type DatabaseResult struct {
-		Exists bool
-	}
-	var checkExists DatabaseResult
-	result := h.db.Raw("SELECT EXISTS(SELECT datname FROM pg_catalog.pg_database WHERE datname = ?)", dbName).Scan(&checkExists)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	// create db if it does not exist
-	if !checkExists.Exists {
-		logger.Infof(context.TODO(), "Creating Database %v since it does not exist", dbName)
-
-		// NOTE: golang sql drivers do not support parameter injection for CREATE calls
-		createDBStatement := fmt.Sprintf("CREATE DATABASE %s", dbName)
-		result = h.db.Exec(createDBStatement)
-
-		if result.Error != nil {
-			if !isPgErrorWithCode(result.Error, pqDbAlreadyExistsCode) {
-				return result.Error
-			}
-			logger.Infof(context.TODO(), "Not creating database %s, already exists", dbName)
-		}
-	}
-
-	return nil
-}
-
 func (h *DBHandle) Migrate(ctx context.Context) error {
 	if err := h.db.AutoMigrate(&models.Dataset{}); err != nil {
 		return err
 	}
 
-	if err := h.db.Debug().AutoMigrate(&models.Artifact{}); err != nil {
+	if err := h.db.AutoMigrate(&models.Artifact{}); err != nil {
 		return err
 	}
 

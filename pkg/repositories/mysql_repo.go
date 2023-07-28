@@ -8,33 +8,31 @@ import (
 	"gorm.io/gorm"
 )
 
-type PostgresRepo struct {
+type MySqlRepo struct {
 	datasetRepo     interfaces.DatasetRepo
 	artifactRepo    interfaces.ArtifactRepo
 	tagRepo         interfaces.TagRepo
 	reservationRepo interfaces.ReservationRepo
 }
 
-func (dc *PostgresRepo) DatasetRepo() interfaces.DatasetRepo {
+func (dc *MySqlRepo) DatasetRepo() interfaces.DatasetRepo {
 	return dc.datasetRepo
 }
 
-func (dc *PostgresRepo) ArtifactRepo() interfaces.ArtifactRepo {
+func (dc *MySqlRepo) ArtifactRepo() interfaces.ArtifactRepo {
 	return dc.artifactRepo
 }
 
-func (dc *PostgresRepo) TagRepo() interfaces.TagRepo {
+func (dc *MySqlRepo) TagRepo() interfaces.TagRepo {
 	return dc.tagRepo
 }
 
-func (dc *PostgresRepo) ReservationRepo() interfaces.ReservationRepo {
+func (dc *MySqlRepo) ReservationRepo() interfaces.ReservationRepo {
 	return dc.reservationRepo
 }
 
-// NewPostgresRepo - The only thing postgres about this is the fact that it's usually called with an error transformer
-// that understands postgres error codes
-func NewPostgresRepo(db *gorm.DB, errorTransformer errors.ErrorTransformer, scope promutils.Scope) interfaces.DataCatalogRepo {
-	return &PostgresRepo{
+func NewMySqlRepo(db *gorm.DB, errorTransformer errors.ErrorTransformer, scope promutils.Scope) interfaces.DataCatalogRepo {
+	return &MySqlRepo{
 		datasetRepo:     gormimpl.NewDatasetRepo(db, errorTransformer, scope.NewSubScope("dataset")),
 		artifactRepo:    gormimpl.NewArtifactRepo(db, errorTransformer, scope.NewSubScope("artifact")),
 		tagRepo:         gormimpl.NewTagRepo(db, errorTransformer, scope.NewSubScope("tag")),

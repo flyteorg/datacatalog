@@ -4,11 +4,11 @@ import "time"
 
 // ReservationKey uniquely identifies a reservation
 type ReservationKey struct {
-	DatasetProject string `gorm:"primary_key"`
-	DatasetName    string `gorm:"primary_key"`
-	DatasetDomain  string `gorm:"primary_key"`
-	DatasetVersion string `gorm:"primary_key"`
-	TagName        string `gorm:"primary_key"`
+	DatasetProject string `gorm:"size:100;primary_key"`
+	DatasetName    string `gorm:"size:100;primary_key"`
+	DatasetDomain  string `gorm:"size:100;primary_key"`
+	DatasetVersion string `gorm:"size:100;primary_key"`
+	TagName        string `gorm:"size:100;primary_key"`
 }
 
 // Reservation tracks the metadata needed to allow
@@ -18,7 +18,7 @@ type Reservation struct {
 	ReservationKey
 
 	// Identifies who owns the reservation
-	OwnerID string
+	OwnerID string `gorm:"size:100"`
 
 	// When the reservation will expire
 	ExpiresAt          time.Time
