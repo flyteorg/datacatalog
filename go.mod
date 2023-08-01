@@ -109,7 +109,7 @@ require (
 // go mod edit -replace github.com/flyteorg/flytestdlib=github.com/gvashishtha/flytestdlib@master
 // go mod tidy
 // go mod edit -replace github.com/flyteorg/stow=github.com/gvashishtha/stow@78e3158
-// docker build . --platform=linux/amd64 -t gvashishthaanduril/flyteadmin:propeller --push
+// docker build . --platform=linux/amd64 -t gvashishthaanduril/flyteadmin:datacatalog --push
 
 replace github.com/flyteorg/flytestdlib => github.com/gvashishtha/flytestdlib v0.0.0-20230801174554-0c6829454663
 
