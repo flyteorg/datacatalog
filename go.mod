@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/Selvatico/go-mocket v1.0.7
 	github.com/flyteorg/flyteidl v1.3.6
-	github.com/flyteorg/flytestdlib v1.0.15
+	github.com/flyteorg/flytestdlib v1.0.22
 	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/golang/glog v1.1.0
 	github.com/golang/protobuf v1.5.3
@@ -43,7 +43,7 @@ require (
 	github.com/coocood/freecache v1.1.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.13.0 // indirect
-	github.com/flyteorg/stow v0.3.6 // indirect
+	github.com/flyteorg/stow v0.3.7 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-logr/logr v0.4.0 // indirect
@@ -105,12 +105,3 @@ require (
 	k8s.io/client-go v0.0.0-20210217172142-7279fc64d847 // indirect
 	k8s.io/klog/v2 v2.5.0 // indirect
 )
-
-// go mod edit -replace github.com/flyteorg/flytestdlib=github.com/gvashishtha/flytestdlib@master
-// go mod tidy
-// go mod edit -replace github.com/flyteorg/stow=github.com/gvashishtha/stow@78e3158
-// docker build . --platform=linux/amd64 -t gvashishthaanduril/flyteadmin:datacatalog --push
-
-replace github.com/flyteorg/flytestdlib => github.com/gvashishtha/flytestdlib v0.0.0-20230801174554-0c6829454663
-
-replace github.com/flyteorg/stow => github.com/gvashishtha/stow v0.0.0-20230801152247-78e3158c973a
