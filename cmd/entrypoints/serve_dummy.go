@@ -14,6 +14,15 @@ var serveDummyCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 		cfg := config.GetConfig()
+
+		// serve a http healthcheck endpoint
+		go func() {
+			err := ServeHTTPHealthCheck(ctx, cfg)
+			if err != nil {
+				logger.Errorf(ctx, "Unable to serve http", cfg.GetGrpcHostAddress(), err)
+			}
+		}()
+
 		return datacatalogservice.Serve(ctx, cfg)
 	},
 }
