@@ -5,6 +5,7 @@ import (
 
 	"github.com/flyteorg/datacatalog/pkg/config"
 	"github.com/flyteorg/datacatalog/pkg/rpc/datacatalogservice"
+	"github.com/flyteorg/flytestdlib/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +18,7 @@ var serveDummyCmd = &cobra.Command{
 
 		// serve a http healthcheck endpoint
 		go func() {
-			err := ServeHTTPHealthCheck(ctx, cfg)
+			err := datacatalogservice.ServeHTTPHealthCheck(ctx, cfg)
 			if err != nil {
 				logger.Errorf(ctx, "Unable to serve http", cfg.GetGrpcHostAddress(), err)
 			}

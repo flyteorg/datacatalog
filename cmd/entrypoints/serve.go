@@ -7,6 +7,7 @@ import (
 	"github.com/flyteorg/datacatalog/pkg/rpc/datacatalogservice"
 	"github.com/flyteorg/datacatalog/pkg/runtime"
 	"github.com/flyteorg/flytestdlib/contextutils"
+	"github.com/flyteorg/flytestdlib/logger"
 	"github.com/flyteorg/flytestdlib/profutils"
 	"github.com/flyteorg/flytestdlib/promutils/labeled"
 
