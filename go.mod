@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/Selvatico/go-mocket v1.0.7
-	github.com/flyteorg/flyteidl v1.3.6
+	github.com/flyteorg/flyteidl v1.5.21
 	github.com/flyteorg/flytestdlib v1.0.22
 	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/golang/glog v1.1.0
